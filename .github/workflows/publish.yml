@@ -1,0 +1,140 @@
+name: Publish
+
+on:
+  push:
+    tags:
+    - v*
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Package version to validate, build, and optionally publish
+        required: true
+        type: string
+      dry_run:
+        description: Build and test packages without publishing
+        required: true
+        default: true
+        type: boolean
+
+env:
+  RELEASE_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+  DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate release version
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Check package versions
+      shell: pwsh
+      run: ./scripts/Publish.ps1 -Package Validate -Version $env:RELEASE_VERSION
+
+  node:
+    name: Publish Node package
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-node@v7
+      with:
+        node-version: 24
+        registry-url: https://registry.npmjs.org
+    - name: Publish
+      shell: pwsh
+      run: ./scripts/Publish.ps1 -Package Node -Version $env:RELEASE_VERSION -SkipPublish:([bool]::Parse($env:DRY_RUN))
+
+  dotnet:
+    name: Publish .NET package
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.0.x
+    - name: Log in to NuGet
+      if: env.DRY_RUN != 'true'
+      id: nuget-login
+      uses: NuGet/login@v1
+      with:
+        user: ${{ vars.NUGET_USER }}
+    - name: Publish
+      shell: pwsh
+      env:
+        NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+      run: ./scripts/Publish.ps1 -Package DotNet -Version $env:RELEASE_VERSION -SkipPublish:([bool]::Parse($env:DRY_RUN))
+
+  powershell:
+    name: Publish PowerShell module
+    needs: [validate, dotnet]
+    runs-on: ubuntu-latest
+    environment: psgallery
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.0.x
+    - name: Install PowerShell 7.6
+      shell: bash
+      run: dotnet tool install --global PowerShell --version '7.6.*'
+    - name: Install Pester
+      shell: bash
+      run: ~/.dotnet/tools/pwsh -NoProfile -Command 'Install-Module Pester -MinimumVersion 5.7.1 -Scope CurrentUser -Force'
+    - name: Publish
+      shell: bash
+      env:
+        PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        RELEASE_VERSION: ${{ env.RELEASE_VERSION }}
+        DRY_RUN: ${{ env.DRY_RUN }}
+      run: ~/.dotnet/tools/pwsh -NoProfile -Command '& ./scripts/Publish.ps1 -Package PowerShell -Version $env:RELEASE_VERSION -SkipPublish:([bool]::Parse($env:DRY_RUN))'
+
+  python:
+    name: Publish Python packages
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-python@v7
+      with:
+        python-version: '3.14'
+    - name: Build and test
+      shell: pwsh
+      run: ./scripts/Publish.ps1 -Package Python -Version $env:RELEASE_VERSION -SkipPublish
+    - name: Publish
+      if: env.DRY_RUN != 'true'
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        packages-dir: artifacts/python
+
+  go:
+    name: Publish Go module tags
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-go@v7
+      with:
+        go-version-file: packages/go/go.mod
+    - name: Publish
+      shell: pwsh
+      run: ./scripts/Publish.ps1 -Package Go -Version $env:RELEASE_VERSION -CommitSha '${{ github.sha }}' -SkipPublish:([bool]::Parse($env:DRY_RUN))

@@ -170,3 +170,7 @@ Project conventions:
 - Review and update the checked-in public API baseline for intentional API changes.
 - Update user documentation when public APIs or supported behavior change.
 - Add or update the native test-framework sample when user-facing workflows change.
+
+## Publishing
+
+Packages are released together using one semantic-version Git tag and protected registry environments. See [Publishing packages](docs/publishing.md) for registry configuration, version sources, dependency order, and the release checklist.

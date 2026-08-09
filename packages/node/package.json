@@ -1,6 +1,6 @@
 {
   "name": "@anthonycmartin/bicep-testing",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Test library for interacting with the Bicep CLI.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,6 +13,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "prepack": "npm run build",
     "test": "jest",
     "api:update": "npm run build && node scripts/public-api.mjs --update",
     "api:check": "npm run build && node scripts/public-api.mjs --check",
@@ -28,6 +29,10 @@
   ],
   "author": "Anthony Martin",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "bugs": {
     "url": "https://github.com/anthony-c-martin/bicep-testing/issues"
   },
