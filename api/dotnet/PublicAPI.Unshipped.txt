@@ -1,62 +1,62 @@
 #nullable enable
-BicepTest.BicepTestSession
-BicepTest.BicepTestSession.DeployAsync(Azure.Core.TokenCredential! credential, BicepTest.DeployOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<BicepTest.DeployResult!>!
-BicepTest.BicepTestSession.Dispose() -> void
-BicepTest.BicepTestSession.DisposeAsync() -> System.Threading.Tasks.ValueTask
-BicepTest.BicepTestSession.SnapshotAsync(string! filePath, string? tenantId = null, string? subscriptionId = null, string? resourceGroup = null, string? location = null, string? deploymentName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<BicepTest.SnapshotResult!>!
-BicepTest.DeploymentResource
-BicepTest.DeploymentResource.<Clone>$() -> BicepTest.DeploymentResource!
-BicepTest.DeploymentResource.Deconstruct(out string! Id, out string? Type) -> void
-BicepTest.DeploymentResource.DeploymentResource(string! Id, string? Type) -> void
-BicepTest.DeploymentResource.Equals(BicepTest.DeploymentResource? other) -> bool
-BicepTest.DeploymentResource.Id.get -> string!
-BicepTest.DeploymentResource.Id.init -> void
-BicepTest.DeploymentResource.Type.get -> string?
-BicepTest.DeploymentResource.Type.init -> void
-BicepTest.DeployOptions
-BicepTest.DeployOptions.DeployOptions() -> void
-BicepTest.DeployOptions.FilePath.get -> string!
-BicepTest.DeployOptions.FilePath.init -> void
-BicepTest.DeployOptions.ParameterOverrides.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Text.Json.JsonElement>!
-BicepTest.DeployOptions.ParameterOverrides.init -> void
-BicepTest.DeployOptions.ResourceGroup.get -> string!
-BicepTest.DeployOptions.ResourceGroup.init -> void
-BicepTest.DeployOptions.StackName.get -> string!
-BicepTest.DeployOptions.StackName.init -> void
-BicepTest.DeployOptions.SubscriptionId.get -> string!
-BicepTest.DeployOptions.SubscriptionId.init -> void
-BicepTest.DeployResult
-BicepTest.DeployResult.DisposeAsync() -> System.Threading.Tasks.ValueTask
-BicepTest.DeployResult.Outputs.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Text.Json.JsonElement>!
-BicepTest.DeployResult.Resources.get -> System.Collections.Generic.IReadOnlyList<BicepTest.DeploymentResource!>!
-BicepTest.DeployResult.TeardownAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-BicepTest.SnapshotResource
-BicepTest.SnapshotResource.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
-BicepTest.SnapshotResource.AdditionalProperties.init -> void
-BicepTest.SnapshotResource.ApiVersion.get -> string!
-BicepTest.SnapshotResource.ApiVersion.init -> void
-BicepTest.SnapshotResource.Id.get -> string!
-BicepTest.SnapshotResource.Id.init -> void
-BicepTest.SnapshotResource.Location.get -> string?
-BicepTest.SnapshotResource.Location.init -> void
-BicepTest.SnapshotResource.Name.get -> string!
-BicepTest.SnapshotResource.Name.init -> void
-BicepTest.SnapshotResource.Properties.get -> System.Text.Json.JsonElement
-BicepTest.SnapshotResource.Properties.init -> void
-BicepTest.SnapshotResource.SnapshotResource() -> void
-BicepTest.SnapshotResource.Type.get -> string!
-BicepTest.SnapshotResource.Type.init -> void
-BicepTest.SnapshotResult
-BicepTest.SnapshotResult.Diagnostics.get -> string![]!
-BicepTest.SnapshotResult.Diagnostics.init -> void
-BicepTest.SnapshotResult.Outputs.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>!
-BicepTest.SnapshotResult.Outputs.init -> void
-BicepTest.SnapshotResult.PredictedResources.get -> BicepTest.SnapshotResource![]!
-BicepTest.SnapshotResult.PredictedResources.init -> void
-BicepTest.SnapshotResult.SnapshotResult() -> void
-override BicepTest.DeploymentResource.Equals(object? obj) -> bool
-override BicepTest.DeploymentResource.GetHashCode() -> int
-override BicepTest.DeploymentResource.ToString() -> string!
-static BicepTest.BicepTestSession.CreateAsync(string! bicepVersion, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<BicepTest.BicepTestSession!>!
-static BicepTest.DeploymentResource.operator !=(BicepTest.DeploymentResource? left, BicepTest.DeploymentResource? right) -> bool
-static BicepTest.DeploymentResource.operator ==(BicepTest.DeploymentResource? left, BicepTest.DeploymentResource? right) -> bool
+AnthonyCMartin.BicepTesting.BicepTestSession
+AnthonyCMartin.BicepTesting.BicepTestSession.DeployAsync(Azure.Core.TokenCredential! credential, AnthonyCMartin.BicepTesting.DeployOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<AnthonyCMartin.BicepTesting.DeployResult!>!
+AnthonyCMartin.BicepTesting.BicepTestSession.Dispose() -> void
+AnthonyCMartin.BicepTesting.BicepTestSession.DisposeAsync() -> System.Threading.Tasks.ValueTask
+AnthonyCMartin.BicepTesting.BicepTestSession.SnapshotAsync(string! filePath, string? tenantId = null, string? subscriptionId = null, string? resourceGroup = null, string? location = null, string? deploymentName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<AnthonyCMartin.BicepTesting.SnapshotResult!>!
+AnthonyCMartin.BicepTesting.DeploymentResource
+AnthonyCMartin.BicepTesting.DeploymentResource.<Clone>$() -> AnthonyCMartin.BicepTesting.DeploymentResource!
+AnthonyCMartin.BicepTesting.DeploymentResource.Deconstruct(out string! Id, out string? Type) -> void
+AnthonyCMartin.BicepTesting.DeploymentResource.DeploymentResource(string! Id, string? Type) -> void
+AnthonyCMartin.BicepTesting.DeploymentResource.Equals(AnthonyCMartin.BicepTesting.DeploymentResource? other) -> bool
+AnthonyCMartin.BicepTesting.DeploymentResource.Id.get -> string!
+AnthonyCMartin.BicepTesting.DeploymentResource.Id.init -> void
+AnthonyCMartin.BicepTesting.DeploymentResource.Type.get -> string?
+AnthonyCMartin.BicepTesting.DeploymentResource.Type.init -> void
+AnthonyCMartin.BicepTesting.DeployOptions
+AnthonyCMartin.BicepTesting.DeployOptions.DeployOptions() -> void
+AnthonyCMartin.BicepTesting.DeployOptions.FilePath.get -> string!
+AnthonyCMartin.BicepTesting.DeployOptions.FilePath.init -> void
+AnthonyCMartin.BicepTesting.DeployOptions.ParameterOverrides.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Text.Json.JsonElement>!
+AnthonyCMartin.BicepTesting.DeployOptions.ParameterOverrides.init -> void
+AnthonyCMartin.BicepTesting.DeployOptions.ResourceGroup.get -> string!
+AnthonyCMartin.BicepTesting.DeployOptions.ResourceGroup.init -> void
+AnthonyCMartin.BicepTesting.DeployOptions.StackName.get -> string!
+AnthonyCMartin.BicepTesting.DeployOptions.StackName.init -> void
+AnthonyCMartin.BicepTesting.DeployOptions.SubscriptionId.get -> string!
+AnthonyCMartin.BicepTesting.DeployOptions.SubscriptionId.init -> void
+AnthonyCMartin.BicepTesting.DeployResult
+AnthonyCMartin.BicepTesting.DeployResult.DisposeAsync() -> System.Threading.Tasks.ValueTask
+AnthonyCMartin.BicepTesting.DeployResult.Outputs.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Text.Json.JsonElement>!
+AnthonyCMartin.BicepTesting.DeployResult.Resources.get -> System.Collections.Generic.IReadOnlyList<AnthonyCMartin.BicepTesting.DeploymentResource!>!
+AnthonyCMartin.BicepTesting.DeployResult.TeardownAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+AnthonyCMartin.BicepTesting.SnapshotResource
+AnthonyCMartin.BicepTesting.SnapshotResource.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
+AnthonyCMartin.BicepTesting.SnapshotResource.AdditionalProperties.init -> void
+AnthonyCMartin.BicepTesting.SnapshotResource.ApiVersion.get -> string!
+AnthonyCMartin.BicepTesting.SnapshotResource.ApiVersion.init -> void
+AnthonyCMartin.BicepTesting.SnapshotResource.Id.get -> string!
+AnthonyCMartin.BicepTesting.SnapshotResource.Id.init -> void
+AnthonyCMartin.BicepTesting.SnapshotResource.Location.get -> string?
+AnthonyCMartin.BicepTesting.SnapshotResource.Location.init -> void
+AnthonyCMartin.BicepTesting.SnapshotResource.Name.get -> string!
+AnthonyCMartin.BicepTesting.SnapshotResource.Name.init -> void
+AnthonyCMartin.BicepTesting.SnapshotResource.Properties.get -> System.Text.Json.JsonElement
+AnthonyCMartin.BicepTesting.SnapshotResource.Properties.init -> void
+AnthonyCMartin.BicepTesting.SnapshotResource.SnapshotResource() -> void
+AnthonyCMartin.BicepTesting.SnapshotResource.Type.get -> string!
+AnthonyCMartin.BicepTesting.SnapshotResource.Type.init -> void
+AnthonyCMartin.BicepTesting.SnapshotResult
+AnthonyCMartin.BicepTesting.SnapshotResult.Diagnostics.get -> string![]!
+AnthonyCMartin.BicepTesting.SnapshotResult.Diagnostics.init -> void
+AnthonyCMartin.BicepTesting.SnapshotResult.Outputs.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>!
+AnthonyCMartin.BicepTesting.SnapshotResult.Outputs.init -> void
+AnthonyCMartin.BicepTesting.SnapshotResult.PredictedResources.get -> AnthonyCMartin.BicepTesting.SnapshotResource![]!
+AnthonyCMartin.BicepTesting.SnapshotResult.PredictedResources.init -> void
+AnthonyCMartin.BicepTesting.SnapshotResult.SnapshotResult() -> void
+override AnthonyCMartin.BicepTesting.DeploymentResource.Equals(object? obj) -> bool
+override AnthonyCMartin.BicepTesting.DeploymentResource.GetHashCode() -> int
+override AnthonyCMartin.BicepTesting.DeploymentResource.ToString() -> string!
+static AnthonyCMartin.BicepTesting.BicepTestSession.CreateAsync(string! bicepVersion, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<AnthonyCMartin.BicepTesting.BicepTestSession!>!
+static AnthonyCMartin.BicepTesting.DeploymentResource.operator !=(AnthonyCMartin.BicepTesting.DeploymentResource? left, AnthonyCMartin.BicepTesting.DeploymentResource? right) -> bool
+static AnthonyCMartin.BicepTesting.DeploymentResource.operator ==(AnthonyCMartin.BicepTesting.DeploymentResource? left, AnthonyCMartin.BicepTesting.DeploymentResource? right) -> bool

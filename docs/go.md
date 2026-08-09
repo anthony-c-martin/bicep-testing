@@ -12,7 +12,7 @@ The Go package provides helpers for testing the predicted resources, outputs, an
 Until a versioned module is released, reference the repository source from a local checkout. After release, install it with:
 
 ```sh
-go get github.com/anthony-c-martin/bicep-test/packages/go
+go get github.com/anthony-c-martin/bicep-testing/packages/go
 ```
 
 ## Usage
@@ -26,11 +26,11 @@ import (
 	"context"
 	"testing"
 
-	biceptest "github.com/anthony-c-martin/bicep-test/packages/go"
+	biceptesting "github.com/anthony-c-martin/bicep-testing/packages/go"
 )
 
 func TestStorageAccountsDisablePublicAccess(t *testing.T) {
-	session, err := biceptest.NewSession(context.Background(), "0.43.1")
+	session, err := biceptesting.NewSession(context.Background(), "0.43.1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,7 +39,7 @@ func TestStorageAccountsDisablePublicAccess(t *testing.T) {
 	snapshot, err := session.Snapshot(
 		context.Background(),
 		"infra/main.bicepparam",
-		biceptest.SnapshotMetadata{
+		biceptesting.SnapshotMetadata{
 			SubscriptionID: "00000000-0000-0000-0000-000000000000",
 			ResourceGroup:  "my-resource-group",
 			Location:       "eastus",
@@ -59,7 +59,27 @@ func TestStorageAccountsDisablePublicAccess(t *testing.T) {
 }
 ```
 
-`biceptest.New` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs. Snapshot tests do not require Azure credentials or an Azure subscription.
+`biceptesting.NewSession` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs. Snapshot tests do not require Azure credentials or an Azure subscription.
+
+## JSON-RPC client
+
+Lower-level integrations can use the independently versioned `bicep-rpc-client` module:
+
+```go
+import biceprpcclient "github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client"
+
+client, err := (biceprpcclient.Factory{}).Initialize(ctx, biceprpcclient.Configuration{
+	BicepVersion: "0.46.1",
+})
+if err != nil {
+	return err
+}
+defer client.Close()
+
+result, err := client.Compile(ctx, biceprpcclient.CompileRequest{Path: "infra/main.bicep"})
+```
+
+Set `ExistingCLIPath` to use an existing installation. Typed operations include `Compile`, `CompileParams`, `Format`, `GetMetadata`, `GetFileReferences`, `GetDeploymentGraph`, `GetSnapshot`, and cached `Version`; every operation accepts a `context.Context` for cancellation and deadlines.
 
 ## Snapshot result
 
@@ -74,7 +94,7 @@ A snapshot contains:
 Use `Deploy` with an Azure `azcore.TokenCredential` when a test needs real resources or service behavior:
 
 ```go
-deployment, err := session.Deploy(ctx, credential, biceptest.DeployOptions{
+deployment, err := session.Deploy(ctx, credential, biceptesting.DeployOptions{
 	FilePath:       "infra/main.bicepparam",
 	SubscriptionID: subscriptionID,
 	ResourceGroup:  resourceGroup,
@@ -98,4 +118,4 @@ See the runnable [Go test sample](../samples/go/snapshot_test.go) for a complete
 
 ## Public API
 
-The complete exported APIs are available for the [`biceptest`](../api/go/biceptest.txt) and [`rpcclient`](../api/go/rpcclient.txt) packages.
+The complete exported APIs are available for the [`biceptesting`](../api/go/biceptesting.txt) and [`biceprpcclient`](../api/go/bicep-rpc-client.txt) packages.

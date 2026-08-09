@@ -8,7 +8,7 @@ using Azure.ResourceManager.Resources.DeploymentStacks.Models;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace BicepTest;
+namespace AnthonyCMartin.BicepTesting;
 
 public sealed class BicepTestSession : IDisposable, IAsyncDisposable
 {

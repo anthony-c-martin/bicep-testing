@@ -2,21 +2,22 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from bicep_test import BicepTestSession
+from anthonycmartin.bicep_rpc_client import CompileParamsRequest, CompileParamsResponse
+from anthonycmartin.bicep_testing import BicepTestSession
 
 
 class FakeRpcClient:
     def __init__(self) -> None:
-        self.params: dict[str, object] = {}
+        self.request: CompileParamsRequest | None = None
 
-    def call(self, method: str, params: dict[str, object]) -> dict[str, object]:
-        assert method == "bicep/compileParams"
-        self.params = params
-        return {
-            "success": True,
-            "template": '{"resources":[]}',
-            "parameters": '{"parameters":{"message":{"value":"hello"}}}',
-        }
+    def compile_params(self, request: CompileParamsRequest) -> CompileParamsResponse:
+        self.request = request
+        return CompileParamsResponse(
+            success=True,
+            diagnostics=(),
+            template='{"resources":[]}',
+            parameters='{"parameters":{"message":{"value":"hello"}}}',
+        )
 
     def close(self) -> None:
         pass
@@ -62,7 +63,7 @@ def test_deploy_compiles_deploys_and_tears_down_once() -> None:
     session = BicepTestSession(rpc)  # type: ignore[arg-type]
 
     with patch(
-        "bicep_test.session._create_deployment_stacks_operations",
+            "anthonycmartin.bicep_testing.session._create_deployment_stacks_operations",
         return_value=operations,
     ):
         result = session.deploy(
@@ -74,8 +75,9 @@ def test_deploy_compiles_deploys_and_tears_down_once() -> None:
             {"message": "override"},
         )
 
-    assert Path(str(rpc.params["path"])).is_absolute()
-    assert rpc.params["parameterOverrides"] == {"message": "override"}
+    assert rpc.request is not None
+    assert Path(rpc.request.path).is_absolute()
+    assert rpc.request.parameter_overrides == {"message": "override"}
     properties = operations.request["properties"]
     assert isinstance(properties, dict)
     assert properties["parameters"] == {"message": {"value": "hello"}}

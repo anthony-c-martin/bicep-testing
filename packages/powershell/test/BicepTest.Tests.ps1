@@ -1,6 +1,6 @@
 BeforeAll {
     $repositoryRoot = Resolve-Path (Join-Path $PSScriptRoot '../../..')
-    $modulePath = Join-Path $repositoryRoot 'packages/powershell/BicepTest/BicepTest.psd1'
+    $modulePath = Join-Path $repositoryRoot 'packages/powershell/AnthonyCMartin.BicepTesting/AnthonyCMartin.BicepTesting.psd1'
     Import-Module $modulePath -Force
 
     $fixturePath = Join-Path $repositoryRoot 'packages/node/test/samples/snapshot/main.bicepparam'
@@ -11,9 +11,9 @@ BeforeAll {
     $deploymentName = 'test-deployment'
 }
 
-Describe 'BicepTest module' {
+Describe 'AnthonyCMartin.BicepTesting module' {
     It 'exports only the supported commands' {
-        (Get-Command -Module BicepTest).Name | Should -Be @(
+        (Get-Command -Module AnthonyCMartin.BicepTesting).Name | Should -Be @(
             'Get-BicepSnapshot'
             'New-BicepTestSession'
             'Remove-BicepTestDeployment'
@@ -58,4 +58,4 @@ Describe 'BicepTest module' {
             $session | Remove-BicepTestSession
         }
     }
-}
+}

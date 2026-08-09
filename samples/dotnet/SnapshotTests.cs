@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace BicepTest.Sample;
+namespace AnthonyCMartin.BicepTesting.Sample;
 
 [TestClass]
 public sealed class SnapshotTests
@@ -14,7 +14,7 @@ public sealed class SnapshotTests
         var parametersPath = Path.GetFullPath(
             Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "infra", "main.bicepparam"));
 
-        await using var session = await BicepTest.BicepTestSession.CreateAsync("0.43.1", TestContext.CancellationToken);
+        await using var session = await AnthonyCMartin.BicepTesting.BicepTestSession.CreateAsync("0.43.1", TestContext.CancellationToken);
         var snapshot = await session.SnapshotAsync(
             parametersPath,
             "00000000-0000-0000-0000-000000000000",

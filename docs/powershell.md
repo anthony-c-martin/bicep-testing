@@ -10,11 +10,11 @@ The PowerShell module provides commands for testing the predicted resources, out
 
 ## Build
 
-The module has not yet been published to the PowerShell Gallery. Build its runtime payload from a local checkout:
+The `AnthonyCMartin.BicepTesting` module has not yet been published to the PowerShell Gallery. Build its runtime payload from a local checkout:
 
 ```powershell
 ./packages/powershell/build.ps1
-Import-Module ./packages/powershell/BicepTest/BicepTest.psd1
+Import-Module ./packages/powershell/AnthonyCMartin.BicepTesting/AnthonyCMartin.BicepTesting.psd1
 ```
 
 ## Usage
@@ -74,4 +74,4 @@ See the runnable [Pester sample](../samples/powershell/BicepTest.Sample.Tests.ps
 
 ## Public API
 
-The complete exported PowerShell API is available in [`api/powershell/BicepTest.txt`](../api/powershell/BicepTest.txt).
+The complete exported PowerShell API is available in [`api/powershell/AnthonyCMartin.BicepTesting.txt`](../api/powershell/AnthonyCMartin.BicepTesting.txt).

@@ -1,4 +1,4 @@
-package biceptest
+package biceptesting
 
 import "encoding/json"
 

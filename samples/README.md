@@ -7,7 +7,6 @@ Each language demonstrates both local snapshot assertions and an opt-in live Azu
 - [Go](go/) uses the standard `testing` package.
 - [PowerShell](powershell/) uses Pester.
 - [Python](python/) uses pytest.
-- [Java](java/) uses JUnit 5.
 
 All samples share [`infra/main.bicepparam`](infra/main.bicepparam). Snapshot tests predict its resources without Azure credentials. Deployment tests compile it, create an Azure Deployment Stack, assert against the resulting resources and outputs, and delete the stack and its managed resources during cleanup.
 

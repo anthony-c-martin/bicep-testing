@@ -1,10 +1,10 @@
-# Bicep Test Framework
+# Bicep Testing Framework
 
 A set of libraries for writing tests against [Bicep](https://github.com/Azure/bicep) files.
 
 ## Overview
 
-`bicep-test` provides language-native testing workflows for Bicep infrastructure code. Each library can capture a fast, local **snapshot** of what a deployment would produce without deploying to Azure or run an opt-in **live deployment test** against Azure. Creating a `BicepTestSession` downloads the requested Bicep CLI version when it is not already cached, so first use may require network access; snapshot evaluation itself requires no Azure credentials or subscription.
+BicepTesting is an independent, non-official set of language-native testing libraries for Bicep infrastructure code. Each library can capture a fast, local **snapshot** of what a deployment would produce without deploying to Azure or run an opt-in **live deployment test** against Azure. Creating a `BicepTestSession` downloads the requested Bicep CLI version when it is not already cached, so first use may require network access; snapshot evaluation itself requires no Azure credentials or subscription.
 
 Live tests compile a `.bicepparam` file, deploy it as an Azure Deployment Stack, and return deployment outputs and managed resource IDs for infrastructure and post-deployment behavior checks. `BicepTestSession` owns the Bicep CLI process; the returned `DeployResult` owns Azure cleanup. Disposing or tearing down the deployment result deletes the stack and its managed resources, and repeated cleanup returns the first cleanup outcome. Live tests require an Azure credential, an existing resource group, and appropriate deployment and deletion permissions. Use a unique stack name for each test run, and never reuse a stack that manages non-test resources. Standard repository tests remain credential-free.
 
@@ -16,15 +16,16 @@ Live tests compile a `.bicepparam` file, deploy it as an Azure Deployment Stack,
 
 ## Language support
 
-- [Node](docs/node.md) 22 or later: implemented, not yet available through npm
-- [C#](docs/csharp.md) on .NET 10 or later: implemented, not yet available through NuGet
+- [Node](docs/node.md) 22 or later: `@anthonycmartin/bicep-testing`, not yet available through npm
+- [C#](docs/csharp.md) on .NET 10 or later: `AnthonyCMartin.BicepTesting`, not yet available through NuGet
 - [Go](docs/go.md) 1.24 or later: implemented, not yet released as a versioned Go module
-- [PowerShell](docs/powershell.md) 7.6 or later: implemented, not yet available through the PowerShell Gallery
-- [Python](docs/python.md) 3.11 or later: implemented, not yet available through PyPI
-- [Java](docs/java.md) 17 or later: implemented, not yet available through Maven Central
+- [PowerShell](docs/powershell.md) 7.6 or later: `AnthonyCMartin.BicepTesting`, not yet available through the PowerShell Gallery
+- [Python](docs/python.md) 3.11 or later: `anthonycmartin-bicep-testing`, not yet available through PyPI
+
+Lower-level Bicep CLI integrations are independently publishable as the Go `bicep-rpc-client` module and the Python `bicep_rpc_client` distribution, imported as `anthonycmartin.bicep_rpc_client`.
 
 ## Samples
 
-Runnable test suites under [`samples/`](samples/) demonstrate the same credential-free snapshot assertions and opt-in live deployment workflow with Jest, MSTest, Go's `testing` package, Pester, pytest, and JUnit. They share one Bicep fixture. Standard CI compiles or collects the samples without executing tests, so it validates both workflows without requiring Azure credentials or creating resources. See the [sample instructions](samples/README.md) for the environment variables required to run the live tests.
+Runnable test suites under [`samples/`](samples/) demonstrate the same credential-free snapshot assertions and opt-in live deployment workflow with Jest, MSTest, Go's `testing` package, Pester, and pytest. They share one Bicep fixture. Standard CI compiles or collects the samples without executing tests, so it validates both workflows without requiring Azure credentials or creating resources. See the [sample instructions](samples/README.md) for the environment variables required to run the live tests.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for repository setup, build commands, tests, and project conventions.

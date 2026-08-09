@@ -1,3 +1,4 @@
+-e ../../packages/python/bicep_rpc_client
 -e ../../packages/python
 azure-identity>=1.25.1
 pytest>=9.1.1

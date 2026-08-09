@@ -3,7 +3,7 @@ import path from 'node:path';
 import process from 'node:process';
 
 const generatedPath = path.resolve('dist/index.d.ts');
-const baselinePath = path.resolve('../../api/node/bicep-test.d.ts');
+const baselinePath = path.resolve('../../api/node/bicep-testing.d.ts');
 
 const normalize = value => `${value
   .replace(/\r\n/g, '\n')

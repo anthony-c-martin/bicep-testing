@@ -1,5 +1,5 @@
 {
-  "name": "bicep-test",
+  "name": "bicep-testing",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "features": {
     "ghcr.io/devcontainers/features/node:2": {
@@ -14,12 +14,6 @@
     "ghcr.io/devcontainers/features/python:1": {
       "version": "3.12"
     },
-    "ghcr.io/devcontainers/features/java:1": {
-      "version": "17",
-      "jdkDistro": "ms",
-      "installMaven": true,
-      "mavenVersion": "3.9.9"
-    },
     "ghcr.io/devcontainers/features/powershell:2": {
       "version": "7.6",
       "modules": "Pester==5.7.1"
@@ -31,11 +25,10 @@
     "PIP_DISABLE_PIP_VERSION_CHECK": "1"
   },
   "mounts": [
-    "source=bicep-test-npm,target=/home/vscode/.npm,type=volume",
-    "source=bicep-test-nuget,target=/home/vscode/.nuget/packages,type=volume",
-    "source=bicep-test-go,target=/go/pkg/mod,type=volume",
-    "source=bicep-test-pip,target=/home/vscode/.cache/pip,type=volume",
-    "source=bicep-test-maven,target=/home/vscode/.m2,type=volume"
+    "source=bicep-testing-npm,target=/home/vscode/.npm,type=volume",
+    "source=bicep-testing-nuget,target=/home/vscode/.nuget/packages,type=volume",
+    "source=bicep-testing-go,target=/go/pkg/mod,type=volume",
+    "source=bicep-testing-pip,target=/home/vscode/.cache/pip,type=volume"
   ],
   "customizations": {
     "vscode": {
@@ -47,7 +40,6 @@
         "ms-vscode.powershell",
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "vscjava.vscode-java-pack",
         "github.vscode-github-actions"
       ],
       "settings": {

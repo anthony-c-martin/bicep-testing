@@ -3,7 +3,7 @@ using Azure.ResourceManager.Resources.DeploymentStacks;
 using Azure.ResourceManager.Resources.DeploymentStacks.Models;
 using System.Text.Json;
 
-namespace BicepTest;
+namespace AnthonyCMartin.BicepTesting;
 
 public sealed class DeployResult : IAsyncDisposable
 {

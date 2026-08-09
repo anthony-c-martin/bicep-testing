@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace BicepTest;
+namespace AnthonyCMartin.BicepTesting;
 
 public sealed class DeployOptions
 {

@@ -3,13 +3,16 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bicep-test"
+name = "anthonycmartin-bicep-testing"
 version = "0.1.0"
 description = "Test Bicep infrastructure by evaluating deployment snapshots locally."
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "Anthony Martin" }]
-dependencies = ["azure-mgmt-resource-deploymentstacks==1.0.0"]
+dependencies = [
+	"bicep_rpc_client>=0.1.0",
+	"azure-mgmt-resource-deploymentstacks==1.0.0",
+]
 
 [project.optional-dependencies]
 test = ["pytest>=8.0"]
@@ -21,4 +24,4 @@ testpaths = ["tests"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-bicep_test = ["py.typed"]
+"anthonycmartin.bicep_testing" = ["py.typed"]

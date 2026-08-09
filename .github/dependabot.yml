@@ -44,10 +44,8 @@ updates:
       all-dependencies:
         patterns:
           - "*"
-  - package-ecosystem: "pip"
-    directories:
-      - "/packages/python"
-      - "/samples/python"
+  - package-ecosystem: "gomod"
+    directory: "/packages/go/bicep-rpc-client"
     schedule:
       interval: "weekly"
       day: "sunday"
@@ -57,10 +55,11 @@ updates:
       all-dependencies:
         patterns:
           - "*"
-  - package-ecosystem: "maven"
+  - package-ecosystem: "pip"
     directories:
-      - "/packages/java"
-      - "/samples/java"
+      - "/packages/python"
+      - "/packages/python/bicep_rpc_client"
+      - "/samples/python"
     schedule:
       interval: "weekly"
       day: "sunday"

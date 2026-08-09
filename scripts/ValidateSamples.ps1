@@ -55,9 +55,6 @@ try {
         Pop-Location
     }
 
-    Write-Host 'Building the Java sample tests...'
-    Invoke-NativeCommand { mvn --file packages/java/pom.xml --batch-mode --no-transfer-progress install -DskipTests } 'Java library build'
-    Invoke-NativeCommand { mvn --file samples/java/pom.xml --batch-mode --no-transfer-progress test-compile -DskipTests } 'Java sample build'
 }
 finally {
     Pop-Location

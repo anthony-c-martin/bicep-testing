@@ -1,0 +1,84 @@
+package biceptesting // import "github.com/anthony-c-martin/bicep-testing/packages/go"
+
+Package biceptesting provides helpers for testing Bicep infrastructure code.
+
+TYPES
+
+type DeployOptions struct {
+	FilePath           string
+	SubscriptionID     string
+	ResourceGroup      string
+	StackName          string
+	ParameterOverrides map[string]json.RawMessage
+}
+    DeployOptions identifies a Bicep parameters file and its resource-group
+    Deployment Stack.
+
+type DeployResult struct {
+	Outputs   map[string]any
+	Resources []DeploymentResource
+
+	// Has unexported fields.
+}
+    DeployResult contains deployed outputs and resources and owns their cleanup.
+
+func (result *DeployResult) Teardown(ctx context.Context) error
+    Teardown deletes the Deployment Stack and all resources it manages. Repeated
+    calls return the first result.
+
+type DeploymentResource struct {
+	ID   string
+	Type string
+}
+    DeploymentResource identifies a resource managed by a Deployment Stack.
+
+type Session struct {
+	// Has unexported fields.
+}
+    Session owns a pinned Bicep CLI used to evaluate and deploy infrastructure
+    under test.
+
+func NewSession(ctx context.Context, bicepVersion string) (*Session, error)
+    NewSession installs the requested Bicep CLI version if needed and starts its
+    RPC client.
+
+func (session *Session) Close() error
+    Close disconnects from the Bicep CLI and terminates its process.
+
+func (session *Session) Deploy(ctx context.Context, credential azcore.TokenCredential, options DeployOptions) (*DeployResult, error)
+    Deploy compiles and deploys a Bicep parameters file as a resource-group
+    Deployment Stack.
+
+func (session *Session) Snapshot(
+	ctx context.Context,
+	filePath string,
+	metadata SnapshotMetadata,
+) (*SnapshotResult, error)
+    Snapshot evaluates a Bicep parameters file without deploying it.
+
+type SnapshotMetadata = biceprpcclient.SnapshotMetadata
+    SnapshotMetadata describes the Azure deployment context used to evaluate a
+    snapshot.
+
+type SnapshotResource struct {
+	ID                   string         `json:"id"`
+	Type                 string         `json:"type"`
+	Name                 string         `json:"name"`
+	APIVersion           string         `json:"apiVersion"`
+	Location             string         `json:"location,omitempty"`
+	Properties           map[string]any `json:"properties,omitempty"`
+	AdditionalProperties map[string]any `json:"-"`
+}
+    SnapshotResource is a resource predicted by a Bicep snapshot.
+
+func (resource *SnapshotResource) UnmarshalJSON(data []byte) error
+    UnmarshalJSON preserves resource fields that are not part of the common
+    snapshot model.
+
+type SnapshotResult struct {
+	PredictedResources []SnapshotResource `json:"predictedResources"`
+	Diagnostics        []string           `json:"diagnostics"`
+	Outputs            map[string]any     `json:"outputs"`
+}
+    SnapshotResult is the predicted result of evaluating a Bicep parameters
+    file.

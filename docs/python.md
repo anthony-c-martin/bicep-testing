@@ -9,7 +9,7 @@ The Python package provides typed helpers for testing the predicted resources, o
 
 ## Installation
 
-Until the package is published to PyPI, install it from a local checkout:
+Until `anthonycmartin-bicep-testing` is published to PyPI, install it from a local checkout:
 
 ```sh
 python -m pip install -e ./packages/python
@@ -20,7 +20,7 @@ python -m pip install -e ./packages/python
 Use `BicepTestSession` as a context manager so the Bicep JSON-RPC process is always closed:
 
 ```python
-from bicep_test import BicepTestSession, SnapshotMetadata
+from anthonycmartin.bicep_testing import BicepTestSession, SnapshotMetadata
 
 metadata = SnapshotMetadata(
     subscription_id="00000000-0000-0000-0000-000000000000",
@@ -45,6 +45,26 @@ assert all(
 ```
 
 `BicepTestSession.create` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs. Snapshot tests do not require Azure credentials or an Azure subscription.
+
+## JSON-RPC client
+
+Most tests should use `BicepTestSession`. Lower-level integrations can install the standalone `bicep_rpc_client` distribution and import `BicepClientFactory`, `BicepClientConfiguration`, and typed request models from `anthonycmartin.bicep_rpc_client`. The factory can download a pinned Bicep CLI or connect through an existing CLI path. The returned client owns the process until `close` is called and supports context-manager cleanup.
+
+```python
+from anthonycmartin.bicep_rpc_client import (
+    BicepClientConfiguration,
+    BicepClientFactory,
+    CompileRequest,
+)
+
+factory = BicepClientFactory()
+with factory.initialize(BicepClientConfiguration(bicep_version="0.46.1")) as client:
+    result = client.compile(CompileRequest("infra/main.bicep"))
+    if result.success:
+        print(result.contents)
+```
+
+Use `existing_cli_path` instead of `bicep_version` to connect through an existing installation. Typed operations include `compile`, `compile_params`, `format`, `get_metadata`, `get_file_references`, `get_deployment_graph`, `get_snapshot`, and cached `get_version`.
 
 ## Snapshot result
 
@@ -77,6 +97,6 @@ with session.deploy(
 
 See the runnable [pytest sample](../samples/python/test_snapshot.py) for a complete consumer test using the shared example infrastructure.
 
-## Public API
+## Public APIs
 
-The complete exported Python API is available in [`api/python/bicep-test.txt`](../api/python/bicep-test.txt).
+The exported high-level API is available in [`api/python/bicep-testing.txt`](../api/python/bicep-testing.txt), and the standalone transport API is available in [`api/python/bicep_rpc_client.txt`](../api/python/bicep_rpc_client.txt).

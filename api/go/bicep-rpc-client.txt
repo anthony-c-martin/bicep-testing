@@ -1,0 +1,180 @@
+package biceprpcclient // import "github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client"
+
+Package biceprpcclient installs and communicates with the Bicep CLI over
+JSON-RPC.
+
+FUNCTIONS
+
+func DownloadURL(ctx context.Context, version string) (string, error)
+    DownloadURL returns the Bicep CLI download URL for a version and the current
+    platform.
+
+func Install(ctx context.Context, basePath, version string) (string, error)
+    Install downloads the Bicep CLI into basePath and returns its executable
+    path.
+
+
+TYPES
+
+type Client struct {
+	// Has unexported fields.
+}
+    Client communicates with one Bicep CLI process. Calls on a Client are safe
+    for concurrent use.
+
+func New(ctx context.Context, bicepPath string) (*Client, error)
+    New starts the Bicep CLI at bicepPath and validates its RPC protocol
+    version.
+
+func (client *Client) Close() error
+    Close disconnects from the Bicep CLI and terminates its process.
+
+func (client *Client) Compile(ctx context.Context, request CompileRequest) (CompileResponse, error)
+    Compile compiles a Bicep file into an ARM template.
+
+func (client *Client) CompileParams(ctx context.Context, request CompileParamsRequest) (CompileParamsResponse, error)
+    CompileParams compiles a Bicep parameters file into deployable ARM JSON.
+
+func (client *Client) Format(ctx context.Context, request FormatRequest) (FormatResponse, error)
+    Format formats a Bicep file using the Bicep CLI formatter.
+
+func (client *Client) GetDeploymentGraph(ctx context.Context, request GetDeploymentGraphRequest) (GetDeploymentGraphResponse, error)
+    GetDeploymentGraph returns the resource dependency graph for a Bicep file.
+
+func (client *Client) GetFileReferences(ctx context.Context, request GetFileReferencesRequest) (GetFileReferencesResponse, error)
+    GetFileReferences returns every file referenced by a Bicep file.
+
+func (client *Client) GetMetadata(ctx context.Context, request GetMetadataRequest) (GetMetadataResponse, error)
+    GetMetadata returns parameters, outputs, exports, and metadata from a Bicep
+    file.
+
+func (client *Client) GetSnapshot(ctx context.Context, request GetSnapshotRequest) (GetSnapshotResponse, error)
+    GetSnapshot returns a deployment snapshot for a Bicep parameters file.
+
+func (client *Client) Version(ctx context.Context) (string, error)
+    Version returns the Bicep CLI version.
+
+type CompileParamsRequest struct {
+	Path               string                     `json:"path"`
+	ParameterOverrides map[string]json.RawMessage `json:"parameterOverrides"`
+}
+    CompileParamsRequest contains the path and overrides for a Bicep parameters
+    compilation.
+
+type CompileParamsResponse struct {
+	Success        bool             `json:"success"`
+	Diagnostics    []map[string]any `json:"diagnostics"`
+	Template       string           `json:"template"`
+	Parameters     string           `json:"parameters"`
+	TemplateSpecID string           `json:"templateSpecId,omitempty"`
+}
+    CompileParamsResponse contains deployable ARM template and parameter JSON.
+
+type CompileRequest struct {
+	Path string `json:"path"`
+}
+    CompileRequest contains the path to a Bicep file.
+
+type CompileResponse struct {
+	Success     bool             `json:"success"`
+	Diagnostics []map[string]any `json:"diagnostics"`
+	Contents    string           `json:"contents"`
+}
+    CompileResponse contains a compiled ARM template and diagnostics.
+
+type Configuration struct {
+	BicepVersion    string
+	ExistingCLIPath string
+	CacheRoot       string
+}
+    Configuration controls Bicep CLI selection and caching.
+
+type Factory struct{}
+    Factory installs or locates the Bicep CLI and initializes clients.
+
+func (Factory) Initialize(ctx context.Context, configuration Configuration) (*Client, error)
+    Initialize creates a client using an existing CLI or a cached requested
+    version.
+
+type FormatRequest struct {
+	Path string `json:"path"`
+}
+    FormatRequest contains the path to a Bicep file to format.
+
+type FormatResponse struct {
+	Contents string `json:"contents"`
+}
+    FormatResponse contains formatted Bicep source.
+
+type GetDeploymentGraphRequest struct {
+	Path string `json:"path"`
+}
+    GetDeploymentGraphRequest contains the path to a Bicep file.
+
+type GetDeploymentGraphResponse struct {
+	Nodes []map[string]any `json:"nodes"`
+	Edges []map[string]any `json:"edges"`
+}
+    GetDeploymentGraphResponse contains dependency graph nodes and edges.
+
+type GetFileReferencesRequest struct {
+	Path string `json:"path"`
+}
+    GetFileReferencesRequest contains the path to a Bicep file.
+
+type GetFileReferencesResponse struct {
+	FilePaths []string `json:"filePaths"`
+}
+    GetFileReferencesResponse contains all referenced file paths.
+
+type GetMetadataRequest struct {
+	Path string `json:"path"`
+}
+    GetMetadataRequest contains the path to a Bicep file.
+
+type GetMetadataResponse struct {
+	Parameters []map[string]any `json:"parameters"`
+	Outputs    []map[string]any `json:"outputs"`
+	Exports    []map[string]any `json:"exports"`
+	Metadata   []map[string]any `json:"metadata"`
+}
+    GetMetadataResponse contains declarations and file metadata.
+
+type GetSnapshotRequest struct {
+	Path           string                  `json:"path"`
+	Metadata       SnapshotMetadata        `json:"metadata"`
+	ExternalInputs []SnapshotExternalInput `json:"externalInputs,omitempty"`
+}
+    GetSnapshotRequest contains the path and deployment context for a Bicep
+    snapshot.
+
+type GetSnapshotResponse struct {
+	Snapshot string `json:"snapshot"`
+}
+    GetSnapshotResponse contains the serialized deployment snapshot.
+
+type RPCError struct {
+	Code    int             `json:"code"`
+	Message string          `json:"message"`
+	Data    json.RawMessage `json:"data,omitempty"`
+}
+    RPCError is an error returned by the Bicep JSON-RPC server.
+
+func (err *RPCError) Error() string
+
+type SnapshotExternalInput struct {
+	Kind   string `json:"kind"`
+	Config any    `json:"config,omitempty"`
+	Value  any    `json:"value"`
+}
+    SnapshotExternalInput supplies a value for a Bicep external input.
+
+type SnapshotMetadata struct {
+	TenantID       string `json:"tenantId,omitempty"`
+	SubscriptionID string `json:"subscriptionId,omitempty"`
+	ResourceGroup  string `json:"resourceGroup,omitempty"`
+	Location       string `json:"location,omitempty"`
+	DeploymentName string `json:"deploymentName,omitempty"`
+}
+    SnapshotMetadata describes the Azure deployment context used to evaluate a
+    snapshot.

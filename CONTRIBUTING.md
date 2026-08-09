@@ -1,8 +1,8 @@
-# Contributing to bicep-test
+# Contributing to bicep-testing
 
 ## Development container
 
-With Docker and the VS Code Dev Containers extension installed, run **Dev Containers: Reopen in Container** from the command palette. The configuration under `.devcontainer/` installs Node 24, .NET 10, Go 1.24, PowerShell 7.6 with Pester, Python 3.12, and Java 17 with Maven. Package-manager caches persist in named Docker volumes, while dependency restore remains explicit for each language.
+With Docker and the VS Code Dev Containers extension installed, run **Dev Containers: Reopen in Container** from the command palette. The configuration under `.devcontainer/` installs Node 24, .NET 10, Go 1.24, PowerShell 7.6 with Pester, and Python 3.12. Package-manager caches persist in named Docker volumes, while dependency restore remains explicit for each language.
 
 ## Repository layout
 
@@ -21,27 +21,23 @@ packages/
 │   ├── src/BicepTest/
 │   └── test/BicepTest.Tests/
 ├── go/
-    ├── rpcclient/
+    ├── bicep-rpc-client/
     ├── biceptest.go
     ├── snapshot.go
     └── go.mod
 ├── powershell/
-    ├── BicepTest/
+    ├── AnthonyCMartin.BicepTesting/
     ├── scripts/
     └── test/
 ├── python/
-│   ├── src/bicep_test/
+│   ├── src/anthonycmartin/bicep_testing/
 │   ├── scripts/
 │   └── tests/
-└── java/
-    ├── src/main/java/
-    ├── src/test/java/
-    └── pom.xml
 ```
 
-The Node package defines the reference snapshot behavior. The C#, Go, PowerShell, Python, and Java conformance tests exercise the same Bicep fixture and assertions.
+The Node package defines the reference snapshot behavior. The C#, Go, PowerShell, and Python conformance tests exercise the same Bicep fixture and assertions.
 
-Runnable consumer tests are under `samples/`. Run all six language samples with:
+Runnable consumer tests are under `samples/`. Run all five language samples with:
 
 ```powershell
 ./scripts/ValidateSamples.ps1
@@ -66,7 +62,7 @@ npm run api:check
 
 The legacy peer resolver is currently required because TypeScript 7 is outside the version range declared by the installed `@typescript-eslint` packages.
 
-Review the Node public API in `api/node/bicep-test.d.ts`. After an intentional API change, run `npm run api:update` from `packages/node` and include the baseline change in the pull request.
+Review the Node public API in `api/node/bicep-testing.d.ts`. After an intentional API change, run `npm run api:update` from `packages/node` and include the baseline change in the pull request.
 
 ## C#
 
@@ -84,7 +80,7 @@ Review the C# public API in `api/dotnet/PublicAPI.Unshipped.txt`. The Public API
 Project conventions:
 
 - Target framework: `net10.0`
-- Root namespace and package ID: `BicepTest`
+- Root namespace and package ID: `AnthonyCMartin.BicepTesting`
 - Nullable reference types and implicit global usings are enabled.
 - Add library code under `packages/dotnet/src/BicepTest`.
 - Add tests under `packages/dotnet/test/BicepTest.Tests` and include the project in `BicepTest.slnx`.
@@ -113,11 +109,11 @@ Review the Go public API in `api/go`. After an intentional API change, run `go g
 
 Project conventions:
 
-- Module path: `github.com/anthony-c-martin/bicep-test/packages/go`
-- Package name: `biceptest`
+- Module path: `github.com/anthony-c-martin/bicep-testing/packages/go`
+- Package name: `biceptesting`
 - Keep exported names idiomatic to Go rather than reproducing the Node API naming exactly.
 - Keep the public snapshot API in the module root.
-- Keep Bicep installation, process, pipe, and JSON-RPC behavior in the separate `rpcclient` package.
+- Keep Bicep installation, process, pipe, and JSON-RPC behavior in the standalone `bicep-rpc-client` module.
 - Preserve both Windows named-pipe and Unix-domain-socket support when changing the transport.
 
 ## PowerShell
@@ -136,12 +132,12 @@ Invoke-Pester ./packages/powershell/test -CI
 ./packages/powershell/scripts/public-api.ps1 -Check
 ```
 
-Review the PowerShell public API in `api/powershell/BicepTest.txt`. After an intentional API change, run `./packages/powershell/scripts/public-api.ps1 -Update` and include the baseline change in the pull request.
+Review the PowerShell public API in `api/powershell/AnthonyCMartin.BicepTesting.txt`. After an intentional API change, run `./packages/powershell/scripts/public-api.ps1 -Update` and include the baseline change in the pull request.
 
 Project conventions:
 
 - Keep the module manifest export lists explicit; do not use wildcard exports.
-- Add public commands to `packages/powershell/BicepTest/BicepTest.psm1` and the manifest.
+- Add public commands to `packages/powershell/AnthonyCMartin.BicepTesting/AnthonyCMartin.BicepTesting.psm1` and the manifest.
 - Keep the PowerShell commands as a thin, idiomatic wrapper over the C# implementation.
 - Preserve compatibility with PowerShell Core on Windows and Linux.
 
@@ -152,37 +148,19 @@ Prerequisite: Python 3.11 or later.
 Install, test, and check the public API from the repository root:
 
 ```sh
-python -m pip install -e "./packages/python[test]"
-python -m pytest packages/python/tests
+python -m pip install -e "./packages/python/bicep_rpc_client[test]" -e "./packages/python[test]"
+python -m pytest packages/python/tests packages/python/bicep_rpc_client/tests
 python packages/python/scripts/public_api.py --check
 ```
 
-Review `api/python/bicep-test.txt`. After an intentional API change, run the API script with `--update` and include the baseline change in the pull request.
+Review `api/python/bicep-testing.txt` and `api/python/bicep_rpc_client.txt`. After an intentional API change, run the API script with `--update` and include the baseline change in the pull request.
 
 Project conventions:
 
 - Keep runtime dependencies in the Python standard library where practical.
 - Use type annotations, immutable dataclasses for result data, and context managers for owned processes.
-- Add package code under `packages/python/src/bicep_test` and pytest tests under `packages/python/tests`.
-
-## Java
-
-Prerequisites: JDK 17 or later and Maven 3.9 or later.
-
-Test and check the public API from `packages/java`:
-
-```sh
-mvn --batch-mode --no-transfer-progress test
-mvn --batch-mode --no-transfer-progress --quiet -DskipTests test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.github.anthonycmartin.biceptest.ApiSurface -Dexec.args=--check
-```
-
-Review `api/java/bicep-test.txt`. After an intentional API change, replace `--check` with `--update` in the API command and include the baseline change in the pull request.
-
-Project conventions:
-
-- Target Java 17 and use Maven for builds and dependency management.
-- Use `AutoCloseable` for process ownership, builders for optional request metadata, and immutable result containers.
-- Add library code under `packages/java/src/main/java` and JUnit 5 tests under `packages/java/src/test/java`.
+- Add transport code under `packages/python/bicep_rpc_client/src/anthonycmartin/bicep_rpc_client`.
+- Add package code under `packages/python/src/anthonycmartin/bicep_testing` and pytest tests under `packages/python/tests`.
 
 ## Pull requests
 

@@ -1,6 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace BicepTest.Tests;
+namespace AnthonyCMartin.BicepTesting.Tests;
 
 [TestClass]
 public sealed class SnapshotTests

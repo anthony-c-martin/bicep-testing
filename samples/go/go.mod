@@ -1,10 +1,10 @@
-module github.com/anthony-c-martin/bicep-test/samples/go
+module github.com/anthony-c-martin/bicep-testing/samples/go
 
 go 1.24
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.10.1
-	github.com/anthony-c-martin/bicep-test/packages/go v0.0.0
+	github.com/anthony-c-martin/bicep-testing/packages/go v0.0.0
 )
 
 require (
@@ -13,6 +13,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armdeploymentstacks v1.0.1 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.4.2 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
+	github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client v0.0.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
@@ -23,4 +24,6 @@ require (
 	golang.org/x/text v0.27.0 // indirect
 )
 
-replace github.com/anthony-c-martin/bicep-test/packages/go => ../../packages/go
+replace github.com/anthony-c-martin/bicep-testing/packages/go => ../../packages/go
+
+replace github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client => ../../packages/go/bicep-rpc-client

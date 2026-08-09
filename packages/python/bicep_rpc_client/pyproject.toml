@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bicep_rpc_client"
+version = "0.1.0"
+description = "Interact with the Bicep CLI through its JSON-RPC API."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Anthony Martin" }]
+
+[project.urls]
+Homepage = "https://github.com/anthony-c-martin/bicep-testing"
+Repository = "https://github.com/anthony-c-martin/bicep-testing"
+Issues = "https://github.com/anthony-c-martin/bicep-testing/issues"
+
+[project.optional-dependencies]
+test = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"anthonycmartin.bicep_rpc_client" = ["py.typed"]

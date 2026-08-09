@@ -1,6 +1,6 @@
 const path = require('node:path');
 const { DefaultAzureCredential } = require('@azure/identity');
-const { BicepTestSession } = require('bicep-test');
+const { BicepTestSession } = require('@anthonycmartin/bicep-testing');
 
 const subscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
 const resourceGroup = process.env.AZURE_RESOURCE_GROUP;

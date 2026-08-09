@@ -5,11 +5,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	biceptest "github.com/anthony-c-martin/bicep-test/packages/go"
+	biceptesting "github.com/anthony-c-martin/bicep-testing/packages/go"
 )
 
 func TestInfrastructureHasExpectedResourcesAndNoDiagnostics(t *testing.T) {
-	session, err := biceptest.NewSession(context.Background(), "0.43.1")
+	session, err := biceptesting.NewSession(context.Background(), "0.43.1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -23,7 +23,7 @@ func TestInfrastructureHasExpectedResourcesAndNoDiagnostics(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	snapshot, err := session.Snapshot(context.Background(), parametersPath, biceptest.SnapshotMetadata{
+	snapshot, err := session.Snapshot(context.Background(), parametersPath, biceptesting.SnapshotMetadata{
 		TenantID:       "00000000-0000-0000-0000-000000000000",
 		SubscriptionID: "00000000-0000-0000-0000-000000000000",
 		ResourceGroup:  "sample-rg",
