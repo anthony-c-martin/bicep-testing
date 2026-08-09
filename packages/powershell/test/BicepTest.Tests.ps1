@@ -11,9 +11,9 @@ BeforeAll {
     $deploymentName = 'test-deployment'
 }
 
-Describe 'BicepTest module' {
+Describe 'AnthonyCMartin.BicepTesting module' {
     It 'exports only the supported commands' {
-        (Get-Command -Module BicepTest).Name | Should -Be @(
+        (Get-Command -Module AnthonyCMartin.BicepTesting).Name | Should -Be @(
             'Get-BicepSnapshot'
             'New-BicepTestSession'
             'Remove-BicepTestDeployment'
@@ -58,4 +58,4 @@ Describe 'BicepTest module' {
             $session | Remove-BicepTestSession
         }
     }
-}
+}

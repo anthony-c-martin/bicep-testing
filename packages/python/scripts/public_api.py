@@ -19,6 +19,8 @@ def generate(module: object) -> str:
         for member_name, member in inspect.getmembers(value):
             if member_name.startswith("_") or not callable(member):
                 continue
+            if issubclass(value, BaseException) and member_name not in vars(value):
+                continue
             try:
                 signature = inspect.signature(member)
             except (TypeError, ValueError):

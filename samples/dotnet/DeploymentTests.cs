@@ -23,7 +23,7 @@ public sealed class DeploymentTests
         await using var session = await AnthonyCMartin.BicepTesting.BicepTestSession.CreateAsync("0.43.1", TestContext.CancellationToken);
         await using var deployment = await session.DeployAsync(
             new DefaultAzureCredential(),
-            new BicepTest.DeployOptions
+            new AnthonyCMartin.BicepTesting.DeployOptions
             {
                 FilePath = parametersPath,
                 SubscriptionId = subscriptionId,
