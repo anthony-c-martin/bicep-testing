@@ -5,7 +5,7 @@
 ## Install
 
 ```sh
-python -m pip install anthonycmartin-bicep-testing==0.1.0
+python -m pip install anthonycmartin-bicep-testing==0.1.1
 ```
 
 See the [Python documentation](https://github.com/anthony-c-martin/bicep-testing/blob/main/docs/python.md) for usage and lifecycle examples.

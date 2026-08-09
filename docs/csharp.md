@@ -10,7 +10,7 @@ The C# library provides helpers for testing the predicted resources, outputs, an
 ## Installation
 
 ```sh
-dotnet add package AnthonyCMartin.BicepTesting --version 0.1.0
+dotnet add package AnthonyCMartin.BicepTesting --version 0.1.1
 ```
 
 ## Usage

@@ -7,7 +7,7 @@ An independent Go client for programmatically interacting with the [Bicep CLI](h
 ### Install the module
 
 ```sh
-go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client@v0.1.0
+go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client@v0.1.1
 ```
 
 ### Initialize the client
