@@ -8,7 +8,7 @@ The workflow delegates package behavior to `scripts/Publish.ps1`. Select a relea
 ./scripts/Publish.ps1 -Package Node -Version 0.1.0 -SkipPublish
 ```
 
-For Python, the script builds both distributions into `artifacts/python`, and one workflow action uploads them together so trusted publishing can use GitHub's OIDC identity.
+For .NET and Python, the script builds release artifacts and the workflow performs the final upload using each registry's trusted-publishing identity. NuGet.org exchanges the GitHub OIDC token for a temporary API key immediately before `dotnet nuget push`; no long-lived NuGet key is stored in GitHub.
 
 To exercise the complete release pipeline without publishing, run the **Publish** workflow manually, enter the package version, and leave **dry_run** enabled. Dry-run jobs perform version checks, tests, API checks, and package builds, but skip registry authentication, uploads, and Go tag creation. Tag-triggered runs publish normally.
 
@@ -19,7 +19,7 @@ Create the `npm`, `nuget`, `pypi`, and `psgallery` environments in the GitHub re
 | Environment | Registry configuration |
 | --- | --- |
 | `npm` | On npmjs.com, configure a trusted publisher for package `@anthonycmartin/bicep-testing`, this repository, workflow `publish.yml`, and environment `npm`. No long-lived token is required. |
-| `nuget` | On nuget.org, configure a trusted publishing policy for package `AnthonyCMartin.BicepTesting`, this repository, workflow `publish.yml`, and environment `nuget`. Add the policy's nuget.org username as the GitHub environment variable `NUGET_USER`. |
+| `nuget` | On nuget.org, add a trusted publishing policy for the package owner with repository owner `anthony-c-martin`, repository `bicep-testing`, workflow `publish.yml`, and environment `nuget`. Add the policy owner's nuget.org profile name (not an email address) as the GitHub environment secret `NUGET_USER`. |
 | `pypi` | On PyPI, configure trusted publishers for `anthonycmartin-bicep-testing` and `bicep_rpc_client`, both using this repository, workflow `publish.yml`, and environment `pypi`. No long-lived token is required. |
 | `psgallery` | Add a PowerShell Gallery API key as the GitHub environment secret `PSGALLERY_API_KEY`. Scope and rotate the key according to the Gallery account policy. |
 

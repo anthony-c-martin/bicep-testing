@@ -101,14 +101,6 @@ function Publish-DotNetPackage {
     Assert-Version '.NET' $actualVersion
     Invoke-NativeCommand dotnet @('test', $solution, '--configuration', 'Release')
     Invoke-NativeCommand dotnet @('pack', $project, '--configuration', 'Release', "-p:PackageOutputPath=$output", '-p:ContinuousIntegrationBuild=true')
-    if (-not $SkipPublish) {
-        if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
-            throw 'NUGET_API_KEY is required to publish the .NET package.'
-        }
-        Get-ChildItem $output -Filter '*.nupkg' | ForEach-Object {
-            Invoke-NativeCommand dotnet @('nuget', 'push', $_.FullName, '--api-key', $env:NUGET_API_KEY, '--source', 'https://api.nuget.org/v3/index.json')
-        }
-    }
 }
 
 function Publish-PowerShellPackage {
