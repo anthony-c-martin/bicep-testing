@@ -9,8 +9,17 @@ The Node package is the current reference implementation of `bicep-test`. It pro
 
 ## Installation
 
+The package has not yet been published to npm. Until it is released, build it from the repository root:
+
 ```sh
-npm install --save-dev bicep-test
+npm --prefix packages/node install
+npm --prefix packages/node run build
+```
+
+Then install that package from the consuming project, replacing the path with the location of your checkout:
+
+```sh
+npm install --save-dev /path/to/bicep-test/packages/node
 ```
 
 ## Usage
