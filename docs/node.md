@@ -1,6 +1,6 @@
 # Node
 
-The `@anthonycmartin/bicep-testing` package is the current reference implementation. It provides a Jest-based workflow for testing the predicted resources, outputs, and diagnostics of a Bicep deployment without deploying to Azure.
+The `@anthony-c-martin/bicep-testing` package is the current reference implementation. It provides a Jest-based workflow for testing the predicted resources, outputs, and diagnostics of a Bicep deployment without deploying to Azure.
 
 ## Requirements
 
@@ -9,17 +9,8 @@ The `@anthonycmartin/bicep-testing` package is the current reference implementat
 
 ## Installation
 
-The package has not yet been published to npm. Until it is released, build it from the repository root:
-
 ```sh
-npm --prefix packages/node install
-npm --prefix packages/node run build
-```
-
-Then install that package from the consuming project, replacing the path with the location of your checkout:
-
-```sh
-npm install --save-dev /path/to/bicep-testing/packages/node
+npm install --save-dev @anthony-c-martin/bicep-testing
 ```
 
 ## Usage
@@ -27,7 +18,7 @@ npm install --save-dev /path/to/bicep-testing/packages/node
 Create one session for the suite, capture the snapshot in setup, and dispose the Bicep process when the suite completes:
 
 ```ts
-import { BicepTestSession, SnapshotResult } from '@anthonycmartin/bicep-testing';
+import { BicepTestSession, SnapshotResult } from '@anthony-c-martin/bicep-testing';
 
 let session: BicepTestSession;
 let snapshot: SnapshotResult;

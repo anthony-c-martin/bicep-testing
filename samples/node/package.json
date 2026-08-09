@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "@azure/identity": "^4.13.0",
-    "@anthonycmartin/bicep-testing": "file:../../packages/node"
+    "@anthony-c-martin/bicep-testing": "file:../../packages/node"
   },
   "devDependencies": {
     "jest": "30.4.2"

@@ -3,7 +3,7 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bicep_rpc_client"
+name = "anthonycmartin-bicep-rpc-client"
 version = "0.1.0"
 description = "Interact with the Bicep CLI through its JSON-RPC API."
 readme = "README.md"
