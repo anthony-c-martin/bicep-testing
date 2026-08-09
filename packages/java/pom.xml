@@ -19,6 +19,11 @@
       <version>${jackson.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.azure.resourcemanager</groupId>
+      <artifactId>azure-resourcemanager-resources-deploymentstacks</artifactId>
+      <version>1.0.0-beta.1</version>
+    </dependency>
+    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>${junit.version}</version>

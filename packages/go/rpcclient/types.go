@@ -1,5 +1,21 @@
 package rpcclient
 
+import "encoding/json"
+
+// CompileParamsRequest contains the path and overrides for a Bicep parameters compilation.
+type CompileParamsRequest struct {
+	Path               string                     `json:"path"`
+	ParameterOverrides map[string]json.RawMessage `json:"parameterOverrides"`
+}
+
+// CompileParamsResponse contains deployable ARM template and parameter JSON.
+type CompileParamsResponse struct {
+	Success     bool             `json:"success"`
+	Diagnostics []map[string]any `json:"diagnostics"`
+	Template    string           `json:"template"`
+	Parameters  string           `json:"parameters"`
+}
+
 // SnapshotMetadata describes the Azure deployment context used to evaluate a snapshot.
 type SnapshotMetadata struct {
 	TenantID       string `json:"tenantId,omitempty"`

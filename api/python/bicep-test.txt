@@ -1,7 +1,15 @@
 CLASS BicepTester
   close(self) -> 'None'
   create(bicep_version: 'str') -> 'Self'
+  deploy(self, credential: 'Any', file_path: 'str | os.PathLike[str]', subscription_id: 'str', resource_group: 'str', stack_name: 'str', parameter_overrides: 'dict[str, Any] | None' = None) -> 'DeployResult'
   snapshot(self, file_path: 'str | os.PathLike[str]', metadata: 'SnapshotMetadata | None' = None) -> 'SnapshotResult'
+
+CLASS DeployResult
+  DeployResult()
+  close(self) -> 'None'
+
+CLASS DeploymentResource
+  DeploymentResource(id: 'str', type: 'str | None' = None) -> None
 
 CLASS SnapshotMetadata
   SnapshotMetadata(tenant_id: 'str | None' = None, subscription_id: 'str | None' = None, resource_group: 'str | None' = None, location: 'str | None' = None, deployment_name: 'str | None' = None) -> None

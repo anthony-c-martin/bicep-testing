@@ -4,12 +4,15 @@ A set of libraries for writing tests against [Bicep](https://github.com/Azure/bi
 
 ## Overview
 
-`bicep-test` provides language-native testing workflows for Bicep infrastructure code. Each library invokes the Bicep CLI locally and captures a **snapshot** of what a deployment _would_ produce — the predicted resources, outputs, and diagnostics — so you can write fast, offline assertions against your templates.
+`bicep-test` provides language-native testing workflows for Bicep infrastructure code. Each library can capture a fast, offline **snapshot** of what a deployment would produce or run an opt-in **live deployment test** against Azure.
+
+Live tests compile a `.bicepparam` file, deploy it as an Azure Deployment Stack, and return deployment outputs and managed resource IDs for infrastructure and post-deployment behavior checks. The result owns cleanup: disposing or tearing it down deletes the stack and its managed resources. Live tests require an Azure credential, an existing resource group, and appropriate deployment and deletion permissions; standard repository tests remain credential-free.
 
 ## Goals
 * Create a very thin unopinionated library that can easily be supported in multiple languages.
 * Use Node as an example language, to determine viability and community interest.
 * Allow simple assertions about predicted goal state (e.g. "all storage accounts must be zone-redundant").
+* Support end-to-end assertions against real Azure resources with deterministic cleanup.
 
 ## Language support
 

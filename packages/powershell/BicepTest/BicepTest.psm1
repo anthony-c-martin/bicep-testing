@@ -14,7 +14,7 @@ function Import-BicepTestAssembly {
         return
     }
 
-    $libraryPath = Join-Path $PSScriptRoot 'lib/net8.0'
+    $libraryPath = Join-Path $PSScriptRoot 'lib/net10.0'
     $assemblyPath = Join-Path $libraryPath 'BicepTest.dll'
     if (-not (Test-Path -LiteralPath $assemblyPath)) {
         throw "The BicepTest runtime has not been built. Run packages/powershell/build.ps1."
@@ -97,4 +97,72 @@ function Remove-BicepTester {
     }
 }
 
-Export-ModuleMember -Function Get-BicepSnapshot, New-BicepTester, Remove-BicepTester
+function Start-BicepTestDeployment {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position = 0, ValueFromPipeline)]
+        [ValidateNotNull()]
+        [object] $Tester,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNull()]
+        [object] $Credential,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Path,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $SubscriptionId,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $ResourceGroup,
+
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string] $StackName,
+
+        [hashtable] $ParameterOverrides = @{}
+    )
+
+    process {
+        Import-BicepTestAssembly
+        $options = [BicepTest.DeployOptions]::new()
+        $options.FilePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+        $options.SubscriptionId = $SubscriptionId
+        $options.ResourceGroup = $ResourceGroup
+        $options.StackName = $StackName
+
+        $overrides = [Collections.Generic.Dictionary[string, Text.Json.JsonElement]]::new()
+        foreach ($item in $ParameterOverrides.GetEnumerator()) {
+            $overrides.Add(
+                [string] $item.Key,
+                [Text.Json.JsonSerializer]::SerializeToElement($item.Value))
+        }
+        $options.ParameterOverrides = $overrides
+
+        $task = $Tester.DeployAsync(
+            $Credential,
+            $options,
+            [Threading.CancellationToken]::None)
+        $task.GetAwaiter().GetResult()
+    }
+}
+
+function Remove-BicepTestDeployment {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, Position = 0, ValueFromPipeline)]
+        [ValidateNotNull()]
+        [object] $Deployment
+    )
+
+    process {
+        $task = $Deployment.TeardownAsync([Threading.CancellationToken]::None)
+        $task.GetAwaiter().GetResult()
+    }
+}
+
+Export-ModuleMember -Function Get-BicepSnapshot, New-BicepTester, Remove-BicepTester, Start-BicepTestDeployment, Remove-BicepTestDeployment

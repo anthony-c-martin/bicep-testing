@@ -16,7 +16,9 @@ Describe 'BicepTest module' {
         (Get-Command -Module BicepTest).Name | Should -Be @(
             'Get-BicepSnapshot'
             'New-BicepTester'
+            'Remove-BicepTestDeployment'
             'Remove-BicepTester'
+            'Start-BicepTestDeployment'
         )
     }
 

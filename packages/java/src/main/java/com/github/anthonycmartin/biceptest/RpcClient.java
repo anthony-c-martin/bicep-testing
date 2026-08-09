@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
-final class RpcClient implements AutoCloseable {
+final class RpcClient implements RpcCaller {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private final Process process;
     private final BufferedInputStream input;
@@ -27,7 +27,7 @@ final class RpcClient implements AutoCloseable {
         output = new BufferedOutputStream(process.getOutputStream());
     }
 
-    synchronized JsonNode call(String method, JsonNode params) throws IOException {
+    public synchronized JsonNode call(String method, JsonNode params) throws IOException {
         long requestId = ++nextId;
         ObjectNode request = MAPPER.createObjectNode();
         request.put("jsonrpc", "2.0");

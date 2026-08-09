@@ -88,6 +88,15 @@ func (client *Client) Version(ctx context.Context) (string, error) {
 	return response.Version, nil
 }
 
+// CompileParams compiles a Bicep parameters file into deployable ARM JSON.
+func (client *Client) CompileParams(ctx context.Context, request CompileParamsRequest) (CompileParamsResponse, error) {
+	var response CompileParamsResponse
+	if err := client.call(ctx, "bicep/compileParams", request, &response); err != nil {
+		return CompileParamsResponse{}, err
+	}
+	return response, nil
+}
+
 // GetSnapshot returns a deployment snapshot for a Bicep parameters file.
 func (client *Client) GetSnapshot(ctx context.Context, request GetSnapshotRequest) (GetSnapshotResponse, error) {
 	version, err := client.Version(ctx)

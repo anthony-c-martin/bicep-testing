@@ -3,7 +3,15 @@ import { mkdir } from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import { TokenCredential } from '@azure/core-auth';
-import { DeploymentStacksClient } from '@azure/arm-resourcesdeploymentstacks';
+import { DeploymentParameter, DeploymentStacksClient } from '@azure/arm-resourcesdeploymentstacks';
+
+export type DeployOptions = {
+  filePath: string;
+  subscriptionId: string;
+  resourceGroup: string;
+  stackName: string;
+  parameterOverrides?: Record<string, unknown>;
+};
 
 export class BicepTester {
   constructor(private bicep: Bicep) {}
@@ -32,21 +40,65 @@ export class BicepTester {
     return JSON.parse(response.snapshot);
   }
 
-  async deploy(credential: TokenCredential, subscriptionId: string, resourceGroup: string, stackName: string) {
-    const client = new DeploymentStacksClient(credential, subscriptionId);
+  async deploy(credential: TokenCredential, options: DeployOptions): Promise<DeployResult> {
+    const compilation = await this.bicep.compileParams({
+      path: path.resolve(options.filePath),
+      parameterOverrides: options.parameterOverrides ?? {},
+    });
+    if (!compilation.success || !compilation.template || !compilation.parameters) {
+      const diagnostics = compilation.diagnostics
+        .map(diagnostic => `${diagnostic.level} ${diagnostic.code}: ${diagnostic.message}`)
+        .join('\n');
+      throw new Error(`Bicep parameter compilation failed${diagnostics ? `:\n${diagnostics}` : '.'}`);
+    }
 
-    await client.deploymentStacks.beginCreateOrUpdateAtResourceGroupAndWait(resourceGroup, stackName, {
+    const template = JSON.parse(compilation.template) as Record<string, unknown>;
+    const parameterFile = JSON.parse(compilation.parameters) as { parameters?: Record<string, DeploymentParameter> };
+    const client = new DeploymentStacksClient(credential, options.subscriptionId);
+    const stack = await client.deploymentStacks.beginCreateOrUpdateAtResourceGroupAndWait(options.resourceGroup, options.stackName, {
       properties: {
+        template,
+        parameters: parameterFile.parameters ?? {},
         actionOnUnmanage: {
-          managementGroups: 'Delete',
-          resourceGroups: 'Delete',
-          resources: 'Delete',
+          managementGroups: 'delete',
+          resourceGroups: 'delete',
+          resources: 'delete',
+          resourcesWithoutDeleteSupport: 'fail',
         },
         denySettings: {
-          mode: 'None'
+          mode: 'none'
         }
       }
     });
+
+    const outputs = Object.fromEntries(
+      Object.entries(stack.properties?.outputs ?? {}).map(([name, output]) => [
+        name,
+        output && typeof output === 'object' && 'value' in output ? output.value : output,
+      ]),
+    );
+    const resources = (stack.properties?.resources ?? [])
+      .filter((resource): resource is typeof resource & { id: string } => typeof resource.id === 'string')
+      .map(resource => ({ id: resource.id, type: resource.type }));
+
+    let teardownPromise: Promise<void> | undefined;
+    return {
+      outputs,
+      resources,
+      teardown: () => {
+        teardownPromise ??= client.deploymentStacks.beginDeleteAtResourceGroupAndWait(
+          options.resourceGroup,
+          options.stackName,
+          {
+            unmanageActionManagementGroups: 'delete',
+            unmanageActionResourceGroups: 'delete',
+            unmanageActionResources: 'delete',
+            unmanageActionResourcesWithoutDeleteSupport: 'fail',
+          },
+        );
+        return teardownPromise;
+      },
+    };
   }
 
   dispose() {
@@ -54,20 +106,16 @@ export class BicepTester {
   }
 }
 
-export class DeployResult {
-  constructor(
-    private credential: TokenCredential,
-    private subscriptionId: string, 
-    private resourceGroup: string, 
-    private stackName: string
-  ) {}
+export type DeployResult = {
+  readonly outputs: Record<string, unknown>;
+  readonly resources: DeploymentResource[];
+  teardown(): Promise<void>;
+};
 
-  async teardown() {
-    const client = new DeploymentStacksClient(this.credential, this.subscriptionId);
-
-    await client.deploymentStacks.beginDeleteAtResourceGroupAndWait(this.resourceGroup, this.stackName);
-  }
-}
+export type DeploymentResource = {
+  id: string;
+  type?: string;
+};
 
 export type SnapshotResource = {
   id: string;

@@ -4,8 +4,8 @@ The PowerShell module provides commands for testing the predicted resources, out
 
 ## Requirements
 
-- PowerShell 7.4 or later
-- .NET 8 SDK or later when building from source
+- PowerShell 7.6 or later
+- .NET 10 SDK or later when building from source
 - A `.bicepparam` entry point for the Bicep deployment under test
 
 ## Build
@@ -42,6 +42,31 @@ finally {
 ```
 
 `New-BicepTester` downloads and reuses the requested Bicep CLI version. Snapshot tests do not require Azure credentials or an Azure subscription.
+
+## Live deployment tests
+
+Use `Start-BicepTestDeployment` with an Azure `TokenCredential` when a test needs deployed resources or service behavior:
+
+```powershell
+$deployment = $tester | Start-BicepTestDeployment `
+    -Credential $credential `
+    -Path 'infra/main.bicepparam' `
+    -SubscriptionId $subscriptionId `
+    -ResourceGroup $resourceGroup `
+    -StackName "storage-test-$([guid]::NewGuid().ToString('N'))"
+
+try {
+    $deployment.Resources.Type | Should -Contain 'Microsoft.Storage/storageAccounts'
+    Invoke-WebRequest $deployment.Outputs['endpoint'].GetString() |
+        Select-Object -ExpandProperty StatusCode |
+        Should -Be 200
+}
+finally {
+    $deployment | Remove-BicepTestDeployment
+}
+```
+
+Deployment results expose normalized outputs and managed resource IDs/types. Removal is idempotent and deletes the Deployment Stack and all resources it manages. Live tests require Azure credentials, an existing resource group, and deployment/deletion permissions.
 
 ## Sample
 

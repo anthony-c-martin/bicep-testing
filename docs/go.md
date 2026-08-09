@@ -69,6 +69,29 @@ A snapshot contains:
 - `Outputs`: resolved deployment outputs
 - `Diagnostics`: compilation warnings and errors
 
+## Live deployment tests
+
+Use `Deploy` with an Azure `azcore.TokenCredential` when a test needs real resources or service behavior:
+
+```go
+deployment, err := tester.Deploy(ctx, credential, biceptest.DeployOptions{
+	FilePath:       "infra/main.bicepparam",
+	SubscriptionID: subscriptionID,
+	ResourceGroup:  resourceGroup,
+	StackName:      fmt.Sprintf("storage-test-%d", time.Now().UnixNano()),
+})
+if err != nil {
+	t.Fatal(err)
+}
+defer deployment.Teardown(context.Background())
+
+if deployment.Outputs["endpoint"] == "" {
+	t.Fatal("deployment did not return an endpoint")
+}
+```
+
+The result exposes normalized outputs and managed resource IDs/types. `Teardown` is idempotent and deletes the Deployment Stack and its managed resources. Live tests require Azure credentials, an existing resource group, and deployment/deletion permissions.
+
 ## Sample
 
 See the runnable [Go test sample](../samples/go/snapshot_test.go) for a complete consumer test using the shared example infrastructure.

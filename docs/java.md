@@ -43,6 +43,28 @@ try (BicepTester tester = BicepTester.create("0.43.1")) {
 
 `SnapshotResult` contains immutable lists of predicted resources and diagnostics plus resolved outputs. `SnapshotResource` exposes resource identity, type, API version, location, properties, and additional fields returned by Bicep.
 
+## Live deployment tests
+
+Use `deploy` with an Azure `TokenCredential` when a test needs real resources or service behavior. Try-with-resources guarantees stack cleanup:
+
+```java
+TokenCredential credential = new DefaultAzureCredentialBuilder().build();
+DeployOptions options = new DeployOptions(
+        Path.of("infra/main.bicepparam"),
+        subscriptionId,
+        resourceGroup,
+        "storage-test-" + UUID.randomUUID());
+
+try (DeployResult deployment = tester.deploy(credential, options)) {
+    assertTrue(deployment.resources().stream()
+            .anyMatch(resource -> resource.type().equals("Microsoft.Storage/storageAccounts")));
+    URI endpoint = URI.create(deployment.outputs().get("endpoint").asText());
+    assertEquals(200, httpClient.send(request(endpoint), BodyHandlers.discarding()).statusCode());
+}
+```
+
+The result exposes normalized outputs and immutable managed-resource data. `close()` is idempotent and deletes the Deployment Stack and its managed resources. Live tests require an existing resource group, Azure credentials, and deployment/deletion permissions.
+
 ## Sample
 
 See the runnable [JUnit sample](../samples/java/src/test/java/com/github/anthonycmartin/samples/SnapshotTest.java) for a complete consumer test using the shared example infrastructure.

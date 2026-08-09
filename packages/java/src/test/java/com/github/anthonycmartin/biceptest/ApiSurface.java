@@ -18,6 +18,9 @@ import java.util.stream.Collectors;
 public final class ApiSurface {
     private static final List<Class<?>> PUBLIC_TYPES = List.of(
             BicepTester.class,
+            DeployOptions.class,
+            DeployResult.class,
+            DeploymentResource.class,
             SnapshotMetadata.class,
             SnapshotMetadata.Builder.class,
             SnapshotResource.class,

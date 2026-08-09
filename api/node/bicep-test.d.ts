@@ -1,21 +1,29 @@
 import { Bicep } from '@azure/bicep-rpc-client';
 import { TokenCredential } from '@azure/core-auth';
+export type DeployOptions = {
+    filePath: string;
+    subscriptionId: string;
+    resourceGroup: string;
+    stackName: string;
+    parameterOverrides?: Record<string, unknown>;
+};
 export declare class BicepTester {
     private bicep;
     constructor(bicep: Bicep);
     static create(bicepVersion: string): Promise<BicepTester>;
     snapshot(filePath: string, tenantId?: string, subscriptionId?: string, resourceGroup?: string, location?: string, deploymentName?: string): Promise<SnapshotResult>;
-    deploy(credential: TokenCredential, subscriptionId: string, resourceGroup: string, stackName: string): Promise<void>;
+    deploy(credential: TokenCredential, options: DeployOptions): Promise<DeployResult>;
     dispose(): void;
 }
-export declare class DeployResult {
-    private credential;
-    private subscriptionId;
-    private resourceGroup;
-    private stackName;
-    constructor(credential: TokenCredential, subscriptionId: string, resourceGroup: string, stackName: string);
+export type DeployResult = {
+    readonly outputs: Record<string, unknown>;
+    readonly resources: DeploymentResource[];
     teardown(): Promise<void>;
-}
+};
+export type DeploymentResource = {
+    id: string;
+    type?: string;
+};
 export type SnapshotResource = {
     id: string;
     type: string;

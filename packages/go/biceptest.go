@@ -14,9 +14,15 @@ import (
 // SnapshotMetadata describes the Azure deployment context used to evaluate a snapshot.
 type SnapshotMetadata = rpcclient.SnapshotMetadata
 
+type bicepClient interface {
+	CompileParams(context.Context, rpcclient.CompileParamsRequest) (rpcclient.CompileParamsResponse, error)
+	GetSnapshot(context.Context, rpcclient.GetSnapshotRequest) (rpcclient.GetSnapshotResponse, error)
+	Close() error
+}
+
 // Tester invokes a pinned Bicep CLI to evaluate infrastructure snapshots.
 type Tester struct {
-	client *rpcclient.Client
+	client bicepClient
 }
 
 // New installs the requested Bicep CLI version if needed and starts its RPC client.

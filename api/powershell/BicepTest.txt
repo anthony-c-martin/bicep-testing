@@ -14,7 +14,23 @@ FUNCTION New-BicepTester
 PARAMETER SET __AllParameterSets
   -BicepVersion <System.String> [Mandatory, Position=0]
 
+FUNCTION Remove-BicepTestDeployment
+
+PARAMETER SET __AllParameterSets
+  -Deployment <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+
 FUNCTION Remove-BicepTester
 
 PARAMETER SET __AllParameterSets
   -Tester <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+
+FUNCTION Start-BicepTestDeployment
+
+PARAMETER SET __AllParameterSets
+  -Tester <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+  -Credential <System.Object> [Mandatory]
+  -ParameterOverrides <System.Collections.Hashtable>
+  -Path <System.String> [Mandatory]
+  -ResourceGroup <System.String> [Mandatory]
+  -StackName <System.String> [Mandatory]
+  -SubscriptionId <System.String> [Mandatory]

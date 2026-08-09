@@ -4,7 +4,7 @@ The C# library provides helpers for testing the predicted resources, outputs, an
 
 ## Requirements
 
-- .NET 8 or later
+- .NET 10 or later
 - A `.bicepparam` entry point for the Bicep deployment under test
 
 ## Installation
@@ -43,6 +43,29 @@ A snapshot contains:
 - `PredictedResources`: resources and resolved properties predicted for the deployment
 - `Outputs`: resolved deployment outputs
 - `Diagnostics`: compilation warnings and errors
+
+## Live deployment tests
+
+Use `DeployAsync` with an Azure `TokenCredential` when a test must assert against deployed resources or service behavior:
+
+```csharp
+await using var deployment = await tester.DeployAsync(
+	new DefaultAzureCredential(),
+	new DeployOptions
+	{
+		FilePath = "infra/main.bicepparam",
+		SubscriptionId = subscriptionId,
+		ResourceGroup = resourceGroup,
+		StackName = $"storage-test-{Guid.NewGuid():N}",
+	});
+
+Assert.IsTrue(deployment.Resources.Any(
+	resource => resource.Type == "Microsoft.Storage/storageAccounts"));
+var endpoint = deployment.Outputs["endpoint"].GetString();
+Assert.AreEqual(HttpStatusCode.OK, (await httpClient.GetAsync(endpoint)).StatusCode);
+```
+
+`DeployResult` exposes normalized outputs and managed resource IDs/types. `await using` calls the idempotent teardown and deletes the Deployment Stack and all resources it manages. Live tests require an existing resource group, Azure credentials, and deployment/deletion permissions.
 
 ## Sample
 
