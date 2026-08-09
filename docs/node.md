@@ -10,7 +10,7 @@ The `@anthony-c-martin/bicep-testing` package is the current reference implement
 ## Installation
 
 ```sh
-npm install --save-dev @anthony-c-martin/bicep-testing@0.1.0
+npm install --save-dev @anthony-c-martin/bicep-testing@0.1.1
 ```
 
 ## Usage
