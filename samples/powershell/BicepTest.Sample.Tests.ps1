@@ -1,7 +1,6 @@
 BeforeAll {
-    $modulePath = Join-Path $PSScriptRoot '../../packages/powershell/AnthonyCMartin.BicepTesting/AnthonyCMartin.BicepTesting.psd1'
     $parametersPath = Join-Path $PSScriptRoot '../infra/main.bicepparam'
-    Import-Module $modulePath -Force
+    Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.0 -Force
 
     $session = New-BicepTestSession -BicepVersion '0.43.1'
     $snapshot = $session | Get-BicepSnapshot `

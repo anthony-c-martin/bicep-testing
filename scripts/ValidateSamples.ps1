@@ -20,9 +20,7 @@ function Invoke-NativeCommand {
 
 Push-Location $repositoryRoot
 try {
-    Write-Host 'Building the Node library and sample...'
-    Invoke-NativeCommand { npm ci --prefix packages/node --legacy-peer-deps } 'Node dependency restore'
-    Invoke-NativeCommand { npm run build --prefix packages/node } 'Node library build'
+    Write-Host 'Restoring and compiling the Node sample...'
     Invoke-NativeCommand { npm install --prefix samples/node --ignore-scripts --no-package-lock } 'Node sample dependency restore'
     Invoke-NativeCommand { $env:BICEP_TEST_VALIDATE_ONLY = '1'; npm test --prefix samples/node } 'Node sample compilation'
     Remove-Item Env:BICEP_TEST_VALIDATE_ONLY -ErrorAction SilentlyContinue
@@ -39,8 +37,8 @@ try {
         Pop-Location
     }
 
-    Write-Host 'Parsing the PowerShell sample tests...'
-    Invoke-NativeCommand { pwsh -NoProfile -File packages/powershell/build.ps1 } 'PowerShell module build'
+    Write-Host 'Installing and parsing the PowerShell sample tests...'
+    Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.0 -Repository PSGallery -Scope CurrentUser -TrustRepository -Reinstall -Quiet
     Invoke-NativeCommand {
         pwsh -NoProfile -Command '$errors = @(); Get-ChildItem ./samples/powershell -Filter *.ps1 | ForEach-Object { [void][Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$errors) }; if ($errors) { $errors | Out-String | Write-Error; exit 1 }'
     } 'PowerShell sample parsing'

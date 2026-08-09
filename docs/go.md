@@ -9,10 +9,8 @@ The Go package provides helpers for testing the predicted resources, outputs, an
 
 ## Installation
 
-Until a versioned module is released, reference the repository source from a local checkout. After release, install it with:
-
 ```sh
-go get github.com/anthony-c-martin/bicep-testing/packages/go
+go get github.com/anthony-c-martin/bicep-testing/packages/go@v0.1.0
 ```
 
 ## Usage
@@ -64,6 +62,10 @@ func TestStorageAccountsDisablePublicAccess(t *testing.T) {
 ## JSON-RPC client
 
 Lower-level integrations can use the independently versioned `bicep-rpc-client` module:
+
+```sh
+go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client@v0.1.0
+```
 
 ```go
 import biceprpcclient "github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client"

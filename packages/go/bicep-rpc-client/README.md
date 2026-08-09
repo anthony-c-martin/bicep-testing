@@ -2,6 +2,10 @@
 
 An independent Go client for the Bicep CLI JSON-RPC API.
 
+```sh
+go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client@v0.1.0
+```
+
 ```go
 package main
 

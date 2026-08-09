@@ -9,7 +9,9 @@ The C# library provides helpers for testing the predicted resources, outputs, an
 
 ## Installation
 
-The `AnthonyCMartin.BicepTesting` package has not yet been published to NuGet. Until it is released, reference `packages/dotnet/src/BicepTest/BicepTest.csproj` from a local checkout.
+```sh
+dotnet add package AnthonyCMartin.BicepTesting --version 0.1.0
+```
 
 ## Usage
 

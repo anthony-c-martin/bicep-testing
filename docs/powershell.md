@@ -5,16 +5,13 @@ The PowerShell module provides commands for testing the predicted resources, out
 ## Requirements
 
 - PowerShell 7.6 or later
-- .NET 10 SDK or later when building from source
 - A `.bicepparam` entry point for the Bicep deployment under test
 
-## Build
-
-The `AnthonyCMartin.BicepTesting` module has not yet been published to the PowerShell Gallery. Build its runtime payload from a local checkout:
+## Installation
 
 ```powershell
-./packages/powershell/build.ps1
-Import-Module ./packages/powershell/AnthonyCMartin.BicepTesting/AnthonyCMartin.BicepTesting.psd1
+Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.0 -Repository PSGallery
+Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.0
 ```
 
 ## Usage
