@@ -2,7 +2,7 @@
 
 ## Development container
 
-With Docker and the VS Code Dev Containers extension installed, run **Dev Containers: Reopen in Container** from the command palette. The configuration under `.devcontainer/` installs Node 24, .NET 8, Go 1.24, PowerShell 7.4 with Pester, Python 3.12, and Java 17 with Maven. Package-manager caches persist in named Docker volumes, while dependency restore remains explicit for each language.
+With Docker and the VS Code Dev Containers extension installed, run **Dev Containers: Reopen in Container** from the command palette. The configuration under `.devcontainer/` installs Node 24, .NET 10, Go 1.24, PowerShell 7.6 with Pester, Python 3.12, and Java 17 with Maven. Package-manager caches persist in named Docker volumes, while dependency restore remains explicit for each language.
 
 ## Repository layout
 
@@ -70,7 +70,7 @@ Review the Node public API in `api/node/bicep-test.d.ts`. After an intentional A
 
 ## C#
 
-Prerequisite: .NET 8 SDK or later.
+Prerequisite: .NET 10 SDK or later.
 
 Build and verify packaging from the repository root:
 
@@ -83,7 +83,7 @@ Review the C# public API in `api/dotnet/PublicAPI.Unshipped.txt`. The Public API
 
 Project conventions:
 
-- Target framework: `net8.0`
+- Target framework: `net10.0`
 - Root namespace and package ID: `BicepTest`
 - Nullable reference types and implicit global usings are enabled.
 - Add library code under `packages/dotnet/src/BicepTest`.
@@ -124,8 +124,8 @@ Project conventions:
 
 Prerequisites:
 
-- PowerShell 7.4 or later
-- .NET 8 SDK or later
+- PowerShell 7.6 or later
+- .NET 10 SDK or later
 - Pester 5.7 or later
 
 Build and test from the repository root:

@@ -50,6 +50,29 @@ assert all(
 
 `SnapshotResult` contains immutable tuples of `predicted_resources` and `diagnostics`, plus the resolved `outputs`. Each `SnapshotResource` exposes its identity, type, API version, location, properties, and any additional fields returned by Bicep.
 
+## Live deployment tests
+
+Use `deploy` with an Azure credential when a test needs real resources or service behavior. The deployment result is also a context manager, so cleanup runs even when an assertion fails:
+
+```python
+from azure.identity import DefaultAzureCredential
+
+with tester.deploy(
+    DefaultAzureCredential(),
+    "infra/main.bicepparam",
+    subscription_id,
+    resource_group,
+    f"storage-test-{uuid.uuid4().hex}",
+) as deployment:
+    assert any(
+        resource.type == "Microsoft.Storage/storageAccounts"
+        for resource in deployment.resources
+    )
+    assert requests.get(deployment.outputs["endpoint"], timeout=30).status_code == 200
+```
+
+`DeployResult` exposes normalized outputs and immutable managed-resource data. `close()` is idempotent and deletes the Deployment Stack and its managed resources. Live tests require an existing resource group, Azure credentials, and deployment/deletion permissions.
+
 ## Sample
 
 See the runnable [pytest sample](../samples/python/test_snapshot.py) for a complete consumer test using the shared example infrastructure.

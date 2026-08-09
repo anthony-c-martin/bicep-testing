@@ -1,7 +1,65 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from collections.abc import Callable
+from threading import Lock
+from typing import Any, Self
+
+
+@dataclass(frozen=True, slots=True)
+class DeploymentResource:
+    """A resource managed by a Deployment Stack."""
+
+    id: str
+    type: str | None = None
+
+
+@dataclass(frozen=True, slots=True, init=False)
+class DeployResult:
+    """Outputs and resources from a deployment, with deterministic cleanup."""
+
+    outputs: dict[str, Any]
+    resources: tuple[DeploymentResource, ...]
+    _teardown: Callable[[], None] = field(repr=False, compare=False)
+    _lock: Lock = field(repr=False, compare=False)
+    _closed: list[bool] = field(repr=False, compare=False)
+    _teardown_error: list[BaseException | None] = field(repr=False, compare=False)
+
+    @classmethod
+    def _create(
+        cls,
+        outputs: dict[str, Any],
+        resources: tuple[DeploymentResource, ...],
+        teardown: Callable[[], None],
+    ) -> DeployResult:
+        result = object.__new__(cls)
+        object.__setattr__(result, "outputs", outputs)
+        object.__setattr__(result, "resources", resources)
+        object.__setattr__(result, "_teardown", teardown)
+        object.__setattr__(result, "_lock", Lock())
+        object.__setattr__(result, "_closed", [False])
+        object.__setattr__(result, "_teardown_error", [None])
+        return result
+
+    def close(self) -> None:
+        """Delete the Deployment Stack and all resources it manages."""
+        with self._lock:
+            if self._closed[0]:
+                if self._teardown_error[0] is not None:
+                    raise self._teardown_error[0]
+                return
+            self._closed[0] = True
+            try:
+                self._teardown()
+            except BaseException as error:
+                self._teardown_error[0] = error
+                raise
+
+    def __enter__(self) -> Self:
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
 
 
 @dataclass(frozen=True, slots=True)

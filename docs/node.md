@@ -61,6 +61,31 @@ A snapshot contains:
 
 Snapshot tests do not require Azure credentials or an Azure subscription.
 
+## Live deployment tests
+
+Use `deploy` when an assertion needs a real Azure resource or service response. The caller supplies an Azure `TokenCredential`, subscription, existing resource group, and unique stack name:
+
+```ts
+const deployment = await tester.deploy(credential, {
+	filePath: 'infra/main.bicepparam',
+	subscriptionId,
+	resourceGroup,
+	stackName: `storage-test-${Date.now()}`,
+});
+
+try {
+	expect(deployment.resources).toContainEqual(
+		expect.objectContaining({ type: 'Microsoft.Storage/storageAccounts' }),
+	);
+	const endpoint = deployment.outputs.endpoint as string;
+	expect((await fetch(endpoint)).status).toBe(200);
+} finally {
+	await deployment.teardown();
+}
+```
+
+Deployment results expose normalized `outputs` and the IDs and types of stack-managed `resources`. `teardown()` is idempotent and deletes the Deployment Stack and its managed resources. Live tests require Azure credentials and deployment/deletion permissions and should run only in an explicitly configured integration-test job.
+
 ## Sample
 
 See the runnable [Jest sample](../samples/node/snapshot.test.js) for a complete consumer test using the shared example infrastructure.

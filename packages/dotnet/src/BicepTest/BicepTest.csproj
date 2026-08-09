@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>BicepTest</PackageId>
@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Bicep.RpcClient" Version="0.46.1" />
+    <PackageReference Include="Azure.ResourceManager.Resources.DeploymentStacks" Version="1.0.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

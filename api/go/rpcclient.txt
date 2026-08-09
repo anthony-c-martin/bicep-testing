@@ -28,11 +28,29 @@ func New(ctx context.Context, bicepPath string) (*Client, error)
 func (client *Client) Close() error
     Close disconnects from the Bicep CLI and terminates its process.
 
+func (client *Client) CompileParams(ctx context.Context, request CompileParamsRequest) (CompileParamsResponse, error)
+    CompileParams compiles a Bicep parameters file into deployable ARM JSON.
+
 func (client *Client) GetSnapshot(ctx context.Context, request GetSnapshotRequest) (GetSnapshotResponse, error)
     GetSnapshot returns a deployment snapshot for a Bicep parameters file.
 
 func (client *Client) Version(ctx context.Context) (string, error)
     Version returns the Bicep CLI version.
+
+type CompileParamsRequest struct {
+	Path               string                     `json:"path"`
+	ParameterOverrides map[string]json.RawMessage `json:"parameterOverrides"`
+}
+    CompileParamsRequest contains the path and overrides for a Bicep parameters
+    compilation.
+
+type CompileParamsResponse struct {
+	Success     bool             `json:"success"`
+	Diagnostics []map[string]any `json:"diagnostics"`
+	Template    string           `json:"template"`
+	Parameters  string           `json:"parameters"`
+}
+    CompileParamsResponse contains deployable ARM template and parameter JSON.
 
 type GetSnapshotRequest struct {
 	Path           string                  `json:"path"`

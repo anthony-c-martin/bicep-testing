@@ -1,8 +1,35 @@
 #nullable enable
 BicepTest.BicepTester
+BicepTest.BicepTester.DeployAsync(Azure.Core.TokenCredential! credential, BicepTest.DeployOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<BicepTest.DeployResult!>!
 BicepTest.BicepTester.Dispose() -> void
 BicepTest.BicepTester.DisposeAsync() -> System.Threading.Tasks.ValueTask
 BicepTest.BicepTester.SnapshotAsync(string! filePath, string? tenantId = null, string? subscriptionId = null, string? resourceGroup = null, string? location = null, string? deploymentName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<BicepTest.SnapshotResult!>!
+BicepTest.DeploymentResource
+BicepTest.DeploymentResource.<Clone>$() -> BicepTest.DeploymentResource!
+BicepTest.DeploymentResource.Deconstruct(out string! Id, out string? Type) -> void
+BicepTest.DeploymentResource.DeploymentResource(string! Id, string? Type) -> void
+BicepTest.DeploymentResource.Equals(BicepTest.DeploymentResource? other) -> bool
+BicepTest.DeploymentResource.Id.get -> string!
+BicepTest.DeploymentResource.Id.init -> void
+BicepTest.DeploymentResource.Type.get -> string?
+BicepTest.DeploymentResource.Type.init -> void
+BicepTest.DeployOptions
+BicepTest.DeployOptions.DeployOptions() -> void
+BicepTest.DeployOptions.FilePath.get -> string!
+BicepTest.DeployOptions.FilePath.init -> void
+BicepTest.DeployOptions.ParameterOverrides.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Text.Json.JsonElement>!
+BicepTest.DeployOptions.ParameterOverrides.init -> void
+BicepTest.DeployOptions.ResourceGroup.get -> string!
+BicepTest.DeployOptions.ResourceGroup.init -> void
+BicepTest.DeployOptions.StackName.get -> string!
+BicepTest.DeployOptions.StackName.init -> void
+BicepTest.DeployOptions.SubscriptionId.get -> string!
+BicepTest.DeployOptions.SubscriptionId.init -> void
+BicepTest.DeployResult
+BicepTest.DeployResult.DisposeAsync() -> System.Threading.Tasks.ValueTask
+BicepTest.DeployResult.Outputs.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Text.Json.JsonElement>!
+BicepTest.DeployResult.Resources.get -> System.Collections.Generic.IReadOnlyList<BicepTest.DeploymentResource!>!
+BicepTest.DeployResult.TeardownAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 BicepTest.SnapshotResource
 BicepTest.SnapshotResource.AdditionalProperties.get -> System.Collections.Generic.Dictionary<string!, System.Text.Json.JsonElement>?
 BicepTest.SnapshotResource.AdditionalProperties.init -> void
@@ -27,4 +54,9 @@ BicepTest.SnapshotResult.Outputs.init -> void
 BicepTest.SnapshotResult.PredictedResources.get -> BicepTest.SnapshotResource![]!
 BicepTest.SnapshotResult.PredictedResources.init -> void
 BicepTest.SnapshotResult.SnapshotResult() -> void
+override BicepTest.DeploymentResource.Equals(object? obj) -> bool
+override BicepTest.DeploymentResource.GetHashCode() -> int
+override BicepTest.DeploymentResource.ToString() -> string!
 static BicepTest.BicepTester.CreateAsync(string! bicepVersion, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<BicepTest.BicepTester!>!
+static BicepTest.DeploymentResource.operator !=(BicepTest.DeploymentResource? left, BicepTest.DeploymentResource? right) -> bool
+static BicepTest.DeploymentResource.operator ==(BicepTest.DeploymentResource? left, BicepTest.DeploymentResource? right) -> bool

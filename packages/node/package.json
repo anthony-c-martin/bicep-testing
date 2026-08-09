@@ -49,6 +49,7 @@
   ],
   "dependencies": {
     "@azure/arm-resourcesdeploymentstacks": "^2.0.0",
-    "@azure/bicep-rpc-client": "^0.2.1"
+    "@azure/bicep-rpc-client": "^0.2.1",
+    "@azure/core-auth": "^1.10.0"
   }
 }

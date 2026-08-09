@@ -4,12 +4,14 @@
     GUID = 'ba8897af-e89f-4657-a30d-d1c9e9816070'
     Author = 'Anthony Martin'
     Description = 'Test Bicep infrastructure by evaluating deployment snapshots locally.'
-    PowerShellVersion = '7.4'
+    PowerShellVersion = '7.6'
     CompatiblePSEditions = @('Core')
     FunctionsToExport = @(
         'Get-BicepSnapshot'
         'New-BicepTester'
+        'Remove-BicepTestDeployment'
         'Remove-BicepTester'
+        'Start-BicepTestDeployment'
     )
     CmdletsToExport = @()
     VariablesToExport = @()

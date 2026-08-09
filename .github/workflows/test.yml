@@ -45,7 +45,7 @@ jobs:
     - name: Set up .NET
       uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
 
     - name: Test and check public API
       run: dotnet test packages/dotnet/BicepTest.slnx --configuration Release
@@ -80,23 +80,27 @@ jobs:
     - name: Set up .NET
       uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
+
+    - name: Install PowerShell 7.6
+      shell: bash
+      run: dotnet tool install --global PowerShell --version '7.6.*'
 
     - name: Install Pester
-      shell: pwsh
-      run: Install-Module Pester -MinimumVersion 5.7.1 -Scope CurrentUser -Force
+      shell: bash
+      run: ~/.dotnet/tools/pwsh -NoProfile -Command 'Install-Module Pester -MinimumVersion 5.7.1 -Scope CurrentUser -Force'
 
     - name: Build
-      shell: pwsh
-      run: ./packages/powershell/build.ps1
+      shell: bash
+      run: ~/.dotnet/tools/pwsh -NoProfile -File ./packages/powershell/build.ps1
 
     - name: Test
-      shell: pwsh
-      run: Invoke-Pester ./packages/powershell/test -CI
+      shell: bash
+      run: ~/.dotnet/tools/pwsh -NoProfile -Command 'Invoke-Pester ./packages/powershell/test -CI'
 
     - name: Check public API
-      shell: pwsh
-      run: ./packages/powershell/scripts/public-api.ps1 -Check
+      shell: bash
+      run: ~/.dotnet/tools/pwsh -NoProfile -File ./packages/powershell/scripts/public-api.ps1 -Check
 
   python:
     name: Python
@@ -163,7 +167,11 @@ jobs:
     - name: Set up .NET
       uses: actions/setup-dotnet@v6
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
+
+    - name: Install PowerShell 7.6
+      shell: bash
+      run: dotnet tool install --global PowerShell --version '7.6.*'
 
     - name: Set up Go
       uses: actions/setup-go@v7
@@ -183,9 +191,9 @@ jobs:
         cache: maven
 
     - name: Install Pester
-      shell: pwsh
-      run: Install-Module Pester -MinimumVersion 5.7.1 -Scope CurrentUser -Force
+      shell: bash
+      run: ~/.dotnet/tools/pwsh -NoProfile -Command 'Install-Module Pester -MinimumVersion 5.7.1 -Scope CurrentUser -Force'
 
     - name: Compile and run samples
-      shell: pwsh
-      run: ./scripts/ValidateSamples.ps1
+      shell: bash
+      run: ~/.dotnet/tools/pwsh -NoProfile -File ./scripts/ValidateSamples.ps1

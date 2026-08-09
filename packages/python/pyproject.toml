@@ -9,6 +9,7 @@ description = "Test Bicep infrastructure by evaluating deployment snapshots loca
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "Anthony Martin" }]
+dependencies = ["azure-mgmt-resource-deploymentstacks==1.0.0"]
 
 [project.optional-dependencies]
 test = ["pytest>=8.0"]
