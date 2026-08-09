@@ -9,7 +9,7 @@ The Python package provides typed helpers for testing the predicted resources, o
 
 ## Installation
 
-Until the package is published to PyPI, install it from a local checkout:
+Until `anthonycmartin-bicep-testing` is published to PyPI, install it from a local checkout:
 
 ```sh
 python -m pip install -e ./packages/python
@@ -20,7 +20,7 @@ python -m pip install -e ./packages/python
 Use `BicepTestSession` as a context manager so the Bicep JSON-RPC process is always closed:
 
 ```python
-from bicep_test import BicepTestSession, SnapshotMetadata
+from anthonycmartin.bicep_testing import BicepTestSession, SnapshotMetadata
 
 metadata = SnapshotMetadata(
     subscription_id="00000000-0000-0000-0000-000000000000",
@@ -79,4 +79,4 @@ See the runnable [pytest sample](../samples/python/test_snapshot.py) for a compl
 
 ## Public API
 
-The complete exported Python API is available in [`api/python/bicep-test.txt`](../api/python/bicep-test.txt).
+The complete exported Python API is available in [`api/python/bicep-testing.txt`](../api/python/bicep-testing.txt).

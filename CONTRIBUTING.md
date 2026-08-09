@@ -26,11 +26,11 @@ packages/
     ├── snapshot.go
     └── go.mod
 ├── powershell/
-    ├── BicepTest/
+    ├── AnthonyCMartin.BicepTesting/
     ├── scripts/
     └── test/
 ├── python/
-│   ├── src/bicep_test/
+│   ├── src/anthonycmartin/bicep_testing/
 │   ├── scripts/
 │   └── tests/
 └── java/
@@ -66,7 +66,7 @@ npm run api:check
 
 The legacy peer resolver is currently required because TypeScript 7 is outside the version range declared by the installed `@typescript-eslint` packages.
 
-Review the Node public API in `api/node/bicep-test.d.ts`. After an intentional API change, run `npm run api:update` from `packages/node` and include the baseline change in the pull request.
+Review the Node public API in `api/node/bicep-testing.d.ts`. After an intentional API change, run `npm run api:update` from `packages/node` and include the baseline change in the pull request.
 
 ## C#
 
@@ -84,7 +84,7 @@ Review the C# public API in `api/dotnet/PublicAPI.Unshipped.txt`. The Public API
 Project conventions:
 
 - Target framework: `net10.0`
-- Root namespace and package ID: `BicepTest`
+- Root namespace and package ID: `AnthonyCMartin.BicepTesting`
 - Nullable reference types and implicit global usings are enabled.
 - Add library code under `packages/dotnet/src/BicepTest`.
 - Add tests under `packages/dotnet/test/BicepTest.Tests` and include the project in `BicepTest.slnx`.
@@ -114,7 +114,7 @@ Review the Go public API in `api/go`. After an intentional API change, run `go g
 Project conventions:
 
 - Module path: `github.com/anthony-c-martin/bicep-test/packages/go`
-- Package name: `biceptest`
+- Package name: `biceptesting`
 - Keep exported names idiomatic to Go rather than reproducing the Node API naming exactly.
 - Keep the public snapshot API in the module root.
 - Keep Bicep installation, process, pipe, and JSON-RPC behavior in the separate `rpcclient` package.
@@ -136,12 +136,12 @@ Invoke-Pester ./packages/powershell/test -CI
 ./packages/powershell/scripts/public-api.ps1 -Check
 ```
 
-Review the PowerShell public API in `api/powershell/BicepTest.txt`. After an intentional API change, run `./packages/powershell/scripts/public-api.ps1 -Update` and include the baseline change in the pull request.
+Review the PowerShell public API in `api/powershell/AnthonyCMartin.BicepTesting.txt`. After an intentional API change, run `./packages/powershell/scripts/public-api.ps1 -Update` and include the baseline change in the pull request.
 
 Project conventions:
 
 - Keep the module manifest export lists explicit; do not use wildcard exports.
-- Add public commands to `packages/powershell/BicepTest/BicepTest.psm1` and the manifest.
+- Add public commands to `packages/powershell/AnthonyCMartin.BicepTesting/AnthonyCMartin.BicepTesting.psm1` and the manifest.
 - Keep the PowerShell commands as a thin, idiomatic wrapper over the C# implementation.
 - Preserve compatibility with PowerShell Core on Windows and Linux.
 
@@ -157,13 +157,13 @@ python -m pytest packages/python/tests
 python packages/python/scripts/public_api.py --check
 ```
 
-Review `api/python/bicep-test.txt`. After an intentional API change, run the API script with `--update` and include the baseline change in the pull request.
+Review `api/python/bicep-testing.txt`. After an intentional API change, run the API script with `--update` and include the baseline change in the pull request.
 
 Project conventions:
 
 - Keep runtime dependencies in the Python standard library where practical.
 - Use type annotations, immutable dataclasses for result data, and context managers for owned processes.
-- Add package code under `packages/python/src/bicep_test` and pytest tests under `packages/python/tests`.
+- Add package code under `packages/python/src/anthonycmartin/bicep_testing` and pytest tests under `packages/python/tests`.
 
 ## Java
 
@@ -173,10 +173,10 @@ Test and check the public API from `packages/java`:
 
 ```sh
 mvn --batch-mode --no-transfer-progress test
-mvn --batch-mode --no-transfer-progress --quiet -DskipTests test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.github.anthonycmartin.biceptest.ApiSurface -Dexec.args=--check
+mvn --batch-mode --no-transfer-progress --quiet -DskipTests test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.github.anthonycmartin.biceptesting.ApiSurface -Dexec.args=--check
 ```
 
-Review `api/java/bicep-test.txt`. After an intentional API change, replace `--check` with `--update` in the API command and include the baseline change in the pull request.
+Review `api/java/bicep-testing.txt`. After an intentional API change, replace `--check` with `--update` in the API command and include the baseline change in the pull request.
 
 Project conventions:
 

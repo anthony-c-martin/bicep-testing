@@ -3,10 +3,10 @@ package com.github.anthonycmartin.samples;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.github.anthonycmartin.biceptest.BicepTestSession;
-import com.github.anthonycmartin.biceptest.SnapshotMetadata;
-import com.github.anthonycmartin.biceptest.SnapshotResource;
-import com.github.anthonycmartin.biceptest.SnapshotResult;
+import com.github.anthonycmartin.biceptesting.BicepTestSession;
+import com.github.anthonycmartin.biceptesting.SnapshotMetadata;
+import com.github.anthonycmartin.biceptesting.SnapshotResource;
+import com.github.anthonycmartin.biceptesting.SnapshotResult;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.stream.Collectors;

@@ -150,7 +150,7 @@ vite.config.ts.timestamp-*
 packages/go/coverage.out
 
 # PowerShell
-packages/powershell/BicepTest/lib/
+packages/powershell/AnthonyCMartin.BicepTesting/lib/
 testResults.xml
 
 # Python

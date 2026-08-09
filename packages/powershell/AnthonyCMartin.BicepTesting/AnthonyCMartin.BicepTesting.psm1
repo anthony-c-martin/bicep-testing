@@ -7,21 +7,21 @@ function Import-BicepTestAssembly {
     }
 
     $loadedAssembly = [AppDomain]::CurrentDomain.GetAssemblies() |
-        Where-Object { $_.GetName().Name -eq 'BicepTest' } |
+        Where-Object { $_.GetName().Name -eq 'AnthonyCMartin.BicepTesting' } |
         Select-Object -First 1
     if ($loadedAssembly) {
-        $script:BicepTestSessionType = $loadedAssembly.GetType('BicepTest.BicepTestSession', $true)
+        $script:BicepTestSessionType = $loadedAssembly.GetType('AnthonyCMartin.BicepTesting.BicepTestSession', $true)
         return
     }
 
     $libraryPath = Join-Path $PSScriptRoot 'lib/net10.0'
-    $assemblyPath = Join-Path $libraryPath 'BicepTest.dll'
+    $assemblyPath = Join-Path $libraryPath 'AnthonyCMartin.BicepTesting.dll'
     if (-not (Test-Path -LiteralPath $assemblyPath)) {
         throw "The BicepTest runtime has not been built. Run packages/powershell/build.ps1."
     }
 
     Get-ChildItem -LiteralPath $libraryPath -Filter '*.dll' |
-        Where-Object Name -ne 'BicepTest.dll' |
+        Where-Object Name -ne 'AnthonyCMartin.BicepTesting.dll' |
         ForEach-Object {
             try {
                 [System.Runtime.Loader.AssemblyLoadContext]::Default.LoadFromAssemblyPath($_.FullName) | Out-Null
@@ -31,7 +31,7 @@ function Import-BicepTestAssembly {
             }
         }
     $assembly = [System.Runtime.Loader.AssemblyLoadContext]::Default.LoadFromAssemblyPath($assemblyPath)
-    $script:BicepTestSessionType = $assembly.GetType('BicepTest.BicepTestSession', $true)
+    $script:BicepTestSessionType = $assembly.GetType('AnthonyCMartin.BicepTesting.BicepTestSession', $true)
 }
 
 function New-BicepTestSession {
@@ -129,7 +129,7 @@ function Start-BicepTestDeployment {
 
     process {
         Import-BicepTestAssembly
-        $options = [BicepTest.DeployOptions]::new()
+        $options = [AnthonyCMartin.BicepTesting.DeployOptions]::new()
         $options.FilePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
         $options.SubscriptionId = $SubscriptionId
         $options.ResourceGroup = $ResourceGroup

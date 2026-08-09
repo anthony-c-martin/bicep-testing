@@ -1,4 +1,4 @@
-package com.github.anthonycmartin.biceptest;
+package com.github.anthonycmartin.biceptesting;
 
 import java.io.IOException;
 import java.net.URI;

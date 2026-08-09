@@ -10,7 +10,7 @@ The Java library provides typed helpers for testing the predicted resources, out
 
 ## Installation
 
-Until the library is published to Maven Central, install it from a local checkout:
+Until `com.github.anthonycmartin:bicep-testing` is published to Maven Central, install it from a local checkout:
 
 ```sh
 mvn --file packages/java/pom.xml install
@@ -21,6 +21,10 @@ mvn --file packages/java/pom.xml install
 Use try-with-resources so the Bicep JSON-RPC process is always closed:
 
 ```java
+import com.github.anthonycmartin.biceptesting.BicepTestSession;
+import com.github.anthonycmartin.biceptesting.SnapshotMetadata;
+import com.github.anthonycmartin.biceptesting.SnapshotResult;
+
 SnapshotMetadata metadata = SnapshotMetadata.builder()
         .subscriptionId("00000000-0000-0000-0000-000000000000")
         .resourceGroup("my-resource-group")
@@ -71,4 +75,4 @@ See the runnable [JUnit sample](../samples/java/src/test/java/com/github/anthony
 
 ## Public API
 
-The complete exported Java API is available in [`api/java/bicep-test.txt`](../api/java/bicep-test.txt).
+The complete exported Java API is available in [`api/java/bicep-testing.txt`](../api/java/bicep-testing.txt).

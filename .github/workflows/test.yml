@@ -149,7 +149,7 @@ jobs:
         mvn --batch-mode --no-transfer-progress --quiet
         -DskipTests test-compile exec:java
         -Dexec.classpathScope=test
-        -Dexec.mainClass=com.github.anthonycmartin.biceptest.ApiSurface
+        -Dexec.mainClass=com.github.anthonycmartin.biceptesting.ApiSurface
         -Dexec.args=--check
 
   samples:

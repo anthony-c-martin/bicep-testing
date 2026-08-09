@@ -44,8 +44,8 @@ If the requested behavior is ambiguous, inspect the nearest existing implementat
 - Inspect the equivalent implementation and test surfaces in:
   - `packages/dotnet/src/BicepTest` and `packages/dotnet/test/BicepTest.Tests`
   - `packages/go` and, when transport behavior changes, `packages/go/rpcclient`
-  - `packages/powershell/BicepTest` and `packages/powershell/test`
-  - `packages/python/src/bicep_test` and `packages/python/tests`
+  - `packages/powershell/AnthonyCMartin.BicepTesting` and `packages/powershell/test`
+  - `packages/python/src/anthonycmartin/bicep_testing` and `packages/python/tests`
   - `packages/java/src/main/java` and `packages/java/src/test/java`
 - Identify the smallest shared behavior contract and the cheapest focused test that can disprove the proposed implementation.
 - Check the current worktree before editing and preserve unrelated user changes.
@@ -91,7 +91,7 @@ Preserve equivalent semantics while following each ecosystem's conventions.
 #### PowerShell
 
 - Use approved `Verb-Noun` command names, `[CmdletBinding()]`, pipeline input where natural, and PowerShell parameter validation.
-- Keep explicit exports synchronized between `BicepTest.psm1` and `BicepTest.psd1`; never use wildcard exports.
+- Keep explicit exports synchronized between `AnthonyCMartin.BicepTesting.psm1` and `AnthonyCMartin.BicepTesting.psd1`; never use wildcard exports.
 - Keep commands as a thin, idiomatic wrapper over the C# implementation when the capability exists there.
 - Ensure errors are terminating when the command cannot produce a valid result.
 - Add Pester tests under `packages/powershell/test`.
@@ -100,7 +100,7 @@ Preserve equivalent semantics while following each ecosystem's conventions.
 #### Python
 
 - Use type annotations, standard naming conventions, immutable dataclasses for result data, and context managers for owned resources.
-- Keep the implementation under `packages/python/src/bicep_test` and pytest tests under `packages/python/tests`.
+- Keep the implementation under `packages/python/src/anthonycmartin/bicep_testing` and pytest tests under `packages/python/tests`.
 - Keep Bicep installation and JSON-RPC details behind the public `BicepTestSession` abstraction.
 
 #### Java
@@ -134,7 +134,7 @@ npm run api:check
 Pop-Location
 ```
 
-Review `api/node/bicep-test.d.ts`.
+Review `api/node/bicep-testing.d.ts`.
 
 #### C#
 
@@ -157,7 +157,7 @@ go run ./internal/apidoc --check
 Pop-Location
 ```
 
-Review `api/go/biceptest.txt` and, when applicable, `api/go/rpcclient.txt`.
+Review `api/go/biceptesting.txt` and, when applicable, `api/go/rpcclient.txt`.
 
 #### PowerShell
 
@@ -166,7 +166,7 @@ Review `api/go/biceptest.txt` and, when applicable, `api/go/rpcclient.txt`.
 ./packages/powershell/scripts/public-api.ps1 -Check
 ```
 
-Review `api/powershell/BicepTest.txt`. Confirm the manifest exports exactly the intended commands.
+Review `api/powershell/AnthonyCMartin.BicepTesting.txt`. Confirm the manifest exports exactly the intended commands.
 
 #### Python
 
@@ -175,18 +175,18 @@ python packages/python/scripts/public_api.py --update
 python packages/python/scripts/public_api.py --check
 ```
 
-Review `api/python/bicep-test.txt`.
+Review `api/python/bicep-testing.txt`.
 
 #### Java
 
 ```powershell
 Push-Location packages/java
-mvn -DskipTests test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.github.anthonycmartin.biceptest.ApiSurface -Dexec.args=--update
-mvn -DskipTests test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.github.anthonycmartin.biceptest.ApiSurface -Dexec.args=--check
+mvn -DskipTests test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.github.anthonycmartin.biceptesting.ApiSurface -Dexec.args=--update
+mvn -DskipTests test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.github.anthonycmartin.biceptesting.ApiSurface -Dexec.args=--check
 Pop-Location
 ```
 
-Review `api/java/bicep-test.txt`.
+Review `api/java/bicep-testing.txt`.
 
 ### 6. Update Documentation
 
@@ -242,7 +242,7 @@ python packages/python/scripts/public_api.py --check
 # Java
 Push-Location packages/java
 mvn test
-mvn -DskipTests test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.github.anthonycmartin.biceptest.ApiSurface -Dexec.args=--check
+mvn -DskipTests test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.github.anthonycmartin.biceptesting.ApiSurface -Dexec.args=--check
 Pop-Location
 
 # Runnable consumer samples

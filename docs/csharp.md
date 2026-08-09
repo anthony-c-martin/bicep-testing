@@ -9,13 +9,15 @@ The C# library provides helpers for testing the predicted resources, outputs, an
 
 ## Installation
 
-The package has not yet been published to NuGet. Until it is released, reference `packages/dotnet/src/BicepTest/BicepTest.csproj` from a local checkout.
+The `AnthonyCMartin.BicepTesting` package has not yet been published to NuGet. Until it is released, reference `packages/dotnet/src/BicepTest/BicepTest.csproj` from a local checkout.
 
 ## Usage
 
 Create and dispose a session within the test lifetime:
 
 ```csharp
+using AnthonyCMartin.BicepTesting;
+
 await using var session = await BicepTestSession.CreateAsync("0.43.1");
 var snapshot = await session.SnapshotAsync(
 	"infra/main.bicepparam",

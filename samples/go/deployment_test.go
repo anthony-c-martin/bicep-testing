@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	biceptest "github.com/anthony-c-martin/bicep-test/packages/go"
+	biceptesting "github.com/anthony-c-martin/bicep-test/packages/go"
 )
 
 func TestInfrastructureDeploysAndIsRemovedAfterward(t *testing.T) {
@@ -25,7 +25,7 @@ func TestInfrastructureDeploysAndIsRemovedAfterward(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	session, err := biceptest.NewSession(ctx, "0.43.1")
+	session, err := biceptesting.NewSession(ctx, "0.43.1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +38,7 @@ func TestInfrastructureDeploysAndIsRemovedAfterward(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	deployment, err := session.Deploy(ctx, credential, biceptest.DeployOptions{
+	deployment, err := session.Deploy(ctx, credential, biceptesting.DeployOptions{
 		FilePath:       parametersPath,
 		SubscriptionID: subscriptionID,
 		ResourceGroup:  resourceGroup,

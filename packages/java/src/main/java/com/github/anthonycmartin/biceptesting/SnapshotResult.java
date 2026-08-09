@@ -1,4 +1,4 @@
-package com.github.anthonycmartin.biceptest;
+package com.github.anthonycmartin.biceptesting;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.List;

@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 from azure.identity import DefaultAzureCredential
-from bicep_test import BicepTestSession
+from anthonycmartin.bicep_testing import BicepTestSession
 
 
 def require_environment_variable(name: str) -> str:

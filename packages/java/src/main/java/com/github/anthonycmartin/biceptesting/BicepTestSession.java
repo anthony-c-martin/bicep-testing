@@ -1,4 +1,4 @@
-package com.github.anthonycmartin.biceptest;
+package com.github.anthonycmartin.biceptesting;
 
 import com.azure.core.credential.TokenCredential;
 import com.azure.resourcemanager.resources.deploymentstacks.models.DeploymentParameter;

@@ -1,0 +1,71 @@
+CLASS com.github.anthonycmartin.biceptesting.BicepTestSession
+  com.github.anthonycmartin.biceptesting.DeployResult deploy(com.azure.core.credential.TokenCredential, com.github.anthonycmartin.biceptesting.DeployOptions) throws java.io.IOException
+  com.github.anthonycmartin.biceptesting.SnapshotResult snapshot(java.nio.file.Path, com.github.anthonycmartin.biceptesting.SnapshotMetadata) throws java.io.IOException
+  static com.github.anthonycmartin.biceptesting.BicepTestSession create(java.lang.String) throws java.io.IOException
+  void close()
+
+RECORD com.github.anthonycmartin.biceptesting.DeployOptions
+  boolean equals(java.lang.Object)
+  component java.lang.String resourceGroup
+  component java.lang.String stackName
+  component java.lang.String subscriptionId
+  component java.nio.file.Path filePath
+  component java.util.Map<java.lang.String, com.fasterxml.jackson.databind.JsonNode> parameterOverrides
+  constructor com.github.anthonycmartin.biceptesting.DeployOptions(java.nio.file.Path, java.lang.String, java.lang.String, java.lang.String)
+  constructor com.github.anthonycmartin.biceptesting.DeployOptions(java.nio.file.Path, java.lang.String, java.lang.String, java.lang.String, java.util.Map<java.lang.String, com.fasterxml.jackson.databind.JsonNode>)
+  int hashCode()
+  java.lang.String resourceGroup()
+  java.lang.String stackName()
+  java.lang.String subscriptionId()
+  java.lang.String toString()
+  java.nio.file.Path filePath()
+  java.util.Map<java.lang.String, com.fasterxml.jackson.databind.JsonNode> parameterOverrides()
+
+CLASS com.github.anthonycmartin.biceptesting.DeployResult
+  java.util.List<com.github.anthonycmartin.biceptesting.DeploymentResource> resources()
+  java.util.Map<java.lang.String, com.fasterxml.jackson.databind.JsonNode> outputs()
+  void close()
+
+RECORD com.github.anthonycmartin.biceptesting.DeploymentResource
+  boolean equals(java.lang.Object)
+  component java.lang.String id
+  component java.lang.String type
+  constructor com.github.anthonycmartin.biceptesting.DeploymentResource(java.lang.String, java.lang.String)
+  int hashCode()
+  java.lang.String id()
+  java.lang.String toString()
+  java.lang.String type()
+
+CLASS com.github.anthonycmartin.biceptesting.SnapshotMetadata
+  static com.github.anthonycmartin.biceptesting.SnapshotMetadata.Builder builder()
+
+CLASS com.github.anthonycmartin.biceptesting.SnapshotMetadata.Builder
+  com.github.anthonycmartin.biceptesting.SnapshotMetadata build()
+  com.github.anthonycmartin.biceptesting.SnapshotMetadata.Builder deploymentName(java.lang.String)
+  com.github.anthonycmartin.biceptesting.SnapshotMetadata.Builder location(java.lang.String)
+  com.github.anthonycmartin.biceptesting.SnapshotMetadata.Builder resourceGroup(java.lang.String)
+  com.github.anthonycmartin.biceptesting.SnapshotMetadata.Builder subscriptionId(java.lang.String)
+  com.github.anthonycmartin.biceptesting.SnapshotMetadata.Builder tenantId(java.lang.String)
+
+CLASS com.github.anthonycmartin.biceptesting.SnapshotResource
+  com.fasterxml.jackson.databind.JsonNode getProperties()
+  constructor com.github.anthonycmartin.biceptesting.SnapshotResource()
+  java.lang.String getApiVersion()
+  java.lang.String getId()
+  java.lang.String getLocation()
+  java.lang.String getName()
+  java.lang.String getType()
+  java.util.Map<java.lang.String, com.fasterxml.jackson.databind.JsonNode> getAdditionalProperties()
+
+RECORD com.github.anthonycmartin.biceptesting.SnapshotResult
+  boolean equals(java.lang.Object)
+  component java.util.List<com.github.anthonycmartin.biceptesting.SnapshotResource> predictedResources
+  component java.util.List<java.lang.String> diagnostics
+  component java.util.Map<java.lang.String, com.fasterxml.jackson.databind.JsonNode> outputs
+  constructor com.github.anthonycmartin.biceptesting.SnapshotResult(java.util.List<com.github.anthonycmartin.biceptesting.SnapshotResource>, java.util.List<java.lang.String>, java.util.Map<java.lang.String, com.fasterxml.jackson.databind.JsonNode>)
+  int hashCode()
+  java.lang.String toString()
+  java.util.List<com.github.anthonycmartin.biceptesting.SnapshotResource> predictedResources()
+  java.util.List<java.lang.String> diagnostics()
+  java.util.Map<java.lang.String, com.fasterxml.jackson.databind.JsonNode> outputs()
+

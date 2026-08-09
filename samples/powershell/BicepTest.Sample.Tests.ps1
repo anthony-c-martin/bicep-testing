@@ -1,5 +1,5 @@
 BeforeAll {
-    $modulePath = Join-Path $PSScriptRoot '../../packages/powershell/BicepTest/BicepTest.psd1'
+    $modulePath = Join-Path $PSScriptRoot '../../packages/powershell/AnthonyCMartin.BicepTesting/AnthonyCMartin.BicepTesting.psd1'
     $parametersPath = Join-Path $PSScriptRoot '../infra/main.bicepparam'
     Import-Module $modulePath -Force
 

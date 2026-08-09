@@ -9,8 +9,8 @@ if ($Update -eq $Check) {
     throw 'Specify exactly one of -Update or -Check.'
 }
 
-$modulePath = Join-Path $PSScriptRoot '../BicepTest/BicepTest.psd1'
-$baselinePath = Join-Path $PSScriptRoot '../../../api/powershell/BicepTest.txt'
+$modulePath = Join-Path $PSScriptRoot '../AnthonyCMartin.BicepTesting/AnthonyCMartin.BicepTesting.psd1'
+$baselinePath = Join-Path $PSScriptRoot '../../../api/powershell/AnthonyCMartin.BicepTesting.txt'
 $commonParameters = @(
     'Debug', 'ErrorAction', 'ErrorVariable', 'InformationAction',
     'InformationVariable', 'OutBuffer', 'OutVariable', 'PipelineVariable',
@@ -55,7 +55,7 @@ if ($Update) {
     $directory = Split-Path $baselinePath -Parent
     [IO.Directory]::CreateDirectory($directory) | Out-Null
     [IO.File]::WriteAllText($baselinePath, $generated, [Text.UTF8Encoding]::new($false))
-    Write-Host "Updated api/powershell/BicepTest.txt"
+    Write-Host "Updated api/powershell/AnthonyCMartin.BicepTesting.txt"
     return
 }
 

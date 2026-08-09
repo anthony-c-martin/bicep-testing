@@ -1,6 +1,6 @@
 BeforeAll {
     $repositoryRoot = Resolve-Path (Join-Path $PSScriptRoot '../../..')
-    $modulePath = Join-Path $repositoryRoot 'packages/powershell/BicepTest/BicepTest.psd1'
+    $modulePath = Join-Path $repositoryRoot 'packages/powershell/AnthonyCMartin.BicepTesting/AnthonyCMartin.BicepTesting.psd1'
     Import-Module $modulePath -Force
 
     $fixturePath = Join-Path $repositoryRoot 'packages/node/test/samples/snapshot/main.bicepparam'

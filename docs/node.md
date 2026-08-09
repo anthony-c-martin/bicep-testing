@@ -1,6 +1,6 @@
 # Node
 
-The Node package is the current reference implementation of `bicep-test`. It provides a Jest-based workflow for testing the predicted resources, outputs, and diagnostics of a Bicep deployment without deploying to Azure.
+The `@anthonycmartin/bicep-testing` package is the current reference implementation. It provides a Jest-based workflow for testing the predicted resources, outputs, and diagnostics of a Bicep deployment without deploying to Azure.
 
 ## Requirements
 
@@ -27,7 +27,7 @@ npm install --save-dev /path/to/bicep-test/packages/node
 Create one session for the suite, capture the snapshot in setup, and dispose the Bicep process when the suite completes:
 
 ```ts
-import { BicepTestSession, SnapshotResult } from 'bicep-test';
+import { BicepTestSession, SnapshotResult } from '@anthonycmartin/bicep-testing';
 
 let session: BicepTestSession;
 let snapshot: SnapshotResult;
@@ -101,4 +101,4 @@ See the runnable [Jest sample](../samples/node/snapshot.test.js) for a complete 
 
 ## Public API
 
-The complete exported Node API is available in [`api/node/bicep-test.d.ts`](../api/node/bicep-test.d.ts).
+The complete exported Node API is available in [`api/node/bicep-testing.d.ts`](../api/node/bicep-testing.d.ts).

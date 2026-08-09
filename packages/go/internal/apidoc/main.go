@@ -19,7 +19,7 @@ type apiTarget struct {
 }
 
 var targets = []apiTarget{
-	{packagePath: ".", baselinePath: "api/go/biceptest.txt", displayName: "biceptest"},
+	{packagePath: ".", baselinePath: "api/go/biceptesting.txt", displayName: "biceptesting"},
 	{packagePath: "./rpcclient", baselinePath: "api/go/rpcclient.txt", displayName: "rpcclient"},
 }
 

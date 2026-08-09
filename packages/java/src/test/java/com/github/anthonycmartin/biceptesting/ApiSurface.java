@@ -1,4 +1,4 @@
-package com.github.anthonycmartin.biceptest;
+package com.github.anthonycmartin.biceptesting;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -33,12 +33,12 @@ public final class ApiSurface {
             throw new IllegalArgumentException("Expected --update or --check");
         }
 
-        Path baseline = Path.of("..", "..", "api", "java", "bicep-test.txt").normalize();
+        Path baseline = Path.of("..", "..", "api", "java", "bicep-testing.txt").normalize();
         String generated = generate();
         if (args[0].equals("--update")) {
             Files.createDirectories(baseline.getParent());
             Files.writeString(baseline, generated, StandardCharsets.UTF_8);
-            System.out.println("Updated api/java/bicep-test.txt");
+            System.out.println("Updated api/java/bicep-testing.txt");
         } else if (!Files.exists(baseline)
                 || !Files.readString(baseline, StandardCharsets.UTF_8).replace("\r\n", "\n").equals(generated)) {
             throw new IllegalStateException(

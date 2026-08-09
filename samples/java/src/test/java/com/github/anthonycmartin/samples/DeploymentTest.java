@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.azure.identity.DefaultAzureCredentialBuilder;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.github.anthonycmartin.biceptest.BicepTestSession;
-import com.github.anthonycmartin.biceptest.DeployOptions;
-import com.github.anthonycmartin.biceptest.DeployResult;
+import com.github.anthonycmartin.biceptesting.BicepTestSession;
+import com.github.anthonycmartin.biceptesting.DeployOptions;
+import com.github.anthonycmartin.biceptesting.DeployResult;
 import java.nio.file.Path;
 import java.util.Map;
 import org.junit.jupiter.api.Test;

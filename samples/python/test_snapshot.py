@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from bicep_test import BicepTestSession, SnapshotMetadata
+from anthonycmartin.bicep_testing import BicepTestSession, SnapshotMetadata
 
 
 def test_infrastructure_snapshot() -> None:

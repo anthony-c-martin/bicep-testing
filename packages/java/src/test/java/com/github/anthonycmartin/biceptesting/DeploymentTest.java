@@ -1,4 +1,4 @@
-package com.github.anthonycmartin.biceptest;
+package com.github.anthonycmartin.biceptesting;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
