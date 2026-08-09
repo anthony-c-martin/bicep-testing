@@ -1,7 +1,7 @@
 FUNCTION Get-BicepSnapshot
 
 PARAMETER SET __AllParameterSets
-  -Tester <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+  -Session <System.Object> [Mandatory, Position=0, ValueFromPipeline]
   -Path <System.String> [Mandatory, Position=1]
   -DeploymentName <System.String>
   -Location <System.String>
@@ -9,7 +9,7 @@ PARAMETER SET __AllParameterSets
   -SubscriptionId <System.String>
   -TenantId <System.String>
 
-FUNCTION New-BicepTester
+FUNCTION New-BicepTestSession
 
 PARAMETER SET __AllParameterSets
   -BicepVersion <System.String> [Mandatory, Position=0]
@@ -19,15 +19,15 @@ FUNCTION Remove-BicepTestDeployment
 PARAMETER SET __AllParameterSets
   -Deployment <System.Object> [Mandatory, Position=0, ValueFromPipeline]
 
-FUNCTION Remove-BicepTester
+FUNCTION Remove-BicepTestSession
 
 PARAMETER SET __AllParameterSets
-  -Tester <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+  -Session <System.Object> [Mandatory, Position=0, ValueFromPipeline]
 
 FUNCTION Start-BicepTestDeployment
 
 PARAMETER SET __AllParameterSets
-  -Tester <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+  -Session <System.Object> [Mandatory, Position=0, ValueFromPipeline]
   -Credential <System.Object> [Mandatory]
   -ParameterOverrides <System.Collections.Hashtable>
   -Path <System.String> [Mandatory]

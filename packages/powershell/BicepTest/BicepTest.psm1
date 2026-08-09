@@ -1,8 +1,8 @@
 Set-StrictMode -Version Latest
-$script:BicepTesterType = $null
+$script:BicepTestSessionType = $null
 
 function Import-BicepTestAssembly {
-    if ($script:BicepTesterType) {
+    if ($script:BicepTestSessionType) {
         return
     }
 
@@ -10,7 +10,7 @@ function Import-BicepTestAssembly {
         Where-Object { $_.GetName().Name -eq 'BicepTest' } |
         Select-Object -First 1
     if ($loadedAssembly) {
-        $script:BicepTesterType = $loadedAssembly.GetType('BicepTest.BicepTester', $true)
+        $script:BicepTestSessionType = $loadedAssembly.GetType('BicepTest.BicepTestSession', $true)
         return
     }
 
@@ -31,10 +31,10 @@ function Import-BicepTestAssembly {
             }
         }
     $assembly = [System.Runtime.Loader.AssemblyLoadContext]::Default.LoadFromAssemblyPath($assemblyPath)
-    $script:BicepTesterType = $assembly.GetType('BicepTest.BicepTester', $true)
+    $script:BicepTestSessionType = $assembly.GetType('BicepTest.BicepTestSession', $true)
 }
 
-function New-BicepTester {
+function New-BicepTestSession {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory, Position = 0)]
@@ -43,7 +43,7 @@ function New-BicepTester {
     )
 
     Import-BicepTestAssembly
-    $method = $script:BicepTesterType.GetMethod('CreateAsync')
+    $method = $script:BicepTestSessionType.GetMethod('CreateAsync')
     $task = $method.Invoke($null, @($BicepVersion, [Threading.CancellationToken]::None))
     $task.GetAwaiter().GetResult()
 }
@@ -53,7 +53,7 @@ function Get-BicepSnapshot {
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipeline)]
         [ValidateNotNull()]
-        [object] $Tester,
+        [object] $Session,
 
         [Parameter(Mandatory, Position = 1)]
         [ValidateNotNullOrEmpty()]
@@ -72,7 +72,7 @@ function Get-BicepSnapshot {
 
     process {
         $resolvedPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
-        $task = $Tester.SnapshotAsync(
+        $task = $Session.SnapshotAsync(
             $resolvedPath,
             $TenantId,
             $SubscriptionId,
@@ -84,16 +84,16 @@ function Get-BicepSnapshot {
     }
 }
 
-function Remove-BicepTester {
+function Remove-BicepTestSession {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipeline)]
         [ValidateNotNull()]
-        [object] $Tester
+        [object] $Session
     )
 
     process {
-        $Tester.Dispose()
+        $Session.Dispose()
     }
 }
 
@@ -102,7 +102,7 @@ function Start-BicepTestDeployment {
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipeline)]
         [ValidateNotNull()]
-        [object] $Tester,
+        [object] $Session,
 
         [Parameter(Mandatory)]
         [ValidateNotNull()]
@@ -143,7 +143,7 @@ function Start-BicepTestDeployment {
         }
         $options.ParameterOverrides = $overrides
 
-        $task = $Tester.DeployAsync(
+        $task = $Session.DeployAsync(
             $Credential,
             $options,
             [Threading.CancellationToken]::None)
@@ -165,4 +165,4 @@ function Remove-BicepTestDeployment {
     }
 }
 
-Export-ModuleMember -Function Get-BicepSnapshot, New-BicepTester, Remove-BicepTester, Start-BicepTestDeployment, Remove-BicepTestDeployment
+Export-ModuleMember -Function Get-BicepSnapshot, New-BicepTestSession, Remove-BicepTestSession, Start-BicepTestDeployment, Remove-BicepTestDeployment

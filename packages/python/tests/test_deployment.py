@@ -2,7 +2,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from bicep_test import BicepTester
+from bicep_test import BicepTestSession
 
 
 class FakeRpcClient:
@@ -59,13 +59,13 @@ class FakeOperations:
 def test_deploy_compiles_deploys_and_tears_down_once() -> None:
     rpc = FakeRpcClient()
     operations = FakeOperations()
-    tester = BicepTester(rpc)  # type: ignore[arg-type]
+    session = BicepTestSession(rpc)  # type: ignore[arg-type]
 
     with patch(
-        "bicep_test.tester._create_deployment_stacks_operations",
+        "bicep_test.session._create_deployment_stacks_operations",
         return_value=operations,
     ):
-        result = tester.deploy(
+        result = session.deploy(
             object(),
             "main.bicepparam",
             "subscription",

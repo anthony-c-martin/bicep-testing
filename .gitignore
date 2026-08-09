@@ -159,6 +159,7 @@ testResults.xml
 .pytest_cache/
 *.egg-info/
 .venv/
+packages/python/build/
 
 # Java
 **/target/

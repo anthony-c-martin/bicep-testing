@@ -7,10 +7,10 @@ export type DeployOptions = {
     stackName: string;
     parameterOverrides?: Record<string, unknown>;
 };
-export declare class BicepTester {
+export declare class BicepTestSession {
     private bicep;
     constructor(bicep: Bicep);
-    static create(bicepVersion: string): Promise<BicepTester>;
+    static create(bicepVersion: string): Promise<BicepTestSession>;
     snapshot(filePath: string, tenantId?: string, subscriptionId?: string, resourceGroup?: string, location?: string, deploymentName?: string): Promise<SnapshotResult>;
     deploy(credential: TokenCredential, options: DeployOptions): Promise<DeployResult>;
     dispose(): void;

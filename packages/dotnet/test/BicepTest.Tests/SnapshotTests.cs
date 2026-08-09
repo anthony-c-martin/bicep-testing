@@ -17,10 +17,10 @@ public sealed class SnapshotTests
     [Timeout(60_000)]
     public async Task Snapshot_matches_reference_behavior()
     {
-        await using var tester = await BicepTester.CreateAsync(
+        await using var session = await BicepTestSession.CreateAsync(
             "0.43.1",
             TestContext.CancellationToken);
-        var snapshot = await tester.SnapshotAsync(
+        var snapshot = await session.SnapshotAsync(
             GetFixturePath(),
             TenantId,
             SubscriptionId,

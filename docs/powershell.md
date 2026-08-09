@@ -19,12 +19,12 @@ Import-Module ./packages/powershell/BicepTest/BicepTest.psd1
 
 ## Usage
 
-Create a tester, evaluate a snapshot, and dispose the tester when the test completes:
+Create a session, evaluate a snapshot, and dispose the session when the test completes:
 
 ```powershell
-$tester = New-BicepTester -BicepVersion '0.43.1'
+$session = New-BicepTestSession -BicepVersion '0.43.1'
 try {
-    $snapshot = $tester | Get-BicepSnapshot `
+    $snapshot = $session | Get-BicepSnapshot `
         -Path 'infra/main.bicepparam' `
         -SubscriptionId '00000000-0000-0000-0000-000000000000' `
         -ResourceGroup 'my-resource-group' `
@@ -37,18 +37,18 @@ try {
         Should -BeFalse
 }
 finally {
-    $tester | Remove-BicepTester
+    $session | Remove-BicepTestSession
 }
 ```
 
-`New-BicepTester` downloads and reuses the requested Bicep CLI version. Snapshot tests do not require Azure credentials or an Azure subscription.
+`New-BicepTestSession` downloads and reuses the requested Bicep CLI version. Snapshot tests do not require Azure credentials or an Azure subscription.
 
 ## Live deployment tests
 
 Use `Start-BicepTestDeployment` with an Azure `TokenCredential` when a test needs deployed resources or service behavior:
 
 ```powershell
-$deployment = $tester | Start-BicepTestDeployment `
+$deployment = $session | Start-BicepTestDeployment `
     -Credential $credential `
     -Path 'infra/main.bicepparam' `
     -SubscriptionId $subscriptionId `

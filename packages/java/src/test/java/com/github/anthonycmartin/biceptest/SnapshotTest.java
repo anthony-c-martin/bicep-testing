@@ -20,8 +20,8 @@ class SnapshotTest {
                 .deploymentName("sample-deployment")
                 .build();
 
-        try (BicepTester tester = BicepTester.create("0.43.1")) {
-            SnapshotResult snapshot = tester.snapshot(fixture, metadata);
+        try (BicepTestSession session = BicepTestSession.create("0.43.1")) {
+            SnapshotResult snapshot = session.snapshot(fixture, metadata);
             assertTrue(snapshot.diagnostics().isEmpty());
             assertEquals(3, snapshot.predictedResources().size());
             assertEquals(

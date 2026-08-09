@@ -1,7 +1,7 @@
-CLASS com.github.anthonycmartin.biceptest.BicepTester
+CLASS com.github.anthonycmartin.biceptest.BicepTestSession
   com.github.anthonycmartin.biceptest.DeployResult deploy(com.azure.core.credential.TokenCredential, com.github.anthonycmartin.biceptest.DeployOptions) throws java.io.IOException
   com.github.anthonycmartin.biceptest.SnapshotResult snapshot(java.nio.file.Path, com.github.anthonycmartin.biceptest.SnapshotMetadata) throws java.io.IOException
-  static com.github.anthonycmartin.biceptest.BicepTester create(java.lang.String) throws java.io.IOException
+  static com.github.anthonycmartin.biceptest.BicepTestSession create(java.lang.String) throws java.io.IOException
   void close()
 
 RECORD com.github.anthonycmartin.biceptest.DeployOptions

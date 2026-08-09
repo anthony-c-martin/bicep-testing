@@ -28,8 +28,8 @@ SnapshotMetadata metadata = SnapshotMetadata.builder()
         .deploymentName("my-deployment")
         .build();
 
-try (BicepTester tester = BicepTester.create("0.43.1")) {
-    SnapshotResult snapshot = tester.snapshot(Path.of("infra/main.bicepparam"), metadata);
+try (BicepTestSession session = BicepTestSession.create("0.43.1")) {
+        SnapshotResult snapshot = session.snapshot(Path.of("infra/main.bicepparam"), metadata);
     boolean allPrivate = snapshot.predictedResources().stream()
             .filter(resource -> resource.getType().equals("Microsoft.Storage/storageAccounts"))
             .allMatch(resource -> !resource.getProperties().get("allowBlobPublicAccess").asBoolean());
@@ -37,7 +37,7 @@ try (BicepTester tester = BicepTester.create("0.43.1")) {
 }
 ```
 
-`BicepTester.create` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs. Snapshot tests do not require Azure credentials or an Azure subscription.
+`BicepTestSession.create` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs. Snapshot tests do not require Azure credentials or an Azure subscription.
 
 ## Snapshot result
 
@@ -55,7 +55,7 @@ DeployOptions options = new DeployOptions(
         resourceGroup,
         "storage-test-" + UUID.randomUUID());
 
-try (DeployResult deployment = tester.deploy(credential, options)) {
+try (DeployResult deployment = session.deploy(credential, options)) {
     assertTrue(deployment.resources().stream()
             .anyMatch(resource -> resource.type().equals("Microsoft.Storage/storageAccounts")));
     URI endpoint = URI.create(deployment.outputs().get("endpoint").asText());

@@ -8,9 +8,9 @@
     CompatiblePSEditions = @('Core')
     FunctionsToExport = @(
         'Get-BicepSnapshot'
-        'New-BicepTester'
+        'New-BicepTestSession'
         'Remove-BicepTestDeployment'
-        'Remove-BicepTester'
+        'Remove-BicepTestSession'
         'Start-BicepTestDeployment'
     )
     CmdletsToExport = @()

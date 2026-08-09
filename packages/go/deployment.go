@@ -60,7 +60,7 @@ var newDeploymentStackClient = func(subscriptionID string, credential azcore.Tok
 }
 
 // Deploy compiles and deploys a Bicep parameters file as a resource-group Deployment Stack.
-func (tester *Tester) Deploy(ctx context.Context, credential azcore.TokenCredential, options DeployOptions) (*DeployResult, error) {
+func (session *Session) Deploy(ctx context.Context, credential azcore.TokenCredential, options DeployOptions) (*DeployResult, error) {
 	if credential == nil {
 		return nil, errors.New("credential must not be nil")
 	}
@@ -71,7 +71,7 @@ func (tester *Tester) Deploy(ctx context.Context, credential azcore.TokenCredent
 	if err != nil {
 		return nil, fmt.Errorf("resolve Bicep parameters file path: %w", err)
 	}
-	compilation, err := tester.client.CompileParams(ctx, rpcclient.CompileParamsRequest{
+	compilation, err := session.client.CompileParams(ctx, rpcclient.CompileParamsRequest{
 		Path:               absolutePath,
 		ParameterOverrides: options.ParameterOverrides,
 	})

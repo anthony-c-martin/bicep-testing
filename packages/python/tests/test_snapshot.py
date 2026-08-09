@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from bicep_test import BicepTester, SnapshotMetadata
+from bicep_test import BicepTestSession, SnapshotMetadata
 
 
 def test_snapshot_matches_reference_behavior() -> None:
@@ -13,8 +13,8 @@ def test_snapshot_matches_reference_behavior() -> None:
         deployment_name="sample-deployment",
     )
 
-    with BicepTester.create("0.43.1") as tester:
-        snapshot = tester.snapshot(fixture, metadata)
+    with BicepTestSession.create("0.43.1") as session:
+        snapshot = session.snapshot(fixture, metadata)
 
     assert snapshot.diagnostics == ()
     assert len(snapshot.predicted_resources) == 3

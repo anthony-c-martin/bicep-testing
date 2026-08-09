@@ -15,17 +15,17 @@ Describe 'BicepTest module' {
     It 'exports only the supported commands' {
         (Get-Command -Module BicepTest).Name | Should -Be @(
             'Get-BicepSnapshot'
-            'New-BicepTester'
+            'New-BicepTestSession'
             'Remove-BicepTestDeployment'
-            'Remove-BicepTester'
+            'Remove-BicepTestSession'
             'Start-BicepTestDeployment'
         )
     }
 
     It 'matches the reference snapshot behavior' {
-        $tester = New-BicepTester -BicepVersion '0.43.1'
+        $session = New-BicepTestSession -BicepVersion '0.43.1'
         try {
-            $snapshot = $tester | Get-BicepSnapshot `
+            $snapshot = $session | Get-BicepSnapshot `
                 -Path $fixturePath `
                 -TenantId $tenantId `
                 -SubscriptionId $subscriptionId `
@@ -55,7 +55,7 @@ Describe 'BicepTest module' {
             $primaryStorageId | Should -Be "/subscriptions/$subscriptionId/resourceGroups/$resourceGroup/providers/Microsoft.Storage/storageAccounts/testprimary"
         }
         finally {
-            $tester | Remove-BicepTester
+            $session | Remove-BicepTestSession
         }
     }
 }

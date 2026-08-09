@@ -101,7 +101,7 @@ Preserve equivalent semantics while following each ecosystem's conventions.
 
 - Use type annotations, standard naming conventions, immutable dataclasses for result data, and context managers for owned resources.
 - Keep the implementation under `packages/python/src/bicep_test` and pytest tests under `packages/python/tests`.
-- Keep Bicep installation and JSON-RPC details behind the public `BicepTester` abstraction.
+- Keep Bicep installation and JSON-RPC details behind the public `BicepTestSession` abstraction.
 
 #### Java
 

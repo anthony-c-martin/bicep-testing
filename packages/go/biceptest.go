@@ -20,13 +20,13 @@ type bicepClient interface {
 	Close() error
 }
 
-// Tester invokes a pinned Bicep CLI to evaluate infrastructure snapshots.
-type Tester struct {
+// Session owns a pinned Bicep CLI used to evaluate and deploy infrastructure under test.
+type Session struct {
 	client bicepClient
 }
 
-// New installs the requested Bicep CLI version if needed and starts its RPC client.
-func New(ctx context.Context, bicepVersion string) (*Tester, error) {
+// NewSession installs the requested Bicep CLI version if needed and starts its RPC client.
+func NewSession(ctx context.Context, bicepVersion string) (*Session, error) {
 	if bicepVersion == "" {
 		return nil, errors.New("Bicep version must not be empty")
 	}
@@ -43,11 +43,11 @@ func New(ctx context.Context, bicepVersion string) (*Tester, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Tester{client: client}, nil
+	return &Session{client: client}, nil
 }
 
 // Snapshot evaluates a Bicep parameters file without deploying it.
-func (tester *Tester) Snapshot(
+func (session *Session) Snapshot(
 	ctx context.Context,
 	filePath string,
 	metadata SnapshotMetadata,
@@ -59,7 +59,7 @@ func (tester *Tester) Snapshot(
 	if err != nil {
 		return nil, fmt.Errorf("resolve Bicep parameters file path: %w", err)
 	}
-	response, err := tester.client.GetSnapshot(ctx, rpcclient.GetSnapshotRequest{
+	response, err := session.client.GetSnapshot(ctx, rpcclient.GetSnapshotRequest{
 		Path:     absolutePath,
 		Metadata: metadata,
 	})
@@ -75,9 +75,9 @@ func (tester *Tester) Snapshot(
 }
 
 // Close disconnects from the Bicep CLI and terminates its process.
-func (tester *Tester) Close() error {
-	if tester == nil || tester.client == nil {
+func (session *Session) Close() error {
+	if session == nil || session.client == nil {
 		return nil
 	}
-	return tester.client.Close()
+	return session.client.Close()
 }

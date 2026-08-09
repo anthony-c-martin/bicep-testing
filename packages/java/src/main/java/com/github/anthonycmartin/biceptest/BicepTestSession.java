@@ -18,18 +18,18 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 
 /** Installs and invokes a pinned Bicep CLI for infrastructure tests. */
-public final class BicepTester implements AutoCloseable {
+public final class BicepTestSession implements AutoCloseable {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     static BiFunction<TokenCredential, String, DeploymentStackService> deploymentStackServiceFactory =
             DeploymentStackService::create;
     private final RpcCaller client;
 
-    BicepTester(RpcCaller client) {
+    BicepTestSession(RpcCaller client) {
         this.client = client;
     }
 
     /** Installs a Bicep CLI version if needed and starts its RPC client. */
-    public static BicepTester create(String bicepVersion) throws IOException {
+    public static BicepTestSession create(String bicepVersion) throws IOException {
         if (bicepVersion == null || bicepVersion.isBlank()) {
             throw new IllegalArgumentException("bicepVersion must not be empty");
         }
@@ -39,7 +39,7 @@ public final class BicepTester implements AutoCloseable {
             client.close();
             throw new IOException("Bicep CLI 0.36.1 or later is required; detected " + version);
         }
-        return new BicepTester(client);
+        return new BicepTestSession(client);
     }
 
     /** Evaluates a Bicep parameters file without deploying it. */

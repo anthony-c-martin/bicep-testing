@@ -48,14 +48,14 @@ class DeploymentTest {
                 deleteCalls.incrementAndGet();
             }
         };
-        var originalFactory = BicepTester.deploymentStackServiceFactory;
-        BicepTester.deploymentStackServiceFactory = (credential, subscription) -> service;
+        var originalFactory = BicepTestSession.deploymentStackServiceFactory;
+        BicepTestSession.deploymentStackServiceFactory = (credential, subscription) -> service;
         try {
             FakeRpcCaller rpc = new FakeRpcCaller();
             TokenCredential credential = request -> Mono.just(
                     new AccessToken("token", OffsetDateTime.now().plusHours(1)));
-            try (BicepTester tester = new BicepTester(rpc)) {
-                DeployResult result = tester.deploy(
+            try (BicepTestSession session = new BicepTestSession(rpc)) {
+                DeployResult result = session.deploy(
                         credential,
                         new DeployOptions(
                                 Path.of("main.bicepparam"),
@@ -72,7 +72,7 @@ class DeploymentTest {
                 result.close();
             }
         } finally {
-            BicepTester.deploymentStackServiceFactory = originalFactory;
+            BicepTestSession.deploymentStackServiceFactory = originalFactory;
         }
         assertEquals(1, deleteCalls.get());
     }

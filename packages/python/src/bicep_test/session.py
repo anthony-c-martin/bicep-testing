@@ -28,7 +28,7 @@ def _create_deployment_stacks_operations(credential: Any, subscription_id: str) 
     return DeploymentStacksClient(credential, subscription_id).deployment_stacks
 
 
-class BicepTester:
+class BicepTestSession:
     """Installs and invokes a pinned Bicep CLI for infrastructure tests."""
 
     def __init__(self, client: RpcClient) -> None:

@@ -32,6 +32,30 @@ type DeploymentResource struct {
 }
     DeploymentResource identifies a resource managed by a Deployment Stack.
 
+type Session struct {
+	// Has unexported fields.
+}
+    Session owns a pinned Bicep CLI used to evaluate and deploy infrastructure
+    under test.
+
+func NewSession(ctx context.Context, bicepVersion string) (*Session, error)
+    NewSession installs the requested Bicep CLI version if needed and starts its
+    RPC client.
+
+func (session *Session) Close() error
+    Close disconnects from the Bicep CLI and terminates its process.
+
+func (session *Session) Deploy(ctx context.Context, credential azcore.TokenCredential, options DeployOptions) (*DeployResult, error)
+    Deploy compiles and deploys a Bicep parameters file as a resource-group
+    Deployment Stack.
+
+func (session *Session) Snapshot(
+	ctx context.Context,
+	filePath string,
+	metadata SnapshotMetadata,
+) (*SnapshotResult, error)
+    Snapshot evaluates a Bicep parameters file without deploying it.
+
 type SnapshotMetadata = rpcclient.SnapshotMetadata
     SnapshotMetadata describes the Azure deployment context used to evaluate a
     snapshot.
@@ -58,26 +82,3 @@ type SnapshotResult struct {
 }
     SnapshotResult is the predicted result of evaluating a Bicep parameters
     file.
-
-type Tester struct {
-	// Has unexported fields.
-}
-    Tester invokes a pinned Bicep CLI to evaluate infrastructure snapshots.
-
-func New(ctx context.Context, bicepVersion string) (*Tester, error)
-    New installs the requested Bicep CLI version if needed and starts its RPC
-    client.
-
-func (tester *Tester) Close() error
-    Close disconnects from the Bicep CLI and terminates its process.
-
-func (tester *Tester) Deploy(ctx context.Context, credential azcore.TokenCredential, options DeployOptions) (*DeployResult, error)
-    Deploy compiles and deploys a Bicep parameters file as a resource-group
-    Deployment Stack.
-
-func (tester *Tester) Snapshot(
-	ctx context.Context,
-	filePath string,
-	metadata SnapshotMetadata,
-) (*SnapshotResult, error)
-    Snapshot evaluates a Bicep parameters file without deploying it.

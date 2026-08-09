@@ -14,8 +14,8 @@ public sealed class SnapshotTests
         var parametersPath = Path.GetFullPath(
             Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "infra", "main.bicepparam"));
 
-        await using var tester = await BicepTest.BicepTester.CreateAsync("0.43.1", TestContext.CancellationToken);
-        var snapshot = await tester.SnapshotAsync(
+        await using var session = await BicepTest.BicepTestSession.CreateAsync("0.43.1", TestContext.CancellationToken);
+        var snapshot = await session.SnapshotAsync(
             parametersPath,
             "00000000-0000-0000-0000-000000000000",
             "00000000-0000-0000-0000-000000000000",

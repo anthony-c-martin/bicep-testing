@@ -13,11 +13,11 @@ The package has not yet been published to NuGet. Until it is released, reference
 
 ## Usage
 
-Create and dispose a tester within the test lifetime:
+Create and dispose a session within the test lifetime:
 
 ```csharp
-await using var tester = await BicepTester.CreateAsync("0.43.1");
-var snapshot = await tester.SnapshotAsync(
+await using var session = await BicepTestSession.CreateAsync("0.43.1");
+var snapshot = await session.SnapshotAsync(
 	"infra/main.bicepparam",
 	subscriptionId: "00000000-0000-0000-0000-000000000000",
 	resourceGroup: "my-resource-group",
@@ -34,7 +34,7 @@ foreach (var storageAccount in storageAccounts)
 }
 ```
 
-`BicepTester.CreateAsync` downloads and reuses the requested Bicep CLI version. Snapshot tests do not require Azure credentials or an Azure subscription.
+`BicepTestSession.CreateAsync` downloads and reuses the requested Bicep CLI version. Snapshot tests do not require Azure credentials or an Azure subscription.
 
 ## Snapshot result
 
@@ -49,7 +49,7 @@ A snapshot contains:
 Use `DeployAsync` with an Azure `TokenCredential` when a test must assert against deployed resources or service behavior:
 
 ```csharp
-await using var deployment = await tester.DeployAsync(
+await using var deployment = await session.DeployAsync(
 	new DefaultAzureCredential(),
 	new DeployOptions
 	{
