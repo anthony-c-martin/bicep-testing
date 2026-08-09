@@ -1,0 +1,23 @@
+# Keep source, configuration, documentation, and lockfiles consistent across platforms.
+* text=auto eol=lf
+
+# Windows command scripts require CRLF for compatibility with cmd.exe.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Never apply line-ending conversion to binary archives, packages, or media.
+*.dll binary
+*.exe binary
+*.gif binary
+*.ico binary
+*.jpeg binary
+*.jpg binary
+*.nupkg binary
+*.pdf binary
+*.png binary
+*.snupkg binary
+*.tar binary
+*.tgz binary
+*.webp binary
+*.whl binary
+*.zip binary
