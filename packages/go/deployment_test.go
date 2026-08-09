@@ -10,7 +10,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armdeploymentstacks"
-	"github.com/anthony-c-martin/bicep-testing/packages/go/rpcclient"
+	biceprpcclient "github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client"
 )
 
 func TestDeployCompilesDeploysAndTearsDownOnce(t *testing.T) {
@@ -24,7 +24,7 @@ func TestDeployCompilesDeploysAndTearsDownOnce(t *testing.T) {
 	}
 	t.Cleanup(func() { newDeploymentStackClient = originalFactory })
 
-	bicep := &fakeBicepClient{compilation: rpcclient.CompileParamsResponse{
+	bicep := &fakeBicepClient{compilation: biceprpcclient.CompileParamsResponse{
 		Success:    true,
 		Template:   `{"resources":[]}`,
 		Parameters: `{"parameters":{"message":{"value":"hello"},"secret":{"reference":{"keyVault":{"id":"/subscriptions/sub/resourceGroups/rg/providers/Microsoft.KeyVault/vaults/test"},"secretName":"password","secretVersion":"v1"}}}}`,
@@ -82,17 +82,17 @@ func (fakeCredential) GetToken(context.Context, policy.TokenRequestOptions) (azc
 }
 
 type fakeBicepClient struct {
-	request     rpcclient.CompileParamsRequest
-	compilation rpcclient.CompileParamsResponse
+	request     biceprpcclient.CompileParamsRequest
+	compilation biceprpcclient.CompileParamsResponse
 }
 
-func (client *fakeBicepClient) CompileParams(_ context.Context, request rpcclient.CompileParamsRequest) (rpcclient.CompileParamsResponse, error) {
+func (client *fakeBicepClient) CompileParams(_ context.Context, request biceprpcclient.CompileParamsRequest) (biceprpcclient.CompileParamsResponse, error) {
 	client.request = request
 	return client.compilation, nil
 }
 
-func (*fakeBicepClient) GetSnapshot(context.Context, rpcclient.GetSnapshotRequest) (rpcclient.GetSnapshotResponse, error) {
-	return rpcclient.GetSnapshotResponse{}, nil
+func (*fakeBicepClient) GetSnapshot(context.Context, biceprpcclient.GetSnapshotRequest) (biceprpcclient.GetSnapshotResponse, error) {
+	return biceprpcclient.GetSnapshotResponse{}, nil
 }
 
 func (*fakeBicepClient) Close() error { return nil }

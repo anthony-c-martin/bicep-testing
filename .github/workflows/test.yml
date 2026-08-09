@@ -66,6 +66,10 @@ jobs:
       working-directory: packages/go
       run: go test ./...
 
+    - name: Test RPC client
+      working-directory: packages/go/bicep-rpc-client
+      run: go test ./...
+
     - name: Check public API
       working-directory: packages/go
       run: go run ./internal/apidoc --check
@@ -117,10 +121,10 @@ jobs:
         cache-dependency-path: packages/python/pyproject.toml
 
     - name: Install
-      run: python -m pip install -e './packages/python[test]'
+      run: python -m pip install -e './packages/python/bicep_rpc_client[test]' -e './packages/python[test]'
 
     - name: Test
-      run: python -m pytest packages/python/tests
+      run: python -m pytest packages/python/tests packages/python/bicep_rpc_client/tests
 
     - name: Check public API
       run: python packages/python/scripts/public_api.py --check

@@ -1,5 +1,5 @@
-// Package rpcclient installs and communicates with the Bicep CLI over JSON-RPC.
-package rpcclient
+// Package biceprpcclient installs and communicates with the Bicep CLI over JSON-RPC.
+package biceprpcclient
 
 import (
 	"bufio"
@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -26,6 +28,42 @@ type Client struct {
 	callMutex  sync.Mutex
 	closeOnce  sync.Once
 	nextID     int64
+	version    string
+}
+
+// Configuration controls Bicep CLI selection and caching.
+type Configuration struct {
+	BicepVersion    string
+	ExistingCLIPath string
+	CacheRoot       string
+}
+
+// Factory installs or locates the Bicep CLI and initializes clients.
+type Factory struct{}
+
+// Initialize creates a client using an existing CLI or a cached requested version.
+func (Factory) Initialize(ctx context.Context, configuration Configuration) (*Client, error) {
+	bicepPath := configuration.ExistingCLIPath
+	if bicepPath == "" {
+		cacheRoot := configuration.CacheRoot
+		if cacheRoot == "" {
+			homeDirectory, err := os.UserHomeDir()
+			if err != nil {
+				return nil, fmt.Errorf("find home directory: %w", err)
+			}
+			cacheRoot = filepath.Join(homeDirectory, ".bicep", "bin")
+		}
+		versionDirectory := "latest"
+		if configuration.BicepVersion != "" {
+			versionDirectory = "v" + configuration.BicepVersion
+		}
+		var err error
+		bicepPath, err = Install(ctx, filepath.Join(cacheRoot, versionDirectory), configuration.BicepVersion)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return New(ctx, bicepPath)
 }
 
 // RPCError is an error returned by the Bicep JSON-RPC server.
@@ -79,13 +117,26 @@ func (client *Client) Close() error {
 
 // Version returns the Bicep CLI version.
 func (client *Client) Version(ctx context.Context) (string, error) {
+	if client.version != "" {
+		return client.version, nil
+	}
 	var response struct {
 		Version string `json:"version"`
 	}
 	if err := client.call(ctx, "bicep/version", struct{}{}, &response); err != nil {
 		return "", err
 	}
-	return response.Version, nil
+	client.version = response.Version
+	return client.version, nil
+}
+
+// Compile compiles a Bicep file into an ARM template.
+func (client *Client) Compile(ctx context.Context, request CompileRequest) (CompileResponse, error) {
+	var response CompileResponse
+	if err := client.call(ctx, "bicep/compile", request, &response); err != nil {
+		return CompileResponse{}, err
+	}
+	return response, nil
 }
 
 // CompileParams compiles a Bicep parameters file into deployable ARM JSON.
@@ -97,14 +148,49 @@ func (client *Client) CompileParams(ctx context.Context, request CompileParamsRe
 	return response, nil
 }
 
+// Format formats a Bicep file using the Bicep CLI formatter.
+func (client *Client) Format(ctx context.Context, request FormatRequest) (FormatResponse, error) {
+	if err := client.requireVersion(ctx, "0.37.1", "Format"); err != nil {
+		return FormatResponse{}, err
+	}
+	var response FormatResponse
+	if err := client.call(ctx, "bicep/format", request, &response); err != nil {
+		return FormatResponse{}, err
+	}
+	return response, nil
+}
+
+// GetMetadata returns parameters, outputs, exports, and metadata from a Bicep file.
+func (client *Client) GetMetadata(ctx context.Context, request GetMetadataRequest) (GetMetadataResponse, error) {
+	var response GetMetadataResponse
+	if err := client.call(ctx, "bicep/getMetadata", request, &response); err != nil {
+		return GetMetadataResponse{}, err
+	}
+	return response, nil
+}
+
+// GetFileReferences returns every file referenced by a Bicep file.
+func (client *Client) GetFileReferences(ctx context.Context, request GetFileReferencesRequest) (GetFileReferencesResponse, error) {
+	var response GetFileReferencesResponse
+	if err := client.call(ctx, "bicep/getFileReferences", request, &response); err != nil {
+		return GetFileReferencesResponse{}, err
+	}
+	return response, nil
+}
+
+// GetDeploymentGraph returns the resource dependency graph for a Bicep file.
+func (client *Client) GetDeploymentGraph(ctx context.Context, request GetDeploymentGraphRequest) (GetDeploymentGraphResponse, error) {
+	var response GetDeploymentGraphResponse
+	if err := client.call(ctx, "bicep/getDeploymentGraph", request, &response); err != nil {
+		return GetDeploymentGraphResponse{}, err
+	}
+	return response, nil
+}
+
 // GetSnapshot returns a deployment snapshot for a Bicep parameters file.
 func (client *Client) GetSnapshot(ctx context.Context, request GetSnapshotRequest) (GetSnapshotResponse, error) {
-	version, err := client.Version(ctx)
-	if err != nil {
+	if err := client.requireVersion(ctx, "0.36.1", "GetSnapshot"); err != nil {
 		return GetSnapshotResponse{}, err
-	}
-	if !versionAtLeast(version, "0.36.1") {
-		return GetSnapshotResponse{}, fmt.Errorf("Bicep CLI version 0.36.1 or later is required; detected %s", version)
 	}
 
 	var response GetSnapshotResponse
@@ -112,6 +198,17 @@ func (client *Client) GetSnapshot(ctx context.Context, request GetSnapshotReques
 		return GetSnapshotResponse{}, err
 	}
 	return response, nil
+}
+
+func (client *Client) requireVersion(ctx context.Context, minimum, operation string) error {
+	version, err := client.Version(ctx)
+	if err != nil {
+		return err
+	}
+	if !versionAtLeast(version, minimum) {
+		return fmt.Errorf("Bicep CLI version %s or later is required for %s; detected %s", minimum, operation, version)
+	}
+	return nil
 }
 
 func (client *Client) call(ctx context.Context, method string, params, result any) error {

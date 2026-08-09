@@ -56,7 +56,7 @@ func (session *Session) Snapshot(
 ) (*SnapshotResult, error)
     Snapshot evaluates a Bicep parameters file without deploying it.
 
-type SnapshotMetadata = rpcclient.SnapshotMetadata
+type SnapshotMetadata = biceprpcclient.SnapshotMetadata
     SnapshotMetadata describes the Azure deployment context used to evaluate a
     snapshot.
 

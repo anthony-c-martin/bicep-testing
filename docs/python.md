@@ -48,7 +48,23 @@ assert all(
 
 ## JSON-RPC client
 
-Most tests should use `BicepTestSession`. Lower-level integrations can import `RpcClient` and `RpcError` from `anthonycmartin.bicep_testing.rpcclient`. `RpcClient` starts `bicep jsonrpc --stdio`, sends `Content-Length` framed requests with `call`, and owns the process until `close` is called. RPC error responses raise `RpcError`.
+Most tests should use `BicepTestSession`. Lower-level integrations can install the standalone `bicep_rpc_client` distribution and import `BicepClientFactory`, `BicepClientConfiguration`, and typed request models from `anthonycmartin.bicep_rpc_client`. The factory can download a pinned Bicep CLI or connect through an existing CLI path. The returned client owns the process until `close` is called and supports context-manager cleanup.
+
+```python
+from anthonycmartin.bicep_rpc_client import (
+    BicepClientConfiguration,
+    BicepClientFactory,
+    CompileRequest,
+)
+
+factory = BicepClientFactory()
+with factory.initialize(BicepClientConfiguration(bicep_version="0.46.1")) as client:
+    result = client.compile(CompileRequest("infra/main.bicep"))
+    if result.success:
+        print(result.contents)
+```
+
+Use `existing_cli_path` instead of `bicep_version` to connect through an existing installation. Typed operations include `compile`, `compile_params`, `format`, `get_metadata`, `get_file_references`, `get_deployment_graph`, `get_snapshot`, and cached `get_version`.
 
 ## Snapshot result
 
@@ -83,4 +99,4 @@ See the runnable [pytest sample](../samples/python/test_snapshot.py) for a compl
 
 ## Public APIs
 
-The exported high-level API is available in [`api/python/bicep-testing.txt`](../api/python/bicep-testing.txt), and the transport API is available in [`api/python/rpcclient.txt`](../api/python/rpcclient.txt).
+The exported high-level API is available in [`api/python/bicep-testing.txt`](../api/python/bicep-testing.txt), and the standalone transport API is available in [`api/python/bicep_rpc_client.txt`](../api/python/bicep_rpc_client.txt).

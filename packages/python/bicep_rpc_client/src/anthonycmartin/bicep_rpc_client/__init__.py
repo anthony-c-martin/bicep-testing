@@ -1,0 +1,45 @@
+"""Typed client for the Bicep CLI JSON-RPC API."""
+
+from .client import BicepClient, BicepClientFactory, RpcError
+from .models import (
+    BicepClientConfiguration,
+    CompileParamsRequest,
+    CompileParamsResponse,
+    CompileRequest,
+    CompileResponse,
+    FormatRequest,
+    FormatResponse,
+    GetDeploymentGraphRequest,
+    GetDeploymentGraphResponse,
+    GetFileReferencesRequest,
+    GetFileReferencesResponse,
+    GetMetadataRequest,
+    GetMetadataResponse,
+    GetSnapshotRequest,
+    GetSnapshotResponse,
+    SnapshotExternalInput,
+    SnapshotMetadata,
+)
+
+__all__ = [
+    "BicepClient",
+    "BicepClientConfiguration",
+    "BicepClientFactory",
+    "CompileParamsRequest",
+    "CompileParamsResponse",
+    "CompileRequest",
+    "CompileResponse",
+    "FormatRequest",
+    "FormatResponse",
+    "GetDeploymentGraphRequest",
+    "GetDeploymentGraphResponse",
+    "GetFileReferencesRequest",
+    "GetFileReferencesResponse",
+    "GetMetadataRequest",
+    "GetMetadataResponse",
+    "GetSnapshotRequest",
+    "GetSnapshotResponse",
+    "RpcError",
+    "SnapshotExternalInput",
+    "SnapshotMetadata",
+]

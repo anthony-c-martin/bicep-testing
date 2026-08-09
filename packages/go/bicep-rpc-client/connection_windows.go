@@ -1,6 +1,6 @@
 //go:build windows
 
-package rpcclient
+package biceprpcclient
 
 import (
 	"net"

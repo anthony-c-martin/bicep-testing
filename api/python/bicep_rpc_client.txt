@@ -1,0 +1,66 @@
+CLASS BicepClient
+  close(self) -> 'None'
+  compile(self, request: 'CompileRequest') -> 'CompileResponse'
+  compile_params(self, request: 'CompileParamsRequest') -> 'CompileParamsResponse'
+  format(self, request: 'FormatRequest') -> 'FormatResponse'
+  get_deployment_graph(self, request: 'GetDeploymentGraphRequest') -> 'GetDeploymentGraphResponse'
+  get_file_references(self, request: 'GetFileReferencesRequest') -> 'GetFileReferencesResponse'
+  get_metadata(self, request: 'GetMetadataRequest') -> 'GetMetadataResponse'
+  get_snapshot(self, request: 'GetSnapshotRequest') -> 'GetSnapshotResponse'
+  get_version(self) -> 'str'
+
+CLASS BicepClientConfiguration
+  BicepClientConfiguration(bicep_version: 'str | None' = None, existing_cli_path: 'str | Path | None' = None, cache_root: 'str | Path | None' = None) -> None
+
+CLASS BicepClientFactory
+  initialize(self, configuration: 'BicepClientConfiguration | None' = None) -> 'BicepClient'
+
+CLASS CompileParamsRequest
+  CompileParamsRequest(path: 'str | Path', parameter_overrides: 'dict[str, Any]' = <factory>) -> None
+
+CLASS CompileParamsResponse
+  CompileParamsResponse(success: 'bool', diagnostics: 'tuple[dict[str, Any], ...]', parameters: 'str | None', template: 'str | None', template_spec_id: 'str | None' = None) -> None
+
+CLASS CompileRequest
+  CompileRequest(path: 'str | Path') -> None
+
+CLASS CompileResponse
+  CompileResponse(success: 'bool', diagnostics: 'tuple[dict[str, Any], ...]', contents: 'str | None') -> None
+
+CLASS FormatRequest
+  FormatRequest(path: 'str | Path') -> None
+
+CLASS FormatResponse
+  FormatResponse(contents: 'str') -> None
+
+CLASS GetDeploymentGraphRequest
+  GetDeploymentGraphRequest(path: 'str | Path') -> None
+
+CLASS GetDeploymentGraphResponse
+  GetDeploymentGraphResponse(nodes: 'tuple[dict[str, Any], ...]', edges: 'tuple[dict[str, Any], ...]') -> None
+
+CLASS GetFileReferencesRequest
+  GetFileReferencesRequest(path: 'str | Path') -> None
+
+CLASS GetFileReferencesResponse
+  GetFileReferencesResponse(file_paths: 'tuple[str, ...]') -> None
+
+CLASS GetMetadataRequest
+  GetMetadataRequest(path: 'str | Path') -> None
+
+CLASS GetMetadataResponse
+  GetMetadataResponse(parameters: 'tuple[dict[str, Any], ...]', outputs: 'tuple[dict[str, Any], ...]', exports: 'tuple[dict[str, Any], ...]', metadata: 'tuple[dict[str, Any], ...]') -> None
+
+CLASS GetSnapshotRequest
+  GetSnapshotRequest(path: 'str | Path', metadata: 'SnapshotMetadata' = <factory>, external_inputs: 'tuple[SnapshotExternalInput, ...]' = ()) -> None
+
+CLASS GetSnapshotResponse
+  GetSnapshotResponse(snapshot: 'str') -> None
+
+CLASS RpcError
+
+CLASS SnapshotExternalInput
+  SnapshotExternalInput(kind: 'str', value: 'Any', config: 'Any' = None) -> None
+
+CLASS SnapshotMetadata
+  SnapshotMetadata(tenant_id: 'str | None' = None, subscription_id: 'str | None' = None, resource_group: 'str | None' = None, location: 'str | None' = None, deployment_name: 'str | None' = None) -> None

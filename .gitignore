@@ -160,3 +160,4 @@ testResults.xml
 *.egg-info/
 .venv/
 packages/python/build/
+packages/python/**/build/

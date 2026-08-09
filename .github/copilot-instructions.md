@@ -11,8 +11,8 @@
 
 - Snapshot tests run locally and must not require Azure credentials, an Azure subscription, or a deployment.
 - Node uses `@azure/bicep-rpc-client`; C# uses `Azure.Bicep.RpcClient`; PowerShell remains a thin wrapper over C#.
-- Go owns its RPC transport in `packages/go/rpcclient`; preserve Windows named-pipe and Unix-domain-socket behavior there.
-- Python uses `bicep jsonrpc --stdio` with `Content-Length` framing. Keep that transport in its separate `rpcclient` package and do not introduce platform-specific pipe dependencies.
+- Go owns its RPC transport in the standalone `packages/go/bicep-rpc-client` module; preserve Windows named-pipe and Unix-domain-socket behavior there.
+- Python uses `bicep jsonrpc --stdio` with `Content-Length` framing. Keep that transport in the standalone `packages/python/bicep_rpc_client` distribution under `anthonycmartin.bicep_rpc_client`; do not introduce platform-specific pipe dependencies.
 - APIs that own a Bicep process must provide and test deterministic cleanup using the language's native lifecycle pattern.
 
 ## Tests And Samples

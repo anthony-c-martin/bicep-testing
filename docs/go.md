@@ -61,6 +61,26 @@ func TestStorageAccountsDisablePublicAccess(t *testing.T) {
 
 `biceptesting.NewSession` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs. Snapshot tests do not require Azure credentials or an Azure subscription.
 
+## JSON-RPC client
+
+Lower-level integrations can use the independently versioned `bicep-rpc-client` module:
+
+```go
+import biceprpcclient "github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client"
+
+client, err := (biceprpcclient.Factory{}).Initialize(ctx, biceprpcclient.Configuration{
+	BicepVersion: "0.46.1",
+})
+if err != nil {
+	return err
+}
+defer client.Close()
+
+result, err := client.Compile(ctx, biceprpcclient.CompileRequest{Path: "infra/main.bicep"})
+```
+
+Set `ExistingCLIPath` to use an existing installation. Typed operations include `Compile`, `CompileParams`, `Format`, `GetMetadata`, `GetFileReferences`, `GetDeploymentGraph`, `GetSnapshot`, and cached `Version`; every operation accepts a `context.Context` for cancellation and deadlines.
+
 ## Snapshot result
 
 A snapshot contains:
@@ -98,4 +118,4 @@ See the runnable [Go test sample](../samples/go/snapshot_test.go) for a complete
 
 ## Public API
 
-The complete exported APIs are available for the [`biceptesting`](../api/go/biceptesting.txt) and [`rpcclient`](../api/go/rpcclient.txt) packages.
+The complete exported APIs are available for the [`biceptesting`](../api/go/biceptesting.txt) and [`biceprpcclient`](../api/go/bicep-rpc-client.txt) packages.

@@ -44,9 +44,21 @@ updates:
       all-dependencies:
         patterns:
           - "*"
+  - package-ecosystem: "gomod"
+    directory: "/packages/go/bicep-rpc-client"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    cooldown:
+      default-days: 7
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
   - package-ecosystem: "pip"
     directories:
       - "/packages/python"
+      - "/packages/python/bicep_rpc_client"
       - "/samples/python"
     schedule:
       interval: "weekly"

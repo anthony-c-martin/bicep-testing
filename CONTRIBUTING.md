@@ -21,7 +21,7 @@ packages/
 │   ├── src/BicepTest/
 │   └── test/BicepTest.Tests/
 ├── go/
-    ├── rpcclient/
+    ├── bicep-rpc-client/
     ├── biceptest.go
     ├── snapshot.go
     └── go.mod
@@ -113,7 +113,7 @@ Project conventions:
 - Package name: `biceptesting`
 - Keep exported names idiomatic to Go rather than reproducing the Node API naming exactly.
 - Keep the public snapshot API in the module root.
-- Keep Bicep installation, process, pipe, and JSON-RPC behavior in the separate `rpcclient` package.
+- Keep Bicep installation, process, pipe, and JSON-RPC behavior in the standalone `bicep-rpc-client` module.
 - Preserve both Windows named-pipe and Unix-domain-socket support when changing the transport.
 
 ## PowerShell
@@ -148,17 +148,18 @@ Prerequisite: Python 3.11 or later.
 Install, test, and check the public API from the repository root:
 
 ```sh
-python -m pip install -e "./packages/python[test]"
-python -m pytest packages/python/tests
+python -m pip install -e "./packages/python/bicep_rpc_client[test]" -e "./packages/python[test]"
+python -m pytest packages/python/tests packages/python/bicep_rpc_client/tests
 python packages/python/scripts/public_api.py --check
 ```
 
-Review `api/python/bicep-testing.txt` and `api/python/rpcclient.txt`. After an intentional API change, run the API script with `--update` and include the baseline change in the pull request.
+Review `api/python/bicep-testing.txt` and `api/python/bicep_rpc_client.txt`. After an intentional API change, run the API script with `--update` and include the baseline change in the pull request.
 
 Project conventions:
 
 - Keep runtime dependencies in the Python standard library where practical.
 - Use type annotations, immutable dataclasses for result data, and context managers for owned processes.
+- Add transport code under `packages/python/bicep_rpc_client/src/anthonycmartin/bicep_rpc_client`.
 - Add package code under `packages/python/src/anthonycmartin/bicep_testing` and pytest tests under `packages/python/tests`.
 
 ## Pull requests

@@ -3,16 +3,18 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "anthonycmartin-bicep-testing"
+name = "bicep_rpc_client"
 version = "0.1.0"
-description = "Test Bicep infrastructure by evaluating deployment snapshots locally."
+description = "Interact with the Bicep CLI through its JSON-RPC API."
+readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "Anthony Martin" }]
-dependencies = [
-	"bicep_rpc_client>=0.1.0",
-	"azure-mgmt-resource-deploymentstacks==1.0.0",
-]
+
+[project.urls]
+Homepage = "https://github.com/anthony-c-martin/bicep-testing"
+Repository = "https://github.com/anthony-c-martin/bicep-testing"
+Issues = "https://github.com/anthony-c-martin/bicep-testing/issues"
 
 [project.optional-dependencies]
 test = ["pytest>=8.0"]
@@ -24,4 +26,4 @@ testpaths = ["tests"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-"anthonycmartin.bicep_testing" = ["py.typed"]
+"anthonycmartin.bicep_rpc_client" = ["py.typed"]

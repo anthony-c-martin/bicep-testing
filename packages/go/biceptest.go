@@ -5,18 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 
-	"github.com/anthony-c-martin/bicep-testing/packages/go/rpcclient"
+	biceprpcclient "github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client"
 )
 
 // SnapshotMetadata describes the Azure deployment context used to evaluate a snapshot.
-type SnapshotMetadata = rpcclient.SnapshotMetadata
+type SnapshotMetadata = biceprpcclient.SnapshotMetadata
 
 type bicepClient interface {
-	CompileParams(context.Context, rpcclient.CompileParamsRequest) (rpcclient.CompileParamsResponse, error)
-	GetSnapshot(context.Context, rpcclient.GetSnapshotRequest) (rpcclient.GetSnapshotResponse, error)
+	CompileParams(context.Context, biceprpcclient.CompileParamsRequest) (biceprpcclient.CompileParamsResponse, error)
+	GetSnapshot(context.Context, biceprpcclient.GetSnapshotRequest) (biceprpcclient.GetSnapshotResponse, error)
 	Close() error
 }
 
@@ -30,16 +29,9 @@ func NewSession(ctx context.Context, bicepVersion string) (*Session, error) {
 	if bicepVersion == "" {
 		return nil, errors.New("Bicep version must not be empty")
 	}
-	homeDirectory, err := os.UserHomeDir()
-	if err != nil {
-		return nil, fmt.Errorf("find home directory: %w", err)
-	}
-	installDirectory := filepath.Join(homeDirectory, ".bicep", "bin", "v"+bicepVersion)
-	bicepPath, err := rpcclient.Install(ctx, installDirectory, bicepVersion)
-	if err != nil {
-		return nil, err
-	}
-	client, err := rpcclient.New(ctx, bicepPath)
+	client, err := (biceprpcclient.Factory{}).Initialize(ctx, biceprpcclient.Configuration{
+		BicepVersion: bicepVersion,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +51,7 @@ func (session *Session) Snapshot(
 	if err != nil {
 		return nil, fmt.Errorf("resolve Bicep parameters file path: %w", err)
 	}
-	response, err := session.client.GetSnapshot(ctx, rpcclient.GetSnapshotRequest{
+	response, err := session.client.GetSnapshot(ctx, biceprpcclient.GetSnapshotRequest{
 		Path:     absolutePath,
 		Metadata: metadata,
 	})

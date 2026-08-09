@@ -20,7 +20,11 @@ type apiTarget struct {
 
 var targets = []apiTarget{
 	{packagePath: ".", baselinePath: "api/go/biceptesting.txt", displayName: "biceptesting"},
-	{packagePath: "./rpcclient", baselinePath: "api/go/rpcclient.txt", displayName: "rpcclient"},
+	{
+		packagePath:  "github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client",
+		baselinePath: "api/go/bicep-rpc-client.txt",
+		displayName:  "biceprpcclient",
+	},
 }
 
 func main() {

@@ -12,7 +12,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armdeploymentstacks"
-	"github.com/anthony-c-martin/bicep-testing/packages/go/rpcclient"
+	biceprpcclient "github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client"
 )
 
 // DeployOptions identifies a Bicep parameters file and its resource-group Deployment Stack.
@@ -71,7 +71,7 @@ func (session *Session) Deploy(ctx context.Context, credential azcore.TokenCrede
 	if err != nil {
 		return nil, fmt.Errorf("resolve Bicep parameters file path: %w", err)
 	}
-	compilation, err := session.client.CompileParams(ctx, rpcclient.CompileParamsRequest{
+	compilation, err := session.client.CompileParams(ctx, biceprpcclient.CompileParamsRequest{
 		Path:               absolutePath,
 		ParameterOverrides: options.ParameterOverrides,
 	})

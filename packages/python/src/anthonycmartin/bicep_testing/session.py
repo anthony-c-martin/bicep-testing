@@ -2,14 +2,19 @@ from __future__ import annotations
 
 import json
 import os
-import platform
-import stat
-import urllib.request
 from pathlib import Path
 from typing import Any, Protocol, Self
 
+from anthonycmartin.bicep_rpc_client import (
+    BicepClient,
+    BicepClientConfiguration,
+    BicepClientFactory,
+    CompileParamsRequest,
+    GetSnapshotRequest,
+    SnapshotMetadata as RpcSnapshotMetadata,
+)
+
 from .models import DeployResult, DeploymentResource, SnapshotMetadata, SnapshotResult
-from .rpcclient import RpcClient
 
 
 class _DeploymentStacksOperations(Protocol):
@@ -31,7 +36,7 @@ def _create_deployment_stacks_operations(credential: Any, subscription_id: str) 
 class BicepTestSession:
     """Installs and invokes a pinned Bicep CLI for infrastructure tests."""
 
-    def __init__(self, client: RpcClient) -> None:
+    def __init__(self, client: BicepClient) -> None:
         self._client = client
 
     @classmethod
@@ -39,9 +44,10 @@ class BicepTestSession:
         """Install a Bicep CLI version if needed and start its RPC client."""
         if not bicep_version.strip():
             raise ValueError("bicep_version must not be empty")
-        executable = _install_bicep(bicep_version)
-        client = RpcClient(executable)
-        version = client.call("bicep/version", {})["version"]
+        client = BicepClientFactory().initialize(
+            BicepClientConfiguration(bicep_version=bicep_version)
+        )
+        version = client.get_version()
         if _version_tuple(version) < (0, 36, 1):
             client.close()
             raise RuntimeError(f"Bicep CLI 0.36.1 or later is required; detected {version}")
@@ -54,14 +60,20 @@ class BicepTestSession:
     ) -> SnapshotResult:
         """Evaluate a Bicep parameters file without deploying it."""
         path = Path(file_path).resolve()
-        response = self._client.call(
-            "bicep/getSnapshot",
-            {
-                "path": str(path),
-                "metadata": (metadata or SnapshotMetadata())._as_rpc_dict(),
-            },
+        snapshot_metadata = metadata or SnapshotMetadata()
+        response = self._client.get_snapshot(
+            GetSnapshotRequest(
+                path,
+                RpcSnapshotMetadata(
+                    tenant_id=snapshot_metadata.tenant_id,
+                    subscription_id=snapshot_metadata.subscription_id,
+                    resource_group=snapshot_metadata.resource_group,
+                    location=snapshot_metadata.location,
+                    deployment_name=snapshot_metadata.deployment_name,
+                ),
+            )
         )
-        return SnapshotResult._from_dict(json.loads(response["snapshot"]))
+        return SnapshotResult._from_dict(json.loads(response.snapshot))
 
     def deploy(
         self,
@@ -77,19 +89,17 @@ class BicepTestSession:
             raise ValueError("credential must not be None")
         if not subscription_id or not resource_group or not stack_name:
             raise ValueError("subscription_id, resource_group, and stack_name must not be empty")
-        compilation = self._client.call(
-            "bicep/compileParams",
-            {
-                "path": str(Path(file_path).resolve()),
-                "parameterOverrides": parameter_overrides or {},
-            },
+        compilation = self._client.compile_params(
+            CompileParamsRequest(
+                Path(file_path).resolve(), parameter_overrides or {}
+            )
         )
-        if not compilation.get("success") or not compilation.get("template") or not compilation.get("parameters"):
-            diagnostics = json.dumps(compilation.get("diagnostics", []))
+        if not compilation.success or not compilation.template or not compilation.parameters:
+            diagnostics = json.dumps(compilation.diagnostics)
             raise RuntimeError(f"Bicep parameter compilation failed: {diagnostics}")
 
-        template = json.loads(compilation["template"])
-        parameter_file = json.loads(compilation["parameters"])
+        template = json.loads(compilation.template)
+        parameter_file = json.loads(compilation.parameters)
         operations = _create_deployment_stacks_operations(credential, subscription_id)
         stack = operations.begin_create_or_update_at_resource_group(
             resource_group,
@@ -140,40 +150,6 @@ class BicepTestSession:
 
     def __exit__(self, *_: object) -> None:
         self.close()
-
-
-def _install_bicep(version: str) -> Path:
-    directory = Path.home() / ".bicep" / "bin" / f"v{version}"
-    directory.mkdir(parents=True, exist_ok=True)
-    artifact = _artifact_name()
-    executable = directory / ("bicep.exe" if os.name == "nt" else "bicep")
-    if executable.exists():
-        return executable
-    url = f"https://downloads.bicep.azure.com/v{version}/{artifact}"
-    temporary = executable.with_suffix(executable.suffix + ".download")
-    try:
-        urllib.request.urlretrieve(url, temporary)
-        temporary.chmod(temporary.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-        temporary.replace(executable)
-    finally:
-        temporary.unlink(missing_ok=True)
-    return executable
-
-
-def _artifact_name() -> str:
-    operating_system = platform.system().lower()
-    architecture = platform.machine().lower()
-    architecture_name = {
-        "amd64": "x64",
-        "x86_64": "x64",
-        "arm64": "arm64",
-        "aarch64": "arm64",
-    }.get(architecture)
-    system_name = {"windows": "win", "linux": "linux", "darwin": "osx"}.get(operating_system)
-    if system_name is None or architecture_name is None:
-        raise RuntimeError(f"Bicep CLI is not available for {operating_system}/{architecture}")
-    extension = ".exe" if operating_system == "windows" else ""
-    return f"bicep-{system_name}-{architecture_name}{extension}"
 
 
 def _version_tuple(version: str) -> tuple[int, ...]:

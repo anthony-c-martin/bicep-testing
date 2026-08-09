@@ -43,9 +43,9 @@ If the requested behavior is ambiguous, inspect the nearest existing implementat
 - Start at `packages/node/src` and the nearest test in `packages/node/test`.
 - Inspect the equivalent implementation and test surfaces in:
   - `packages/dotnet/src/BicepTest` and `packages/dotnet/test/BicepTest.Tests`
-  - `packages/go` and, when transport behavior changes, `packages/go/rpcclient`
+  - `packages/go` and, when transport behavior changes, `packages/go/bicep-rpc-client`
   - `packages/powershell/AnthonyCMartin.BicepTesting` and `packages/powershell/test`
-  - `packages/python/src/anthonycmartin/bicep_testing` and, when transport behavior changes, `packages/python/src/anthonycmartin/bicep_testing/rpcclient`
+  - `packages/python/src/anthonycmartin/bicep_testing` and, when transport behavior changes, `packages/python/bicep_rpc_client`
 - Identify the smallest shared behavior contract and the cheapest focused test that can disprove the proposed implementation.
 - Check the current worktree before editing and preserve unrelated user changes.
 
@@ -82,7 +82,7 @@ Preserve equivalent semantics while following each ecosystem's conventions.
 
 - Use idiomatic exported names, explicit errors, `context.Context`, and `Close` where ownership requires cleanup.
 - Keep the high-level snapshot API in the module root.
-- Put Bicep installation, process, pipe/socket, and JSON-RPC behavior in `packages/go/rpcclient`.
+- Put Bicep installation, process, pipe/socket, and JSON-RPC behavior in the standalone `packages/go/bicep-rpc-client` module.
 - Preserve Windows named-pipe and Unix-domain-socket behavior when transport code changes.
 - Add table-driven or focused Go tests next to the owning package.
 - Do not copy class-oriented APIs into Go.
@@ -100,7 +100,7 @@ Preserve equivalent semantics while following each ecosystem's conventions.
 
 - Use type annotations, standard naming conventions, immutable dataclasses for result data, and context managers for owned resources.
 - Keep the implementation under `packages/python/src/anthonycmartin/bicep_testing` and pytest tests under `packages/python/tests`.
-- Put Bicep process and JSON-RPC behavior in the separate public `rpcclient` package while keeping it behind the high-level `BicepTestSession` abstraction.
+- Put Bicep process and JSON-RPC behavior in the standalone public `anthonycmartin.bicep_rpc_client` package while keeping it behind the high-level `BicepTestSession` abstraction.
 
 ### 4. Add Cross-Language Tests
 
@@ -150,7 +150,7 @@ go run ./internal/apidoc --check
 Pop-Location
 ```
 
-Review `api/go/biceptesting.txt` and, when applicable, `api/go/rpcclient.txt`.
+Review `api/go/biceptesting.txt` and, when applicable, `api/go/bicep-rpc-client.txt`.
 
 #### PowerShell
 
@@ -168,7 +168,7 @@ python packages/python/scripts/public_api.py --update
 python packages/python/scripts/public_api.py --check
 ```
 
-Review `api/python/bicep-testing.txt` and `api/python/rpcclient.txt`.
+Review `api/python/bicep-testing.txt` and `api/python/bicep_rpc_client.txt`.
 
 ### 6. Update Documentation
 

@@ -22,6 +22,8 @@ Live tests compile a `.bicepparam` file, deploy it as an Azure Deployment Stack,
 - [PowerShell](docs/powershell.md) 7.6 or later: `AnthonyCMartin.BicepTesting`, not yet available through the PowerShell Gallery
 - [Python](docs/python.md) 3.11 or later: `anthonycmartin-bicep-testing`, not yet available through PyPI
 
+Lower-level Bicep CLI integrations are independently publishable as the Go `bicep-rpc-client` module and the Python `bicep_rpc_client` distribution, imported as `anthonycmartin.bicep_rpc_client`.
+
 ## Samples
 
 Runnable test suites under [`samples/`](samples/) demonstrate the same credential-free snapshot assertions and opt-in live deployment workflow with Jest, MSTest, Go's `testing` package, Pester, and pytest. They share one Bicep fixture. Standard CI compiles or collects the samples without executing tests, so it validates both workflows without requiring Azure credentials or creating resources. See the [sample instructions](samples/README.md) for the environment variables required to run the live tests.

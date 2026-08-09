@@ -5,8 +5,8 @@ import dataclasses
 import inspect
 from pathlib import Path
 
+from anthonycmartin import bicep_rpc_client
 from anthonycmartin import bicep_testing
-from anthonycmartin.bicep_testing import rpcclient
 
 
 def generate(module: object) -> str:
@@ -37,7 +37,7 @@ args = parser.parse_args()
 api_root = Path(__file__).parents[3] / "api" / "python"
 targets = {
     "bicep-testing.txt": bicep_testing,
-    "rpcclient.txt": rpcclient,
+    "bicep_rpc_client.txt": bicep_rpc_client,
 }
 for filename, module in targets.items():
     baseline = api_root / filename
