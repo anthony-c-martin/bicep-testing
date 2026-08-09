@@ -1,6 +1,6 @@
 @{
     RootModule = 'AnthonyCMartin.BicepTesting.psm1'
-    ModuleVersion = '0.1.1'
+    ModuleVersion = '0.1.2'
     GUID = 'ba8897af-e89f-4657-a30d-d1c9e9816070'
     Author = 'Anthony Martin'
     Description = 'Test Bicep infrastructure by evaluating deployment snapshots locally.'

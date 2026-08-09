@@ -10,7 +10,7 @@ The Go package provides helpers for testing the predicted resources, outputs, an
 ## Installation
 
 ```sh
-go get github.com/anthony-c-martin/bicep-testing/packages/go@v0.1.1
+go get github.com/anthony-c-martin/bicep-testing/packages/go@v0.1.2
 ```
 
 ## Usage
@@ -64,7 +64,7 @@ func TestStorageAccountsDisablePublicAccess(t *testing.T) {
 Lower-level integrations can use the independently versioned `bicep-rpc-client` module:
 
 ```sh
-go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client@v0.1.1
+go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client@v0.1.2
 ```
 
 ```go

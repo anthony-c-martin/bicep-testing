@@ -10,8 +10,8 @@ The PowerShell module provides commands for testing the predicted resources, out
 ## Installation
 
 ```powershell
-Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.1 -Repository PSGallery
-Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.1
+Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.2 -Repository PSGallery
+Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.2
 ```
 
 ## Usage

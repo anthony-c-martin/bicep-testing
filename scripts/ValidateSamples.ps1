@@ -38,7 +38,7 @@ try {
     }
 
     Write-Host 'Installing and parsing the PowerShell sample tests...'
-    Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.1 -Repository PSGallery -Scope CurrentUser -TrustRepository -Reinstall -Quiet
+    Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.2 -Repository PSGallery -Scope CurrentUser -TrustRepository -Reinstall -Quiet
     Invoke-NativeCommand {
         pwsh -NoProfile -Command '$errors = @(); Get-ChildItem ./samples/powershell -Filter *.ps1 | ForEach-Object { [void][Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$errors) }; if ($errors) { $errors | Out-String | Write-Error; exit 1 }'
     } 'PowerShell sample parsing'

@@ -5,11 +5,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>AnthonyCMartin.BicepTesting</PackageId>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <AssemblyName>AnthonyCMartin.BicepTesting</AssemblyName>
     <RootNamespace>AnthonyCMartin.BicepTesting</RootNamespace>
     <Description>Test library for interacting with the Bicep CLI.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/anthony-c-martin/bicep-testing</RepositoryUrl>
     <WarningsAsErrors>$(WarningsAsErrors);RS0016;RS0017</WarningsAsErrors>
   </PropertyGroup>
@@ -26,6 +27,7 @@
   <ItemGroup>
     <AdditionalFiles Include="../../../../api/dotnet/PublicAPI.Shipped.txt" />
     <AdditionalFiles Include="../../../../api/dotnet/PublicAPI.Unshipped.txt" />
+    <None Include="../../README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
