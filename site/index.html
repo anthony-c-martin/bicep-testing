@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Language-native testing libraries for Bicep infrastructure. Inspect deployment snapshots locally or run live Azure tests with deterministic cleanup.">
+  <meta name="theme-color" content="#171a1f">
+  <meta property="og:title" content="Bicep Testing">
+  <meta property="og:description" content="Test Bicep infrastructure before it reaches Azure.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://anthony-c-martin.github.io/bicep-testing/">
+  <meta property="og:image" content="https://raw.githubusercontent.com/Azure/bicep/main/docs/images/BicepLogoImage.png">
+  <title>Bicep Testing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Bicep Testing home">
+      <img src="https://raw.githubusercontent.com/Azure/bicep/main/docs/images/BicepLogoImage.png" alt="" width="34" height="34">
+      <span>Bicep Testing</span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="#packages">Packages</a>
+      <a href="#workflow">Workflow</a>
+      <a href="https://github.com/anthony-c-martin/bicep-testing/tree/main/samples">Samples</a>
+      <a class="github-link" href="https://github.com/anthony-c-martin/bicep-testing" aria-label="View Bicep Testing on GitHub">
+        <i data-lucide="github" aria-hidden="true"></i>
+        <span>GitHub</span>
+      </a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="hero-scene" aria-hidden="true">
+        <div class="scene-toolbar">
+          <span></span><span></span><span></span>
+          <p>storage.test.ts</p>
+        </div>
+        <pre><code><span class="syntax-dim">const</span> snapshot = <span class="syntax-dim">await</span> session.<span class="syntax-blue">snapshot</span>({
+  filePath: <span class="syntax-green">'main.bicepparam'</span>,
+  location: <span class="syntax-green">'eastus'</span>
+});
+
+<span class="syntax-dim">for</span> (<span class="syntax-dim">const</span> resource <span class="syntax-dim">of</span> snapshot.resources) {
+  expect(resource.properties
+    .allowBlobPublicAccess).<span class="syntax-blue">toBe</span>(<span class="syntax-coral">false</span>);
+}</code></pre>
+        <div class="scene-result">
+          <span class="result-check"><i data-lucide="check" aria-hidden="true"></i></span>
+          <div>
+            <strong>3 resources predicted</strong>
+            <span>No diagnostics. No deployment.</span>
+          </div>
+          <span class="result-time">1.4s</span>
+        </div>
+      </div>
+
+      <div class="hero-content">
+        <p class="eyebrow"><span></span> Bicep test libraries</p>
+        <h1 id="hero-title">Bicep Testing</h1>
+        <p class="hero-lede">Language-native libraries for inspecting the resources, outputs, and diagnostics produced by a Bicep deployment. Run snapshots locally, or opt into Azure deployment tests when service behavior needs verification.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#packages">Installation <i data-lucide="arrow-down" aria-hidden="true"></i></a>
+          <a class="button button-secondary" href="https://github.com/anthony-c-martin/bicep-testing/tree/main/samples">View sample tests <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+        </div>
+        <dl class="hero-facts">
+          <div><dt>5</dt><dd>supported languages</dd></div>
+          <div><dt>Local</dt><dd>credential-free snapshots</dd></div>
+          <div><dt>Live</dt><dd>optional Azure tests</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="package-section" id="packages" aria-labelledby="packages-title">
+      <div class="section-heading">
+        <p class="section-kicker">Packages</p>
+        <h2 id="packages-title">Installation by language</h2>
+        <p>The libraries expose equivalent snapshot and deployment behavior through each language's native test framework and lifecycle patterns.</p>
+      </div>
+
+      <div class="install-tool">
+        <div class="language-tabs" role="tablist" aria-label="Package language">
+          <button role="tab" aria-selected="true" aria-controls="panel-node" id="tab-node" data-language="node">Node</button>
+          <button role="tab" aria-selected="false" aria-controls="panel-csharp" id="tab-csharp" data-language="csharp" tabindex="-1">C#</button>
+          <button role="tab" aria-selected="false" aria-controls="panel-go" id="tab-go" data-language="go" tabindex="-1">Go</button>
+          <button role="tab" aria-selected="false" aria-controls="panel-powershell" id="tab-powershell" data-language="powershell" tabindex="-1">PowerShell</button>
+          <button role="tab" aria-selected="false" aria-controls="panel-python" id="tab-python" data-language="python" tabindex="-1">Python</button>
+        </div>
+
+        <div class="install-panels">
+          <div class="install-panel" role="tabpanel" id="panel-node" aria-labelledby="tab-node" data-panel="node">
+            <div class="install-meta"><span>npm</span><span>Node.js 22+</span><span>v0.1.0</span></div>
+            <div class="command-row"><code>npm install --save-dev @anthony-c-martin/bicep-testing@0.1.0</code><button class="copy-button" data-copy="npm install --save-dev @anthony-c-martin/bicep-testing@0.1.0" aria-label="Copy Node install command"><i data-lucide="copy" aria-hidden="true"></i></button></div>
+            <a href="https://github.com/anthony-c-martin/bicep-testing/blob/main/docs/node.md">Read the Node guide <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+          </div>
+          <div class="install-panel" role="tabpanel" id="panel-csharp" aria-labelledby="tab-csharp" data-panel="csharp" hidden>
+            <div class="install-meta"><span>NuGet</span><span>.NET 10+</span><span>v0.1.0</span></div>
+            <div class="command-row"><code>dotnet add package AnthonyCMartin.BicepTesting --version 0.1.0</code><button class="copy-button" data-copy="dotnet add package AnthonyCMartin.BicepTesting --version 0.1.0" aria-label="Copy C# install command"><i data-lucide="copy" aria-hidden="true"></i></button></div>
+            <a href="https://github.com/anthony-c-martin/bicep-testing/blob/main/docs/csharp.md">Read the C# guide <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+          </div>
+          <div class="install-panel" role="tabpanel" id="panel-go" aria-labelledby="tab-go" data-panel="go" hidden>
+            <div class="install-meta"><span>Go modules</span><span>Go 1.24+</span><span>v0.1.0</span></div>
+            <div class="command-row"><code>go get github.com/anthony-c-martin/bicep-testing/packages/go@v0.1.0</code><button class="copy-button" data-copy="go get github.com/anthony-c-martin/bicep-testing/packages/go@v0.1.0" aria-label="Copy Go install command"><i data-lucide="copy" aria-hidden="true"></i></button></div>
+            <a href="https://github.com/anthony-c-martin/bicep-testing/blob/main/docs/go.md">Read the Go guide <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+          </div>
+          <div class="install-panel" role="tabpanel" id="panel-powershell" aria-labelledby="tab-powershell" data-panel="powershell" hidden>
+            <div class="install-meta"><span>PowerShell Gallery</span><span>PowerShell 7.6+</span><span>v0.1.0</span></div>
+            <div class="command-row"><code>Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.0</code><button class="copy-button" data-copy="Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.0" aria-label="Copy PowerShell install command"><i data-lucide="copy" aria-hidden="true"></i></button></div>
+            <a href="https://github.com/anthony-c-martin/bicep-testing/blob/main/docs/powershell.md">Read the PowerShell guide <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+          </div>
+          <div class="install-panel" role="tabpanel" id="panel-python" aria-labelledby="tab-python" data-panel="python" hidden>
+            <div class="install-meta"><span>PyPI</span><span>Python 3.11+</span><span>v0.1.0</span></div>
+            <div class="command-row"><code>python -m pip install anthonycmartin-bicep-testing==0.1.0</code><button class="copy-button" data-copy="python -m pip install anthonycmartin-bicep-testing==0.1.0" aria-label="Copy Python install command"><i data-lucide="copy" aria-hidden="true"></i></button></div>
+            <a href="https://github.com/anthony-c-martin/bicep-testing/blob/main/docs/python.md">Read the Python guide <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workflow-section" id="workflow" aria-labelledby="workflow-title">
+      <div class="section-heading section-heading-light">
+        <p class="section-kicker">Capabilities</p>
+        <h2 id="workflow-title">Local snapshots and live deployment tests</h2>
+      </div>
+      <div class="workflow-steps">
+        <article>
+          <span class="step-number">01</span>
+          <div class="step-icon"><i data-lucide="scan-search" aria-hidden="true"></i></div>
+          <h3>Evaluate a snapshot locally</h3>
+          <p>Compile a <code>.bicepparam</code> entry point and return the predicted resources, resolved outputs, and compiler diagnostics for assertions.</p>
+          <ul>
+            <li>No Azure subscription</li>
+            <li>No credentials</li>
+            <li>No deployed resources</li>
+          </ul>
+        </article>
+        <div class="workflow-connector" aria-hidden="true"><span></span><i data-lucide="arrow-right"></i></div>
+        <article>
+          <span class="step-number">02</span>
+          <div class="step-icon step-icon-coral"><i data-lucide="cloud-cog" aria-hidden="true"></i></div>
+          <h3>Run an Azure deployment test</h3>
+          <p>Create a Deployment Stack when a test needs to inspect deployed resources, service responses, or other runtime behavior.</p>
+          <ul>
+            <li>Normalized deployment outputs</li>
+            <li>Managed resource inventory</li>
+            <li>Deterministic teardown</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="principles" aria-labelledby="principles-title">
+      <div class="section-heading">
+        <p class="section-kicker">Library behavior</p>
+        <h2 id="principles-title">What the libraries handle</h2>
+      </div>
+      <div class="principle-list">
+        <article><span>01</span><div><h3>Native test frameworks</h3><p>Use Jest, MSTest, Go testing, Pester, or pytest without introducing another test runner.</p></div></article>
+        <article><span>02</span><div><h3>Bicep CLI lifecycle</h3><p>A session downloads or reuses a requested CLI version, owns its process, and closes it through the language's standard cleanup pattern.</p></div></article>
+        <article><span>03</span><div><h3>Shared test input</h3><p>The same <code>.bicepparam</code> entry point can be used for local snapshots and opt-in deployment tests.</p></div></article>
+        <article><span>04</span><div><h3>Deployment cleanup</h3><p>Live test results own the Deployment Stack and provide idempotent teardown for the stack and its managed resources.</p></div></article>
+      </div>
+    </section>
+
+    <section class="cta-band" aria-labelledby="cta-title">
+      <div>
+        <p class="section-kicker">Examples</p>
+        <h2 id="cta-title">See complete tests for each language</h2>
+      </div>
+      <div class="cta-actions">
+        <a class="button button-light" href="https://github.com/anthony-c-martin/bicep-testing/tree/main/samples">Browse samples <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
+        <a class="text-link" href="https://github.com/anthony-c-martin/bicep-testing">Repository <i data-lucide="github" aria-hidden="true"></i></a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand footer-brand" href="#top">
+      <img src="https://raw.githubusercontent.com/Azure/bicep/main/docs/images/BicepLogoImage.png" alt="" width="30" height="30">
+      <span>Bicep Testing</span>
+    </a>
+    <p>Independent, non-official testing libraries for Bicep.</p>
+    <div><a href="https://github.com/anthony-c-martin/bicep-testing/blob/main/LICENSE">MIT License</a><a href="https://github.com/anthony-c-martin/bicep-testing/issues">Issues</a></div>
+  </footer>
+</body>
+</html>
