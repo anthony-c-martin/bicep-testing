@@ -5,6 +5,7 @@
     "test": "jest --runInBand"
   },
   "dependencies": {
+    "@azure/identity": "^4.13.0",
     "bicep-test": "file:../../packages/node"
   },
   "devDependencies": {

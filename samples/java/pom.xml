@@ -11,6 +11,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.azure</groupId>
+      <artifactId>azure-identity</artifactId>
+      <version>1.18.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.github.anthonycmartin</groupId>
       <artifactId>bicep-test</artifactId>
       <version>0.1.0-SNAPSHOT</version>
