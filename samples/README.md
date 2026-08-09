@@ -8,7 +8,22 @@ Each language demonstrates both local snapshot assertions and an opt-in live Azu
 - [PowerShell](powershell/) uses Pester.
 - [Python](python/) uses pytest.
 
-All samples share [`infra/main.bicepparam`](infra/main.bicepparam). Snapshot tests predict its resources without Azure credentials. Deployment tests compile it, create an Azure Deployment Stack, assert against the resulting resources and outputs, and delete the stack and its managed resources during cleanup.
+All languages exercise the same shared Bicep fixtures and equivalent assertions.
+
+## Offline snapshot scenarios
+
+- **Environment topology** evaluates separate development and production parameter files, checking conditional resources, storage SKUs, names, tags, and outputs.
+- **Security baseline** verifies hardened Storage and Key Vault properties and demonstrates how a deliberately weakened parameter set exposes a regression.
+- **Private network wiring** checks VNet and subnet address plans, NSG associations, private endpoint connections, private DNS links, and output contracts.
+
+Snapshot tests evaluate these scenarios locally without Azure credentials or a subscription.
+
+## Live deployment scenarios
+
+- **Secure storage** deploys an ephemeral storage account, verifies its security properties through an authenticated Azure Resource Manager request, and confirms teardown removed it.
+- **Deployment reconciliation** deploys primary and audit storage accounts, updates the same Deployment Stack to remove the audit account, verifies Azure reconciled the change, and confirms final teardown removed the remaining account.
+
+Both scenarios use [`infra/live-storage/main.bicepparam`](infra/live-storage/main.bicepparam) and inexpensive `Standard_LRS` storage accounts. Deployment tests always delete the stack and its managed resources during cleanup.
 
 Live deployment tests are skipped unless all of these environment variables are set:
 
@@ -27,4 +42,4 @@ Validate every sample from the repository root:
 
 The validator restores the published version 0.1.0 libraries and dependencies, then compiles, parses, or collects every sample test. It does not execute snapshot or live deployment tests, so standard CI remains credential-free and cannot create Azure resources.
 
-To run a language's tests, use its native test command after setting the live deployment environment variables. Without those variables, only the credential-free snapshot tests run and the deployment test is skipped.
+To run a language's tests, use its native test command after setting the live deployment environment variables. Without those variables, the three credential-free snapshot tests run and the two deployment tests are skipped.

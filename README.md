@@ -26,6 +26,6 @@ Lower-level Bicep CLI integrations are published as the Go `bicep-rpc-client` mo
 
 ## Samples
 
-Runnable test suites under [`samples/`](samples/) demonstrate the same credential-free snapshot assertions and opt-in live deployment workflow with Jest, MSTest, Go's `testing` package, Pester, and pytest. They share one Bicep fixture. Standard CI compiles or collects the samples without executing tests, so it validates both workflows without requiring Azure credentials or creating resources. See the [sample instructions](samples/README.md) for the environment variables required to run the live tests.
+Runnable test suites under [`samples/`](samples/) demonstrate three credential-free snapshot scenarios and two opt-in live deployment scenarios with Jest, MSTest, Go's `testing` package, Pester, and pytest. Every language uses the same shared Bicep fixtures and equivalent assertions. Standard CI compiles or collects the samples without requiring Azure credentials or creating resources. See the [sample instructions](samples/README.md) for the scenario catalog and the environment variables required to run the live tests.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for repository setup, build commands, tests, and project conventions.
