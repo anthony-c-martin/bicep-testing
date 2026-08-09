@@ -2,6 +2,10 @@
 
 An independent Python client for the Bicep CLI JSON-RPC API. Install the `anthonycmartin-bicep-rpc-client` distribution and import its public API from `anthonycmartin.bicep_rpc_client`.
 
+```sh
+python -m pip install anthonycmartin-bicep-rpc-client==0.1.0
+```
+
 ```python
 from anthonycmartin.bicep_rpc_client import (
     BicepClientConfiguration,

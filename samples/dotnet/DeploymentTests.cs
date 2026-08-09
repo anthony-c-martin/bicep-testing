@@ -1,8 +1,9 @@
+using AnthonyCMartin.BicepTesting;
 using Azure.Identity;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
 
-namespace AnthonyCMartin.BicepTesting.Sample;
+namespace Samples;
 
 [TestClass]
 public sealed class DeploymentTests
@@ -23,7 +24,7 @@ public sealed class DeploymentTests
         await using var session = await AnthonyCMartin.BicepTesting.BicepTestSession.CreateAsync("0.43.1", TestContext.CancellationToken);
         await using var deployment = await session.DeployAsync(
             new DefaultAzureCredential(),
-            new AnthonyCMartin.BicepTesting.DeployOptions
+            new DeployOptions
             {
                 FilePath = parametersPath,
                 SubscriptionId = subscriptionId,

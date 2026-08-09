@@ -10,7 +10,7 @@ The Python package provides typed helpers for testing the predicted resources, o
 ## Installation
 
 ```sh
-python -m pip install anthonycmartin-bicep-testing
+python -m pip install anthonycmartin-bicep-testing==0.1.0
 ```
 
 ## Usage
@@ -46,7 +46,7 @@ assert all(
 
 ## JSON-RPC client
 
-Most tests should use `BicepTestSession`. Lower-level integrations can install the standalone `anthonycmartin-bicep-rpc-client` distribution and import `BicepClientFactory`, `BicepClientConfiguration`, and typed request models from `anthonycmartin.bicep_rpc_client`. The factory can download a pinned Bicep CLI or connect through an existing CLI path. The returned client owns the process until `close` is called and supports context-manager cleanup.
+Most tests should use `BicepTestSession`. Lower-level integrations can install the standalone distribution with `python -m pip install anthonycmartin-bicep-rpc-client==0.1.0` and import `BicepClientFactory`, `BicepClientConfiguration`, and typed request models from `anthonycmartin.bicep_rpc_client`. The factory can download a pinned Bicep CLI or connect through an existing CLI path. The returned client owns the process until `close` is called and supports context-manager cleanup.
 
 ```python
 from anthonycmartin.bicep_rpc_client import (
