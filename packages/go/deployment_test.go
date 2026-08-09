@@ -10,7 +10,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armdeploymentstacks"
-	"github.com/anthony-c-martin/bicep-test/packages/go/rpcclient"
+	"github.com/anthony-c-martin/bicep-testing/packages/go/rpcclient"
 )
 
 func TestDeployCompilesDeploysAndTearsDownOnce(t *testing.T) {

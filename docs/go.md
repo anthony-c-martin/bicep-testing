@@ -12,7 +12,7 @@ The Go package provides helpers for testing the predicted resources, outputs, an
 Until a versioned module is released, reference the repository source from a local checkout. After release, install it with:
 
 ```sh
-go get github.com/anthony-c-martin/bicep-test/packages/go
+go get github.com/anthony-c-martin/bicep-testing/packages/go
 ```
 
 ## Usage
@@ -26,7 +26,7 @@ import (
 	"context"
 	"testing"
 
-	biceptesting "github.com/anthony-c-martin/bicep-test/packages/go"
+	biceptesting "github.com/anthony-c-martin/bicep-testing/packages/go"
 )
 
 func TestStorageAccountsDisablePublicAccess(t *testing.T) {

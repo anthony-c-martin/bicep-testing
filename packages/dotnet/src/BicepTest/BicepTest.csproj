@@ -9,7 +9,7 @@
     <RootNamespace>AnthonyCMartin.BicepTesting</RootNamespace>
     <Description>Test library for interacting with the Bicep CLI.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <RepositoryUrl>https://github.com/anthony-c-martin/bicep-test</RepositoryUrl>
+    <RepositoryUrl>https://github.com/anthony-c-martin/bicep-testing</RepositoryUrl>
     <WarningsAsErrors>$(WarningsAsErrors);RS0016;RS0017</WarningsAsErrors>
   </PropertyGroup>
 

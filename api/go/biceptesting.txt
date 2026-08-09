@@ -1,4 +1,4 @@
-package biceptesting // import "github.com/anthony-c-martin/bicep-test/packages/go"
+package biceptesting // import "github.com/anthony-c-martin/bicep-testing/packages/go"
 
 Package biceptesting provides helpers for testing Bicep infrastructure code.
 

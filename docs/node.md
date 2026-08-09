@@ -19,7 +19,7 @@ npm --prefix packages/node run build
 Then install that package from the consuming project, replacing the path with the location of your checkout:
 
 ```sh
-npm install --save-dev /path/to/bicep-test/packages/node
+npm install --save-dev /path/to/bicep-testing/packages/node
 ```
 
 ## Usage

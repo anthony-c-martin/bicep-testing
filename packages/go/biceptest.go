@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/anthony-c-martin/bicep-test/packages/go/rpcclient"
+	"github.com/anthony-c-martin/bicep-testing/packages/go/rpcclient"
 )
 
 // SnapshotMetadata describes the Azure deployment context used to evaluate a snapshot.

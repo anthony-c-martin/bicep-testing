@@ -57,19 +57,6 @@ updates:
       all-dependencies:
         patterns:
           - "*"
-  - package-ecosystem: "maven"
-    directories:
-      - "/packages/java"
-      - "/samples/java"
-    schedule:
-      interval: "weekly"
-      day: "sunday"
-    cooldown:
-      default-days: 7
-    groups:
-      all-dependencies:
-        patterns:
-          - "*"
   - package-ecosystem: "devcontainers"
     directory: "/"
     schedule:

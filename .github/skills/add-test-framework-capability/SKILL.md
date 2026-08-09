@@ -1,6 +1,6 @@
 ---
 name: add-test-framework-capability
-description: 'Add or extend a bicep-test framework capability across Node, C#, Go, PowerShell, Python, and Java. Use when implementing new snapshot behavior, options, result data, lifecycle operations, or other public features that require idiomatic APIs, cross-language conformance tests, shared Bicep samples, regenerated public API baselines, language docs, and an abstract README explanation.'
+description: 'Add or extend a bicep-testing framework capability across Node, C#, Go, PowerShell, and Python. Use when implementing new snapshot behavior, options, result data, lifecycle operations, or other public features that require idiomatic APIs, cross-language conformance tests, shared Bicep samples, regenerated public API baselines, language docs, and an abstract README explanation.'
 argument-hint: 'Describe the capability and expected behavior'
 user-invocable: true
 disable-model-invocation: false
@@ -14,7 +14,7 @@ Implement one capability end to end across every supported library without forci
 
 A capability is complete only when all of the following are true:
 
-- Node, C#, Go, PowerShell, Python, and Java expose equivalent behavior through idiomatic public APIs.
+- Node, C#, Go, PowerShell, and Python expose equivalent behavior through idiomatic public APIs.
 - Each language has focused tests for success, relevant edge cases, and errors introduced by the capability.
 - A shared Bicep sample demonstrates the capability and is exercised by all applicable conformance tests.
 - Public API artifacts under `api/` are regenerated and verified.
@@ -45,8 +45,7 @@ If the requested behavior is ambiguous, inspect the nearest existing implementat
   - `packages/dotnet/src/BicepTest` and `packages/dotnet/test/BicepTest.Tests`
   - `packages/go` and, when transport behavior changes, `packages/go/rpcclient`
   - `packages/powershell/AnthonyCMartin.BicepTesting` and `packages/powershell/test`
-  - `packages/python/src/anthonycmartin/bicep_testing` and `packages/python/tests`
-  - `packages/java/src/main/java` and `packages/java/src/test/java`
+  - `packages/python/src/anthonycmartin/bicep_testing` and, when transport behavior changes, `packages/python/src/anthonycmartin/bicep_testing/rpcclient`
 - Identify the smallest shared behavior contract and the cheapest focused test that can disprove the proposed implementation.
 - Check the current worktree before editing and preserve unrelated user changes.
 
@@ -56,7 +55,7 @@ If the requested behavior is ambiguous, inspect the nearest existing implementat
 - Prefer extending an existing fixture when it remains understandable. Create a focused fixture when extension would mix unrelated behavior.
 - Make the sample deterministic, offline, and independent of Azure credentials or deployment.
 - Include only the Bicep constructs needed to demonstrate the behavior clearly.
-- Update the runnable Jest, MSTest, Go `testing`, Pester, pytest, and JUnit examples under `samples/` to demonstrate the capability idiomatically.
+- Update the runnable Jest, MSTest, Go `testing`, Pester, and pytest examples under `samples/` to demonstrate the capability idiomatically.
 - Point every applicable sample and conformance test at the same fixture. Do not duplicate equivalent fixtures per language.
 
 ### 3. Implement Idiomatically In Every Library
@@ -101,13 +100,7 @@ Preserve equivalent semantics while following each ecosystem's conventions.
 
 - Use type annotations, standard naming conventions, immutable dataclasses for result data, and context managers for owned resources.
 - Keep the implementation under `packages/python/src/anthonycmartin/bicep_testing` and pytest tests under `packages/python/tests`.
-- Keep Bicep installation and JSON-RPC details behind the public `BicepTestSession` abstraction.
-
-#### Java
-
-- Target Java 17 and use builders for optional metadata, typed models for stable results, and `AutoCloseable` for process ownership.
-- Keep the implementation under `packages/java/src/main/java` and JUnit 5 tests under `packages/java/src/test/java`.
-- Keep Bicep installation and JSON-RPC details package-private.
+- Put Bicep process and JSON-RPC behavior in the separate public `rpcclient` package while keeping it behind the high-level `BicepTestSession` abstraction.
 
 ### 4. Add Cross-Language Tests
 
@@ -175,18 +168,7 @@ python packages/python/scripts/public_api.py --update
 python packages/python/scripts/public_api.py --check
 ```
 
-Review `api/python/bicep-testing.txt`.
-
-#### Java
-
-```powershell
-Push-Location packages/java
-mvn -DskipTests test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.github.anthonycmartin.biceptesting.ApiSurface -Dexec.args=--update
-mvn -DskipTests test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.github.anthonycmartin.biceptesting.ApiSurface -Dexec.args=--check
-Pop-Location
-```
-
-Review `api/java/bicep-testing.txt`.
+Review `api/python/bicep-testing.txt` and `api/python/rpcclient.txt`.
 
 ### 6. Update Documentation
 
@@ -197,7 +179,6 @@ Update every language document, even when the capability has the same conceptual
 - `docs/go.md`
 - `docs/powershell.md`
 - `docs/python.md`
-- `docs/java.md`
 
 Each document must explain:
 
@@ -206,7 +187,7 @@ Each document must explain:
 - A concise, runnable example in that language.
 - The returned data, side effects, cleanup, and notable errors where relevant.
 
-Update `README.md` separately. Describe the capability once in language-neutral, user-centered terms. Explain what it enables and its major behavioral constraints without listing language-specific method names or duplicating all six examples.
+Update `README.md` separately. Describe the capability once in language-neutral, user-centered terms. Explain what it enables and its major behavioral constraints without listing language-specific method names or duplicating all five examples.
 
 ### 7. Validate End To End
 
@@ -238,12 +219,6 @@ Invoke-Pester ./packages/powershell/test -CI
 # Python
 python -m pytest packages/python/tests
 python packages/python/scripts/public_api.py --check
-
-# Java
-Push-Location packages/java
-mvn test
-mvn -DskipTests test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.github.anthonycmartin.biceptesting.ApiSurface -Dexec.args=--check
-Pop-Location
 
 # Runnable consumer samples
 ./scripts/ValidateSamples.ps1

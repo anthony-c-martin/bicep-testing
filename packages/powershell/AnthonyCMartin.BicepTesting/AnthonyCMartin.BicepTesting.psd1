@@ -18,8 +18,8 @@
     AliasesToExport = @()
     PrivateData = @{
         PSData = @{
-            LicenseUri = 'https://github.com/anthony-c-martin/bicep-test/blob/main/LICENSE'
-            ProjectUri = 'https://github.com/anthony-c-martin/bicep-test'
+            LicenseUri = 'https://github.com/anthony-c-martin/bicep-testing/blob/main/LICENSE'
+            ProjectUri = 'https://github.com/anthony-c-martin/bicep-testing'
             Tags = @('Bicep', 'Testing', 'InfrastructureAsCode')
         }
     }

@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anthony-c-martin/bicep-test.git"
+    "url": "git+https://github.com/anthony-c-martin/bicep-testing.git"
   },
   "keywords": [
     "bicep"
@@ -29,9 +29,9 @@
   "author": "Anthony Martin",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/anthony-c-martin/bicep-test/issues"
+    "url": "https://github.com/anthony-c-martin/bicep-testing/issues"
   },
-  "homepage": "https://github.com/anthony-c-martin/bicep-test#readme",
+  "homepage": "https://github.com/anthony-c-martin/bicep-testing#readme",
   "devDependencies": {
     "@types/jest": "30.0.0",
     "@typescript-eslint/eslint-plugin": "8.66.0",

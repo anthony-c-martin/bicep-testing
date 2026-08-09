@@ -1,4 +1,4 @@
-module github.com/anthony-c-martin/bicep-test/packages/go
+module github.com/anthony-c-martin/bicep-testing/packages/go
 
 go 1.24
 

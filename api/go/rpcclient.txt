@@ -1,4 +1,4 @@
-package rpcclient // import "github.com/anthony-c-martin/bicep-test/packages/go/rpcclient"
+package rpcclient // import "github.com/anthony-c-martin/bicep-testing/packages/go/rpcclient"
 
 Package rpcclient installs and communicates with the Bicep CLI over JSON-RPC.
 

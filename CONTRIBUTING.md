@@ -1,8 +1,8 @@
-# Contributing to bicep-test
+# Contributing to bicep-testing
 
 ## Development container
 
-With Docker and the VS Code Dev Containers extension installed, run **Dev Containers: Reopen in Container** from the command palette. The configuration under `.devcontainer/` installs Node 24, .NET 10, Go 1.24, PowerShell 7.6 with Pester, Python 3.12, and Java 17 with Maven. Package-manager caches persist in named Docker volumes, while dependency restore remains explicit for each language.
+With Docker and the VS Code Dev Containers extension installed, run **Dev Containers: Reopen in Container** from the command palette. The configuration under `.devcontainer/` installs Node 24, .NET 10, Go 1.24, PowerShell 7.6 with Pester, and Python 3.12. Package-manager caches persist in named Docker volumes, while dependency restore remains explicit for each language.
 
 ## Repository layout
 
@@ -33,15 +33,11 @@ packages/
 │   ├── src/anthonycmartin/bicep_testing/
 │   ├── scripts/
 │   └── tests/
-└── java/
-    ├── src/main/java/
-    ├── src/test/java/
-    └── pom.xml
 ```
 
-The Node package defines the reference snapshot behavior. The C#, Go, PowerShell, Python, and Java conformance tests exercise the same Bicep fixture and assertions.
+The Node package defines the reference snapshot behavior. The C#, Go, PowerShell, and Python conformance tests exercise the same Bicep fixture and assertions.
 
-Runnable consumer tests are under `samples/`. Run all six language samples with:
+Runnable consumer tests are under `samples/`. Run all five language samples with:
 
 ```powershell
 ./scripts/ValidateSamples.ps1
@@ -113,7 +109,7 @@ Review the Go public API in `api/go`. After an intentional API change, run `go g
 
 Project conventions:
 
-- Module path: `github.com/anthony-c-martin/bicep-test/packages/go`
+- Module path: `github.com/anthony-c-martin/bicep-testing/packages/go`
 - Package name: `biceptesting`
 - Keep exported names idiomatic to Go rather than reproducing the Node API naming exactly.
 - Keep the public snapshot API in the module root.
@@ -157,32 +153,13 @@ python -m pytest packages/python/tests
 python packages/python/scripts/public_api.py --check
 ```
 
-Review `api/python/bicep-testing.txt`. After an intentional API change, run the API script with `--update` and include the baseline change in the pull request.
+Review `api/python/bicep-testing.txt` and `api/python/rpcclient.txt`. After an intentional API change, run the API script with `--update` and include the baseline change in the pull request.
 
 Project conventions:
 
 - Keep runtime dependencies in the Python standard library where practical.
 - Use type annotations, immutable dataclasses for result data, and context managers for owned processes.
 - Add package code under `packages/python/src/anthonycmartin/bicep_testing` and pytest tests under `packages/python/tests`.
-
-## Java
-
-Prerequisites: JDK 17 or later and Maven 3.9 or later.
-
-Test and check the public API from `packages/java`:
-
-```sh
-mvn --batch-mode --no-transfer-progress test
-mvn --batch-mode --no-transfer-progress --quiet -DskipTests test-compile exec:java -Dexec.classpathScope=test -Dexec.mainClass=com.github.anthonycmartin.biceptesting.ApiSurface -Dexec.args=--check
-```
-
-Review `api/java/bicep-testing.txt`. After an intentional API change, replace `--check` with `--update` in the API command and include the baseline change in the pull request.
-
-Project conventions:
-
-- Target Java 17 and use Maven for builds and dependency management.
-- Use `AutoCloseable` for process ownership, builders for optional request metadata, and immutable result containers.
-- Add library code under `packages/java/src/main/java` and JUnit 5 tests under `packages/java/src/test/java`.
 
 ## Pull requests
 

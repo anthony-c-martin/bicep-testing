@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	biceptesting "github.com/anthony-c-martin/bicep-test/packages/go"
+	biceptesting "github.com/anthony-c-martin/bicep-testing/packages/go"
 )
 
 func TestInfrastructureHasExpectedResourcesAndNoDiagnostics(t *testing.T) {

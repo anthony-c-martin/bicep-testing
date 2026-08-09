@@ -125,33 +125,6 @@ jobs:
     - name: Check public API
       run: python packages/python/scripts/public_api.py --check
 
-  java:
-    name: Java
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v7
-
-    - name: Set up Java
-      uses: actions/setup-java@v5
-      with:
-        distribution: microsoft
-        java-version: '17'
-        cache: maven
-
-    - name: Test
-      working-directory: packages/java
-      run: mvn --batch-mode --no-transfer-progress test
-
-    - name: Check public API
-      working-directory: packages/java
-      run: >-
-        mvn --batch-mode --no-transfer-progress --quiet
-        -DskipTests test-compile exec:java
-        -Dexec.classpathScope=test
-        -Dexec.mainClass=com.github.anthonycmartin.biceptesting.ApiSurface
-        -Dexec.args=--check
-
   samples:
     name: Samples
     runs-on: ubuntu-latest
@@ -182,13 +155,6 @@ jobs:
       uses: actions/setup-python@v7
       with:
         python-version: '3.14'
-
-    - name: Set up Java
-      uses: actions/setup-java@v5
-      with:
-        distribution: microsoft
-        java-version: '17'
-        cache: maven
 
     - name: Install Pester
       shell: bash

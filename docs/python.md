@@ -46,6 +46,10 @@ assert all(
 
 `BicepTestSession.create` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs. Snapshot tests do not require Azure credentials or an Azure subscription.
 
+## JSON-RPC client
+
+Most tests should use `BicepTestSession`. Lower-level integrations can import `RpcClient` and `RpcError` from `anthonycmartin.bicep_testing.rpcclient`. `RpcClient` starts `bicep jsonrpc --stdio`, sends `Content-Length` framed requests with `call`, and owns the process until `close` is called. RPC error responses raise `RpcError`.
+
 ## Snapshot result
 
 `SnapshotResult` contains immutable tuples of `predicted_resources` and `diagnostics`, plus the resolved `outputs`. Each `SnapshotResource` exposes its identity, type, API version, location, properties, and any additional fields returned by Bicep.
@@ -77,6 +81,6 @@ with session.deploy(
 
 See the runnable [pytest sample](../samples/python/test_snapshot.py) for a complete consumer test using the shared example infrastructure.
 
-## Public API
+## Public APIs
 
-The complete exported Python API is available in [`api/python/bicep-testing.txt`](../api/python/bicep-testing.txt).
+The exported high-level API is available in [`api/python/bicep-testing.txt`](../api/python/bicep-testing.txt), and the transport API is available in [`api/python/rpcclient.txt`](../api/python/rpcclient.txt).

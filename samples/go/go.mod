@@ -1,10 +1,10 @@
-module github.com/anthony-c-martin/bicep-test/samples/go
+module github.com/anthony-c-martin/bicep-testing/samples/go
 
 go 1.24
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.10.1
-	github.com/anthony-c-martin/bicep-test/packages/go v0.0.0
+	github.com/anthony-c-martin/bicep-testing/packages/go v0.0.0
 )
 
 require (
@@ -23,4 +23,4 @@ require (
 	golang.org/x/text v0.27.0 // indirect
 )
 
-replace github.com/anthony-c-martin/bicep-test/packages/go => ../../packages/go
+replace github.com/anthony-c-martin/bicep-testing/packages/go => ../../packages/go

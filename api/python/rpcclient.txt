@@ -1,0 +1,5 @@
+CLASS RpcClient
+  call(self, method: 'str', params: 'dict[str, Any]') -> 'Any'
+  close(self) -> 'None'
+
+CLASS RpcError

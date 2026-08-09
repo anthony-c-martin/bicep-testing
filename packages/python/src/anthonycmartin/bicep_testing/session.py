@@ -8,8 +8,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Protocol, Self
 
-from ._rpc import RpcClient
 from .models import DeployResult, DeploymentResource, SnapshotMetadata, SnapshotResult
+from .rpcclient import RpcClient
 
 
 class _DeploymentStacksOperations(Protocol):

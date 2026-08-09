@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	biceptesting "github.com/anthony-c-martin/bicep-test/packages/go"
+	biceptesting "github.com/anthony-c-martin/bicep-testing/packages/go"
 )
 
 func TestInfrastructureDeploysAndIsRemovedAfterward(t *testing.T) {
