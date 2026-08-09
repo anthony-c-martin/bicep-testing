@@ -18,9 +18,9 @@ Create the `npm`, `nuget`, `pypi`, and `psgallery` environments in the GitHub re
 
 | Environment | Registry configuration |
 | --- | --- |
-| `npm` | On npmjs.com, configure a trusted publisher for package `@anthonycmartin/bicep-testing`, this repository, workflow `publish.yml`, and environment `npm`. No long-lived token is required. |
+| `npm` | On npmjs.com, configure a trusted publisher for package `@anthony-c-martin/bicep-testing`, this repository, workflow `publish.yml`, and environment `npm`. No long-lived token is required. |
 | `nuget` | On nuget.org, add a trusted publishing policy for the package owner with repository owner `anthony-c-martin`, repository `bicep-testing`, workflow `publish.yml`, and environment `nuget`. Add the policy owner's nuget.org profile name (not an email address) as the GitHub environment secret `NUGET_USER`. |
-| `pypi` | On PyPI, configure trusted publishers for `anthonycmartin-bicep-testing` and `bicep_rpc_client`, both using this repository, workflow `publish.yml`, and environment `pypi`. No long-lived token is required. |
+| `pypi` | On PyPI, configure trusted publishers for `anthonycmartin-bicep-testing` and `anthonycmartin-bicep-rpc-client`, both using this repository, workflow `publish.yml`, and environment `pypi`. No long-lived token is required. |
 | `psgallery` | Add a PowerShell Gallery API key as the GitHub environment secret `PSGALLERY_API_KEY`. Scope and rotate the key according to the Gallery account policy. |
 
 The Go proxy requires path-prefixed tags for modules in subdirectories. The workflow creates those compatibility tags automatically from the repository release tag; release authors still create only one tag.

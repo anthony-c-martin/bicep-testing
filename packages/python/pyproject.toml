@@ -11,7 +11,7 @@ requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "Anthony Martin" }]
 dependencies = [
-	"bicep_rpc_client>=0.1.0",
+	"anthonycmartin-bicep-rpc-client>=0.1.0",
 	"azure-mgmt-resource-deploymentstacks==1.0.0",
 ]
 

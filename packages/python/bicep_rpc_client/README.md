@@ -1,6 +1,6 @@
-# bicep_rpc_client
+# Bicep RPC Client for Python
 
-An independent Python client for the Bicep CLI JSON-RPC API. The distribution is named `bicep_rpc_client` and its public API is namespaced under `anthonycmartin.bicep_rpc_client`.
+An independent Python client for the Bicep CLI JSON-RPC API. Install the `anthonycmartin-bicep-rpc-client` distribution and import its public API from `anthonycmartin.bicep_rpc_client`.
 
 ```python
 from anthonycmartin.bicep_rpc_client import (

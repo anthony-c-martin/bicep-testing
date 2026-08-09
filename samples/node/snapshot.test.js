@@ -1,5 +1,5 @@
 const path = require('node:path');
-const { BicepTestSession } = require('@anthonycmartin/bicep-testing');
+const { BicepTestSession } = require('@anthony-c-martin/bicep-testing');
 
 const sampleDescribe = process.env.BICEP_TEST_VALIDATE_ONLY === '1' ? describe.skip : describe;
 

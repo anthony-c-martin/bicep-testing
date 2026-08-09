@@ -1,4 +1,4 @@
-# @anthonycmartin/bicep-testing
+# @anthony-c-martin/bicep-testing
 
 The independent, non-official Node library for asserting on Bicep templates without deploying to Azure.
 

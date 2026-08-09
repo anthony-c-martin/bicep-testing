@@ -1,5 +1,5 @@
 {
-  "name": "@anthonycmartin/bicep-testing",
+  "name": "@anthony-c-martin/bicep-testing",
   "version": "0.1.0",
   "description": "Test library for interacting with the Bicep CLI.",
   "main": "dist/index.js",
