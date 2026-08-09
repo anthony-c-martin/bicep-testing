@@ -1,13 +1,13 @@
 const path = require('node:path');
-const { BicepTester } = require('bicep-test');
+const { BicepTestSession } = require('bicep-test');
 
 describe('Bicep infrastructure', () => {
-  let tester;
+  let session;
   let snapshot;
 
   beforeAll(async () => {
-    tester = await BicepTester.create('0.43.1');
-    snapshot = await tester.snapshot(
+    session = await BicepTestSession.create('0.43.1');
+    snapshot = await session.snapshot(
       path.resolve(__dirname, '../infra/main.bicepparam'),
       '00000000-0000-0000-0000-000000000000',
       '00000000-0000-0000-0000-000000000000',
@@ -17,7 +17,7 @@ describe('Bicep infrastructure', () => {
     );
   }, 60_000);
 
-  afterAll(() => tester.dispose());
+  afterAll(() => session.dispose());
 
   test('predicts the expected resources without diagnostics', () => {
     expect(snapshot.diagnostics).toHaveLength(0);

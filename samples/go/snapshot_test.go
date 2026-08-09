@@ -9,13 +9,13 @@ import (
 )
 
 func TestInfrastructureHasExpectedResourcesAndNoDiagnostics(t *testing.T) {
-	tester, err := biceptest.New(context.Background(), "0.43.1")
+	session, err := biceptest.NewSession(context.Background(), "0.43.1")
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		if err := tester.Close(); err != nil {
-			t.Errorf("close tester: %v", err)
+		if err := session.Close(); err != nil {
+			t.Errorf("close session: %v", err)
 		}
 	})
 
@@ -23,7 +23,7 @@ func TestInfrastructureHasExpectedResourcesAndNoDiagnostics(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	snapshot, err := tester.Snapshot(context.Background(), parametersPath, biceptest.SnapshotMetadata{
+	snapshot, err := session.Snapshot(context.Background(), parametersPath, biceptest.SnapshotMetadata{
 		TenantID:       "00000000-0000-0000-0000-000000000000",
 		SubscriptionID: "00000000-0000-0000-0000-000000000000",
 		ResourceGroup:  "sample-rg",

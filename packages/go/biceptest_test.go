@@ -21,13 +21,13 @@ func TestSnapshotMatchesReferenceBehavior(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	tester, err := New(ctx, "0.43.1")
+	session, err := NewSession(ctx, "0.43.1")
 	if err != nil {
-		t.Fatalf("New returned an error: %v", err)
+		t.Fatalf("NewSession returned an error: %v", err)
 	}
-	defer tester.Close()
+	defer session.Close()
 
-	snapshot, err := tester.Snapshot(ctx, fixturePath(t), SnapshotMetadata{
+	snapshot, err := session.Snapshot(ctx, fixturePath(t), SnapshotMetadata{
 		TenantID:       tenantID,
 		SubscriptionID: subscriptionID,
 		ResourceGroup:  resourceGroup,

@@ -13,7 +13,7 @@ export type DeployOptions = {
   parameterOverrides?: Record<string, unknown>;
 };
 
-export class BicepTester {
+export class BicepTestSession {
   constructor(private bicep: Bicep) {}
 
   public static async create(bicepVersion: string) {
@@ -22,7 +22,7 @@ export class BicepTester {
     const bicepPath = await Bicep.install(basePath, bicepVersion);
     const bicep = await Bicep.initialize(bicepPath);
 
-    return new BicepTester(bicep);
+    return new BicepTestSession(bicep);
   }
 
   async snapshot(filePath: string, tenantId?: string, subscriptionId?: string, resourceGroup?: string, location?: string, deploymentName?: string): Promise<SnapshotResult> {

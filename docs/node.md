@@ -15,17 +15,17 @@ npm install --save-dev bicep-test
 
 ## Usage
 
-Create one tester for the suite, capture the snapshot in setup, and dispose the Bicep process when the suite completes:
+Create one session for the suite, capture the snapshot in setup, and dispose the Bicep process when the suite completes:
 
 ```ts
-import { BicepTester, SnapshotResult } from 'bicep-test';
+import { BicepTestSession, SnapshotResult } from 'bicep-test';
 
-let tester: BicepTester;
+let session: BicepTestSession;
 let snapshot: SnapshotResult;
 
 beforeAll(async () => {
-	tester = await BicepTester.create('0.43.1');
-	snapshot = await tester.snapshot(
+	session = await BicepTestSession.create('0.43.1');
+	snapshot = await session.snapshot(
 		'infra/main.bicepparam',
 		'00000000-0000-0000-0000-000000000000',
 		'00000000-0000-0000-0000-000000000000',
@@ -35,7 +35,7 @@ beforeAll(async () => {
 	);
 }, 60000);
 
-afterAll(() => tester.dispose());
+afterAll(() => session.dispose());
 
 it('disables public blob access', () => {
 	const storageAccounts = snapshot.predictedResources.filter(
@@ -49,7 +49,7 @@ it('disables public blob access', () => {
 });
 ```
 
-`BicepTester.create()` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs.
+`BicepTestSession.create()` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs.
 
 ## Snapshot result
 
@@ -66,7 +66,7 @@ Snapshot tests do not require Azure credentials or an Azure subscription.
 Use `deploy` when an assertion needs a real Azure resource or service response. The caller supplies an Azure `TokenCredential`, subscription, existing resource group, and unique stack name:
 
 ```ts
-const deployment = await tester.deploy(credential, {
+const deployment = await session.deploy(credential, {
 	filePath: 'infra/main.bicepparam',
 	subscriptionId,
 	resourceGroup,

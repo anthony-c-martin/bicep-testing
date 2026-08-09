@@ -3,8 +3,8 @@ BeforeAll {
     $parametersPath = Join-Path $PSScriptRoot '../infra/main.bicepparam'
     Import-Module $modulePath -Force
 
-    $tester = New-BicepTester -BicepVersion '0.43.1'
-    $snapshot = $tester | Get-BicepSnapshot `
+    $session = New-BicepTestSession -BicepVersion '0.43.1'
+    $snapshot = $session | Get-BicepSnapshot `
         -Path $parametersPath `
         -TenantId '00000000-0000-0000-0000-000000000000' `
         -SubscriptionId '00000000-0000-0000-0000-000000000000' `
@@ -14,7 +14,7 @@ BeforeAll {
 }
 
 AfterAll {
-    $tester | Remove-BicepTester
+    $session | Remove-BicepTestSession
 }
 
 Describe 'Bicep infrastructure' {

@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { BicepTester, SnapshotResult } from "../src";
+import { BicepTestSession, SnapshotResult } from "../src";
 
 const TENANT_ID = '00000000-0000-0000-0000-000000000000';
 const SUBSCRIPTION_ID = '00000000-0000-0000-0000-000000000000';
@@ -7,11 +7,11 @@ const RESOURCE_GROUP = 'test-rg';
 const LOCATION = 'eastus';
 const DEPLOYMENT_NAME = 'test-deployment';
 
-let tester: BicepTester;
+let tester: BicepTestSession;
 let snapshot: SnapshotResult;
 
 async function onBeforeAll() {
-  tester = await BicepTester.create('0.43.1');
+  tester = await BicepTestSession.create('0.43.1');
   snapshot = await tester.snapshot(
     path.join(__dirname, 'samples/snapshot/main.bicepparam'),
     TENANT_ID,

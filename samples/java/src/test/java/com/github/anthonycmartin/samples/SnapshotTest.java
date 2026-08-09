@@ -3,7 +3,7 @@ package com.github.anthonycmartin.samples;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.github.anthonycmartin.biceptest.BicepTester;
+import com.github.anthonycmartin.biceptest.BicepTestSession;
 import com.github.anthonycmartin.biceptest.SnapshotMetadata;
 import com.github.anthonycmartin.biceptest.SnapshotResource;
 import com.github.anthonycmartin.biceptest.SnapshotResult;
@@ -24,8 +24,8 @@ class SnapshotTest {
                 .deploymentName("sample-deployment")
                 .build();
 
-        try (BicepTester tester = BicepTester.create("0.43.1")) {
-            SnapshotResult snapshot = tester.snapshot(parameters, metadata);
+        try (BicepTestSession session = BicepTestSession.create("0.43.1")) {
+            SnapshotResult snapshot = session.snapshot(parameters, metadata);
             assertTrue(snapshot.diagnostics().isEmpty());
             assertEquals(
                     Set.of("sampleprimary", "samplebackup", "samplekv"),

@@ -29,9 +29,9 @@ func TestDeployCompilesDeploysAndTearsDownOnce(t *testing.T) {
 		Template:   `{"resources":[]}`,
 		Parameters: `{"parameters":{"message":{"value":"hello"},"secret":{"reference":{"keyVault":{"id":"/subscriptions/sub/resourceGroups/rg/providers/Microsoft.KeyVault/vaults/test"},"secretName":"password","secretVersion":"v1"}}}}`,
 	}}
-	tester := &Tester{client: bicep}
+	session := &Session{client: bicep}
 	overrides := map[string]json.RawMessage{"message": json.RawMessage(`"override"`)}
-	result, err := tester.Deploy(context.Background(), fakeCredential{}, DeployOptions{
+	result, err := session.Deploy(context.Background(), fakeCredential{}, DeployOptions{
 		FilePath:           "main.bicepparam",
 		SubscriptionID:     subscriptionID,
 		ResourceGroup:      resourceGroup,

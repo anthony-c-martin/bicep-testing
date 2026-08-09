@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from bicep_test import BicepTester, SnapshotMetadata
+from bicep_test import BicepTestSession, SnapshotMetadata
 
 
 def test_infrastructure_snapshot() -> None:
@@ -13,8 +13,8 @@ def test_infrastructure_snapshot() -> None:
         deployment_name="sample-deployment",
     )
 
-    with BicepTester.create("0.43.1") as tester:
-        snapshot = tester.snapshot(parameters, metadata)
+    with BicepTestSession.create("0.43.1") as session:
+        snapshot = session.snapshot(parameters, metadata)
 
     assert snapshot.diagnostics == ()
     assert {resource.name for resource in snapshot.predicted_resources} == {

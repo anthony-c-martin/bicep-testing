@@ -1,9 +1,9 @@
 #nullable enable
-BicepTest.BicepTester
-BicepTest.BicepTester.DeployAsync(Azure.Core.TokenCredential! credential, BicepTest.DeployOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<BicepTest.DeployResult!>!
-BicepTest.BicepTester.Dispose() -> void
-BicepTest.BicepTester.DisposeAsync() -> System.Threading.Tasks.ValueTask
-BicepTest.BicepTester.SnapshotAsync(string! filePath, string? tenantId = null, string? subscriptionId = null, string? resourceGroup = null, string? location = null, string? deploymentName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<BicepTest.SnapshotResult!>!
+BicepTest.BicepTestSession
+BicepTest.BicepTestSession.DeployAsync(Azure.Core.TokenCredential! credential, BicepTest.DeployOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<BicepTest.DeployResult!>!
+BicepTest.BicepTestSession.Dispose() -> void
+BicepTest.BicepTestSession.DisposeAsync() -> System.Threading.Tasks.ValueTask
+BicepTest.BicepTestSession.SnapshotAsync(string! filePath, string? tenantId = null, string? subscriptionId = null, string? resourceGroup = null, string? location = null, string? deploymentName = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<BicepTest.SnapshotResult!>!
 BicepTest.DeploymentResource
 BicepTest.DeploymentResource.<Clone>$() -> BicepTest.DeploymentResource!
 BicepTest.DeploymentResource.Deconstruct(out string! Id, out string? Type) -> void
@@ -57,6 +57,6 @@ BicepTest.SnapshotResult.SnapshotResult() -> void
 override BicepTest.DeploymentResource.Equals(object? obj) -> bool
 override BicepTest.DeploymentResource.GetHashCode() -> int
 override BicepTest.DeploymentResource.ToString() -> string!
-static BicepTest.BicepTester.CreateAsync(string! bicepVersion, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<BicepTest.BicepTester!>!
+static BicepTest.BicepTestSession.CreateAsync(string! bicepVersion, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<BicepTest.BicepTestSession!>!
 static BicepTest.DeploymentResource.operator !=(BicepTest.DeploymentResource? left, BicepTest.DeploymentResource? right) -> bool
 static BicepTest.DeploymentResource.operator ==(BicepTest.DeploymentResource? left, BicepTest.DeploymentResource? right) -> bool

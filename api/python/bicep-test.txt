@@ -1,4 +1,4 @@
-CLASS BicepTester
+CLASS BicepTestSession
   close(self) -> 'None'
   create(bicep_version: 'str') -> 'Self'
   deploy(self, credential: 'Any', file_path: 'str | os.PathLike[str]', subscription_id: 'str', resource_group: 'str', stack_name: 'str', parameter_overrides: 'dict[str, Any] | None' = None) -> 'DeployResult'

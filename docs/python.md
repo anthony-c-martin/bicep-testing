@@ -17,10 +17,10 @@ python -m pip install -e ./packages/python
 
 ## Usage
 
-Use `BicepTester` as a context manager so the Bicep JSON-RPC process is always closed:
+Use `BicepTestSession` as a context manager so the Bicep JSON-RPC process is always closed:
 
 ```python
-from bicep_test import BicepTester, SnapshotMetadata
+from bicep_test import BicepTestSession, SnapshotMetadata
 
 metadata = SnapshotMetadata(
     subscription_id="00000000-0000-0000-0000-000000000000",
@@ -29,8 +29,8 @@ metadata = SnapshotMetadata(
     deployment_name="my-deployment",
 )
 
-with BicepTester.create("0.43.1") as tester:
-    snapshot = tester.snapshot("infra/main.bicepparam", metadata)
+with BicepTestSession.create("0.43.1") as session:
+    snapshot = session.snapshot("infra/main.bicepparam", metadata)
 
 storage_accounts = [
     resource
@@ -44,7 +44,7 @@ assert all(
 )
 ```
 
-`BicepTester.create` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs. Snapshot tests do not require Azure credentials or an Azure subscription.
+`BicepTestSession.create` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs. Snapshot tests do not require Azure credentials or an Azure subscription.
 
 ## Snapshot result
 
@@ -57,7 +57,7 @@ Use `deploy` with an Azure credential when a test needs real resources or servic
 ```python
 from azure.identity import DefaultAzureCredential
 
-with tester.deploy(
+with session.deploy(
     DefaultAzureCredential(),
     "infra/main.bicepparam",
     subscription_id,

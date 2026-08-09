@@ -1,7 +1,7 @@
 import { Bicep } from '@azure/bicep-rpc-client';
 import { DeploymentStacksClient } from '@azure/arm-resourcesdeploymentstacks';
 import { TokenCredential } from '@azure/core-auth';
-import { BicepTester } from '../src';
+import { BicepTestSession } from '../src';
 
 const createOrUpdate = jest.fn();
 const deleteStack = jest.fn();
@@ -40,7 +40,7 @@ describe('Deployment helper', () => {
         ],
       },
     });
-    const tester = new BicepTester({ compileParams } as unknown as Bicep);
+    const tester = new BicepTestSession({ compileParams } as unknown as Bicep);
 
     const deployment = await tester.deploy(credential, {
       filePath: './main.bicepparam',
@@ -83,7 +83,7 @@ describe('Deployment helper', () => {
       success: false,
       diagnostics: [{ level: 'Error', code: 'BCP001', message: 'Invalid Bicep.' }],
     });
-    const tester = new BicepTester({ compileParams } as unknown as Bicep);
+    const tester = new BicepTestSession({ compileParams } as unknown as Bicep);
 
     await expect(tester.deploy(credential, {
       filePath: './main.bicepparam',

@@ -1,10 +1,10 @@
 """Test Bicep infrastructure by evaluating deployment snapshots locally."""
 
 from .models import DeployResult, DeploymentResource, SnapshotMetadata, SnapshotResource, SnapshotResult
-from .tester import BicepTester
+from .session import BicepTestSession
 
 __all__ = [
-    "BicepTester",
+    "BicepTestSession",
     "DeployResult",
     "DeploymentResource",
     "SnapshotMetadata",

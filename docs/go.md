@@ -17,7 +17,7 @@ go get github.com/anthony-c-martin/bicep-test/packages/go
 
 ## Usage
 
-Create one tester for the test, capture the snapshot, and close the Bicep process when the test completes:
+Create one session for the test, capture the snapshot, and close the Bicep process when the test completes:
 
 ```go
 package infra_test
@@ -30,13 +30,13 @@ import (
 )
 
 func TestStorageAccountsDisablePublicAccess(t *testing.T) {
-	tester, err := biceptest.New(context.Background(), "0.43.1")
+	session, err := biceptest.NewSession(context.Background(), "0.43.1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer tester.Close()
+	defer session.Close()
 
-	snapshot, err := tester.Snapshot(
+	snapshot, err := session.Snapshot(
 		context.Background(),
 		"infra/main.bicepparam",
 		biceptest.SnapshotMetadata{
@@ -74,7 +74,7 @@ A snapshot contains:
 Use `Deploy` with an Azure `azcore.TokenCredential` when a test needs real resources or service behavior:
 
 ```go
-deployment, err := tester.Deploy(ctx, credential, biceptest.DeployOptions{
+deployment, err := session.Deploy(ctx, credential, biceptest.DeployOptions{
 	FilePath:       "infra/main.bicepparam",
 	SubscriptionID: subscriptionID,
 	ResourceGroup:  resourceGroup,

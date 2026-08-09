@@ -10,7 +10,7 @@ using System.Text.Json.Nodes;
 
 namespace BicepTest;
 
-public sealed class BicepTester : IDisposable, IAsyncDisposable
+public sealed class BicepTestSession : IDisposable, IAsyncDisposable
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -19,12 +19,12 @@ public sealed class BicepTester : IDisposable, IAsyncDisposable
 
     private readonly IBicepClient client;
 
-    private BicepTester(IBicepClient client)
+    private BicepTestSession(IBicepClient client)
     {
         this.client = client;
     }
 
-    public static async Task<BicepTester> CreateAsync(
+    public static async Task<BicepTestSession> CreateAsync(
         string bicepVersion,
         CancellationToken cancellationToken = default)
     {
@@ -34,7 +34,7 @@ public sealed class BicepTester : IDisposable, IAsyncDisposable
         var client = await factory.Initialize(
             BicepClientConfiguration.Default with { BicepVersion = bicepVersion },
             cancellationToken);
-        return new BicepTester(client);
+        return new BicepTestSession(client);
     }
 
     public async Task<SnapshotResult> SnapshotAsync(
