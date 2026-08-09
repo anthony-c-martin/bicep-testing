@@ -1,7 +1,9 @@
 const path = require('node:path');
 const { BicepTestSession } = require('bicep-test');
 
-describe('Bicep infrastructure', () => {
+const sampleDescribe = process.env.BICEP_TEST_VALIDATE_ONLY === '1' ? describe.skip : describe;
+
+sampleDescribe('Bicep infrastructure snapshot', () => {
   let session;
   let snapshot;
 

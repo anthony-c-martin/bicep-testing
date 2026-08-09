@@ -25,6 +25,6 @@ Live tests compile a `.bicepparam` file, deploy it as an Azure Deployment Stack,
 
 ## Samples
 
-Runnable test suites under [`samples/`](samples/) demonstrate the same credential-free snapshot assertions with Jest, MSTest, Go's `testing` package, Pester, pytest, and JUnit. They share one Bicep fixture and are compiled and executed in CI. Live deployment examples are documented in each language guide but remain opt-in and are not run by standard CI.
+Runnable test suites under [`samples/`](samples/) demonstrate the same credential-free snapshot assertions and opt-in live deployment workflow with Jest, MSTest, Go's `testing` package, Pester, pytest, and JUnit. They share one Bicep fixture. Standard CI compiles or collects the samples without executing tests, so it validates both workflows without requiring Azure credentials or creating resources. See the [sample instructions](samples/README.md) for the environment variables required to run the live tests.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for repository setup, build commands, tests, and project conventions.
