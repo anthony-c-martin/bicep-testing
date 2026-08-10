@@ -14,10 +14,6 @@ github.com/AzureAD/microsoft-authentication-library-for-go v1.6.0 h1:XRzhVemXdgv
 github.com/AzureAD/microsoft-authentication-library-for-go v1.6.0/go.mod h1:HKpQxkWaGLJ+D/5H8QRpyQXA1eKjxkFlOMwck5+33Jk=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
-github.com/anthony-c-martin/bicep-testing/packages/go v0.1.0 h1:14KxxFK922GVQh2KZlc06wnzvi0UZD5yHRDnlTjajL0=
-github.com/anthony-c-martin/bicep-testing/packages/go v0.1.0/go.mod h1:3SG6i+1DBceftRjh2uXhCCcLxLBYbvMhUY1ovgu7P3Y=
-github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client v0.1.0 h1:LDERq3zL6wMFxA7THjhPg8fAVWnyDP4MuP6IVzAzv5Y=
-github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client v0.1.0/go.mod h1:UiQAgrrYy21PC4O2+LXEuqoRUTglNz3epmblaVtoUFg=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/golang-jwt/jwt/v5 v5.3.0 h1:pv4AsKCKKZuqlgs5sUmn4x8UlGa0kEVt/puTpKx9vvo=

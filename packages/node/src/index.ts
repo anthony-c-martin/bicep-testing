@@ -14,7 +14,7 @@ export type DeployOptions = {
 };
 
 export class BicepTestSession {
-  constructor(private bicep: Bicep) {}
+  private constructor(private bicep: Bicep) {}
 
   public static async create(bicepVersion: string) {
     const basePath = path.join(os.homedir(), '.bicep', 'bin', `v${bicepVersion}`);

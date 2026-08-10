@@ -12,8 +12,8 @@ This is an independent, non-official project.
 ## Installation
 
 ```powershell
-Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.2 -Repository PSGallery
-Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.2
+Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.3 -Repository PSGallery
+Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.3
 ```
 
 ## Snapshot testing
@@ -80,7 +80,7 @@ finally {
 }
 ```
 
-Live tests require an Azure `TokenCredential`, an existing resource group, and permission to create and delete Deployment Stacks and their managed resources. `Remove-BicepTestDeployment` is idempotent and deletes the stack and all resources it manages. Use a unique stack name and keep removal in a `finally` block.
+Live tests require an Azure `TokenCredential`, an existing resource group, and permission to create and delete Deployment Stacks and their managed resources. `Start-BicepTestDeployment` and `Remove-BicepTestDeployment` support `-WhatIf` and `-Confirm`. Removal is idempotent and deletes the stack and all resources it manages. Use a unique stack name and keep removal in a `finally` block.
 
 ## More information
 

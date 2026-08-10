@@ -9,7 +9,7 @@ import threading
 import urllib.request
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any, BinaryIO, Self
+from typing import Any, BinaryIO, Self, cast
 
 from .models import (
     BicepClientConfiguration,
@@ -65,11 +65,11 @@ class BicepClient:
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
         )
+        self._input = cast(BinaryIO, self._process.stdin)
+        self._output = cast(BinaryIO, self._process.stdout)
         if self._process.stdin is None or self._process.stdout is None:
             self.close()
             raise RuntimeError("Bicep JSON-RPC process did not expose stdin and stdout")
-        self._input: BinaryIO = self._process.stdin
-        self._output: BinaryIO = self._process.stdout
         self._lock = threading.Lock()
         self._next_id = 0
         self._version: str | None = None
@@ -161,14 +161,21 @@ class BicepClient:
         return self._version
 
     def close(self) -> None:
-        if self._process.poll() is not None:
-            return
-        self._process.terminate()
         try:
-            self._process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            self._process.kill()
-            self._process.wait()
+            if self._process.poll() is None:
+                self._process.terminate()
+                try:
+                    self._process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    self._process.kill()
+                    self._process.wait()
+        finally:
+            input_stream = getattr(self, "_input", None)
+            output_stream = getattr(self, "_output", None)
+            if input_stream is not None:
+                input_stream.close()
+            if output_stream is not None:
+                output_stream.close()
 
     def __enter__(self) -> Self:
         return self

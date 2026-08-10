@@ -18,6 +18,8 @@ FUNCTION Remove-BicepTestDeployment
 
 PARAMETER SET __AllParameterSets
   -Deployment <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+  -Confirm <System.Management.Automation.SwitchParameter>
+  -WhatIf <System.Management.Automation.SwitchParameter>
 
 FUNCTION Remove-BicepTestSession
 
@@ -28,9 +30,11 @@ FUNCTION Start-BicepTestDeployment
 
 PARAMETER SET __AllParameterSets
   -Session <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+  -Confirm <System.Management.Automation.SwitchParameter>
   -Credential <System.Object> [Mandatory]
   -ParameterOverrides <System.Collections.Hashtable>
   -Path <System.String> [Mandatory]
   -ResourceGroup <System.String> [Mandatory]
   -StackName <System.String> [Mandatory]
   -SubscriptionId <System.String> [Mandatory]
+  -WhatIf <System.Management.Automation.SwitchParameter>

@@ -98,7 +98,7 @@ function Remove-BicepTestSession {
 }
 
 function Start-BicepTestDeployment {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipeline)]
         [ValidateNotNull()]
@@ -128,6 +128,11 @@ function Start-BicepTestDeployment {
     )
 
     process {
+        $target = "$SubscriptionId/$ResourceGroup/$StackName"
+        if (-not $PSCmdlet.ShouldProcess($target, 'Create or update Bicep test deployment')) {
+            return
+        }
+
         Import-BicepTestAssembly
         $options = [AnthonyCMartin.BicepTesting.DeployOptions]::new()
         $options.FilePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
@@ -137,9 +142,13 @@ function Start-BicepTestDeployment {
 
         $overrides = [Collections.Generic.Dictionary[string, Text.Json.JsonElement]]::new()
         foreach ($item in $ParameterOverrides.GetEnumerator()) {
+            $valueType = if ($null -eq $item.Value) { [object] } else { $item.Value.GetType() }
             $overrides.Add(
                 [string] $item.Key,
-                [Text.Json.JsonSerializer]::SerializeToElement($item.Value))
+                [Text.Json.JsonSerializer]::SerializeToElement(
+                    [object] $item.Value,
+                    $valueType,
+                    [Text.Json.JsonSerializerOptions] $null))
         }
         $options.ParameterOverrides = $overrides
 
@@ -152,7 +161,7 @@ function Start-BicepTestDeployment {
 }
 
 function Remove-BicepTestDeployment {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipeline)]
         [ValidateNotNull()]
@@ -160,6 +169,10 @@ function Remove-BicepTestDeployment {
     )
 
     process {
+        if (-not $PSCmdlet.ShouldProcess('Bicep test deployment', 'Remove deployment stack and managed resources')) {
+            return
+        }
+
         $task = $Deployment.TeardownAsync([Threading.CancellationToken]::None)
         $task.GetAwaiter().GetResult()
     }

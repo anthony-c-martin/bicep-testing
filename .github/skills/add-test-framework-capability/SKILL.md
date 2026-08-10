@@ -45,7 +45,7 @@ If the requested behavior is ambiguous, inspect the nearest existing implementat
   - `packages/dotnet/src/BicepTest` and `packages/dotnet/test/BicepTest.Tests`
   - `packages/go` and, when transport behavior changes, `packages/go/bicep-rpc-client`
   - `packages/powershell/AnthonyCMartin.BicepTesting` and `packages/powershell/test`
-  - `packages/python/src/anthonycmartin/bicep_testing` and, when transport behavior changes, `packages/python/bicep_rpc_client`
+  - `packages/python/bicep_testing/src/anthonycmartin/bicep_testing` and, when transport behavior changes, `packages/python/bicep_rpc_client`
 - Identify the smallest shared behavior contract and the cheapest focused test that can disprove the proposed implementation.
 - Check the current worktree before editing and preserve unrelated user changes.
 
@@ -99,7 +99,7 @@ Preserve equivalent semantics while following each ecosystem's conventions.
 #### Python
 
 - Use type annotations, standard naming conventions, immutable dataclasses for result data, and context managers for owned resources.
-- Keep the implementation under `packages/python/src/anthonycmartin/bicep_testing` and pytest tests under `packages/python/tests`.
+- Keep the implementation under `packages/python/bicep_testing/src/anthonycmartin/bicep_testing` and pytest tests under `packages/python/bicep_testing/tests`.
 - Put Bicep process and JSON-RPC behavior in the standalone public `anthonycmartin.bicep_rpc_client` package while keeping it behind the high-level `BicepTestSession` abstraction.
 
 ### 4. Add Cross-Language Tests
@@ -178,7 +178,8 @@ Update every package README, even when the capability has the same conceptual be
 - `packages/dotnet/README.md`
 - `packages/go/README.md`
 - `packages/powershell/README.md`
-- `packages/python/README.md`
+- `packages/python/bicep_testing/README.md`
+- `packages/python/bicep_rpc_client/README.md`
 
 Each package README must explain:
 
@@ -217,7 +218,7 @@ Invoke-Pester ./packages/powershell/test -CI
 ./packages/powershell/scripts/public-api.ps1 -Check
 
 # Python
-python -m pytest packages/python/tests
+python -m pytest packages/python/bicep_testing/tests
 python packages/python/scripts/public_api.py --check
 
 # Runnable consumer samples

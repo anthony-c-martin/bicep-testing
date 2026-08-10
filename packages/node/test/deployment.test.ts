@@ -17,6 +17,10 @@ jest.mock('@azure/arm-resourcesdeploymentstacks', () => ({
 
 const credential = {} as TokenCredential;
 
+function createSession(bicep: Partial<Bicep>) {
+  return Reflect.construct(BicepTestSession, [bicep]) as BicepTestSession;
+}
+
 describe('Deployment helper', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -40,7 +44,7 @@ describe('Deployment helper', () => {
         ],
       },
     });
-    const tester = new BicepTestSession({ compileParams } as unknown as Bicep);
+    const tester = createSession({ compileParams } as unknown as Bicep);
 
     const deployment = await tester.deploy(credential, {
       filePath: './main.bicepparam',
@@ -83,7 +87,7 @@ describe('Deployment helper', () => {
       success: false,
       diagnostics: [{ level: 'Error', code: 'BCP001', message: 'Invalid Bicep.' }],
     });
-    const tester = new BicepTestSession({ compileParams } as unknown as Bicep);
+    const tester = createSession({ compileParams } as unknown as Bicep);
 
     await expect(tester.deploy(credential, {
       filePath: './main.bicepparam',

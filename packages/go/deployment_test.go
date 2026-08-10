@@ -3,7 +3,9 @@ package biceptesting
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -27,7 +29,7 @@ func TestDeployCompilesDeploysAndTearsDownOnce(t *testing.T) {
 	bicep := &fakeBicepClient{compilation: biceprpcclient.CompileParamsResponse{
 		Success:    true,
 		Template:   `{"resources":[]}`,
-		Parameters: `{"parameters":{"message":{"value":"hello"},"secret":{"reference":{"keyVault":{"id":"/subscriptions/sub/resourceGroups/rg/providers/Microsoft.KeyVault/vaults/test"},"secretName":"password","secretVersion":"v1"}}}}`,
+		Parameters: `{"parameters":{"message":{"value":"hello"},"optionalValue":{"value":null},"secret":{"reference":{"keyVault":{"id":"/subscriptions/sub/resourceGroups/rg/providers/Microsoft.KeyVault/vaults/test"},"secretName":"password","secretVersion":"v1"}}}}`,
 	}}
 	session := &Session{client: bicep}
 	overrides := map[string]json.RawMessage{"message": json.RawMessage(`"override"`)}
@@ -53,6 +55,16 @@ func TestDeployCompilesDeploysAndTearsDownOnce(t *testing.T) {
 	if actual := stackClient.stack.Properties.Parameters["message"].Value; actual != "hello" {
 		t.Errorf("deployment parameter = %v, want hello", actual)
 	}
+	if actual := stackClient.stack.Properties.Parameters["optionalValue"].Value; !azcore.IsNullValue(actual) {
+		t.Errorf("optional deployment parameter = %#v, want explicit null", actual)
+	}
+	encodedNull, err := json.Marshal(stackClient.stack.Properties.Parameters["optionalValue"])
+	if err != nil {
+		t.Fatalf("marshal null deployment parameter: %v", err)
+	}
+	if string(encodedNull) != `{"value":null}` {
+		t.Errorf("null deployment parameter = %s, want explicit null value", encodedNull)
+	}
 	secret := stackClient.stack.Properties.Parameters["secret"].Reference
 	if secret == nil || secret.KeyVault == nil || *secret.KeyVault.ID != "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.KeyVault/vaults/test" || *secret.SecretName != "password" || *secret.SecretVersion != "v1" {
 		t.Errorf("secret parameter = %#v, want a Key Vault reference", secret)
@@ -72,6 +84,61 @@ func TestDeployCompilesDeploysAndTearsDownOnce(t *testing.T) {
 	}
 	if stackClient.deleteCalls != 1 {
 		t.Errorf("delete calls = %d, want 1", stackClient.deleteCalls)
+	}
+}
+
+func TestTeardownRetriesAfterFailure(t *testing.T) {
+	stackClient := &fakeDeploymentStackClient{deleteErrors: []error{context.Canceled, nil}}
+	result := &DeployResult{client: stackClient, resourceGroup: resourceGroup, stackName: "test-stack"}
+
+	if err := result.Teardown(context.Background()); !errors.Is(err, context.Canceled) {
+		t.Fatalf("first Teardown error = %v, want context canceled", err)
+	}
+	if err := result.Teardown(context.Background()); err != nil {
+		t.Fatalf("second Teardown returned an error: %v", err)
+	}
+	if err := result.Teardown(context.Background()); err != nil {
+		t.Fatalf("third Teardown returned an error: %v", err)
+	}
+	if stackClient.deleteCalls != 2 {
+		t.Errorf("delete calls = %d, want 2", stackClient.deleteCalls)
+	}
+}
+
+func TestTeardownSharesActiveDeletionAndAllowsWaiterCancellation(t *testing.T) {
+	stackClient := &blockingDeploymentStackClient{
+		started: make(chan struct{}),
+		release: make(chan struct{}),
+	}
+	result := &DeployResult{client: stackClient, resourceGroup: resourceGroup, stackName: "test-stack"}
+	firstDone := make(chan error, 1)
+	go func() {
+		firstDone <- result.Teardown(context.Background())
+	}()
+	<-stackClient.started
+
+	waiterCtx, cancelWaiter := context.WithCancel(context.Background())
+	waiterDone := make(chan error, 1)
+	go func() {
+		waiterDone <- result.Teardown(waiterCtx)
+	}()
+	cancelWaiter()
+	if err := <-waiterDone; !errors.Is(err, context.Canceled) {
+		t.Fatalf("waiting Teardown error = %v, want context canceled", err)
+	}
+	if calls := stackClient.deleteCalls.Load(); calls != 1 {
+		t.Fatalf("delete calls while active = %d, want 1", calls)
+	}
+
+	close(stackClient.release)
+	if err := <-firstDone; err != nil {
+		t.Fatalf("active Teardown returned an error: %v", err)
+	}
+	if err := result.Teardown(context.Background()); err != nil {
+		t.Fatalf("completed Teardown returned an error: %v", err)
+	}
+	if calls := stackClient.deleteCalls.Load(); calls != 1 {
+		t.Errorf("delete calls = %d, want 1", calls)
 	}
 }
 
@@ -102,6 +169,7 @@ type fakeDeploymentStackClient struct {
 	stackName     string
 	stack         armdeploymentstacks.DeploymentStack
 	deleteCalls   int
+	deleteErrors  []error
 }
 
 func (client *fakeDeploymentStackClient) createOrUpdate(_ context.Context, resourceGroup, stackName string, stack armdeploymentstacks.DeploymentStack) (armdeploymentstacks.DeploymentStack, error) {
@@ -119,5 +187,31 @@ func (client *fakeDeploymentStackClient) createOrUpdate(_ context.Context, resou
 
 func (client *fakeDeploymentStackClient) delete(_ context.Context, resourceGroup, stackName string) error {
 	client.deleteCalls++
+	if len(client.deleteErrors) > 0 {
+		err := client.deleteErrors[0]
+		client.deleteErrors = client.deleteErrors[1:]
+		return err
+	}
 	return nil
+}
+
+type blockingDeploymentStackClient struct {
+	started     chan struct{}
+	release     chan struct{}
+	deleteCalls atomic.Int32
+}
+
+func (*blockingDeploymentStackClient) createOrUpdate(context.Context, string, string, armdeploymentstacks.DeploymentStack) (armdeploymentstacks.DeploymentStack, error) {
+	return armdeploymentstacks.DeploymentStack{}, nil
+}
+
+func (client *blockingDeploymentStackClient) delete(ctx context.Context, _, _ string) error {
+	client.deleteCalls.Add(1)
+	close(client.started)
+	select {
+	case <-client.release:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }

@@ -8,8 +8,20 @@ import (
 	biceptesting "github.com/anthony-c-martin/bicep-testing/packages/go"
 )
 
-func TestEnvironmentParametersSelectTopologySKUsAndTags(t *testing.T) {
-	session := newSnapshotSession(t)
+func TestSnapshots(t *testing.T) {
+	session := newTestSession(t)
+	t.Run("environment parameters select topology, SKUs, and tags", func(t *testing.T) {
+		testEnvironmentParametersSelectTopologySKUsAndTags(t, session)
+	})
+	t.Run("security baseline catches weakened parameters", func(t *testing.T) {
+		testSecurityBaselineCatchesWeakenedParameters(t, session)
+	})
+	t.Run("private network references are wired together", func(t *testing.T) {
+		testPrivateNetworkReferencesAreWiredTogether(t, session)
+	})
+}
+
+func testEnvironmentParametersSelectTopologySKUsAndTags(t *testing.T, session *biceptesting.Session) {
 	development := takeSnapshot(t, session, "environment-topology/dev.bicepparam")
 	production := takeSnapshot(t, session, "environment-topology/prod.bicepparam")
 
@@ -37,8 +49,7 @@ func TestEnvironmentParametersSelectTopologySKUsAndTags(t *testing.T) {
 	}
 }
 
-func TestSecurityBaselineCatchesWeakenedParameters(t *testing.T) {
-	session := newSnapshotSession(t)
+func testSecurityBaselineCatchesWeakenedParameters(t *testing.T, session *biceptesting.Session) {
 	secure := takeSnapshot(t, session, "security-baseline/secure.bicepparam")
 	insecure := takeSnapshot(t, session, "security-baseline/insecure.bicepparam")
 	secureStorage := resourceByType(t, secure, "Microsoft.Storage/storageAccounts")
@@ -58,8 +69,7 @@ func TestSecurityBaselineCatchesWeakenedParameters(t *testing.T) {
 	}
 }
 
-func TestPrivateNetworkReferencesAreWiredTogether(t *testing.T) {
-	session := newSnapshotSession(t)
+func testPrivateNetworkReferencesAreWiredTogether(t *testing.T, session *biceptesting.Session) {
 	snapshot := takeSnapshot(t, session, "private-network/main.bicepparam")
 	resources := map[string]biceptesting.SnapshotResource{}
 	for _, resource := range snapshot.PredictedResources {
@@ -85,7 +95,7 @@ func TestPrivateNetworkReferencesAreWiredTogether(t *testing.T) {
 	}
 }
 
-func newSnapshotSession(t *testing.T) *biceptesting.Session {
+func newTestSession(t *testing.T) *biceptesting.Session {
 	t.Helper()
 	session, err := biceptesting.NewSession(context.Background(), "0.43.1")
 	if err != nil {

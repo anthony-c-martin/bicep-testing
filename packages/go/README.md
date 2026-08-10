@@ -6,13 +6,13 @@ This is an independent, non-official project.
 
 ## Requirements
 
-- Go 1.24 or later
+- Go 1.25 or later
 - A `.bicepparam` entry point for the deployment under test
 
 ## Installation
 
 ```sh
-go get github.com/anthony-c-martin/bicep-testing/packages/go@v0.1.2
+go get github.com/anthony-c-martin/bicep-testing/packages/go@v0.1.3
 ```
 
 ## Snapshot testing
@@ -97,7 +97,7 @@ t.Cleanup(func() {
 })
 ```
 
-Live tests require an `azcore.TokenCredential`, an existing resource group, and permission to create and delete Deployment Stacks and their managed resources. `Teardown()` is idempotent and deletes the stack and all resources it manages. Use a unique stack name and register teardown immediately after deployment.
+Live tests require an `azcore.TokenCredential`, an existing resource group, and permission to create and delete Deployment Stacks and their managed resources. `Teardown()` deletes the stack and all resources it manages. Concurrent calls share an active deletion, successful cleanup is idempotent, and a failed deletion can be retried. Use a unique stack name and register teardown immediately after deployment.
 
 Lower-level Bicep integrations can use the separately versioned [bicep-rpc-client module](https://github.com/anthony-c-martin/bicep-testing/tree/main/packages/go/bicep-rpc-client).
 

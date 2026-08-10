@@ -17,19 +17,30 @@ import (
 	biceptesting "github.com/anthony-c-martin/bicep-testing/packages/go"
 )
 
-func TestSecureStorageIsVerifiedInAzureAndRemoved(t *testing.T) {
+func TestDeployments(t *testing.T) {
 	settings := loadLiveSettings(t)
+	session := newTestSession(t)
+	t.Run("secure storage is verified in Azure and removed", func(t *testing.T) {
+		testSecureStorageIsVerifiedInAzureAndRemoved(t, session, settings)
+	})
+	t.Run("removed audit storage is reconciled and remaining resources are cleaned up", func(t *testing.T) {
+		testDeploymentReconcilesRemovedAuditStorageAndCleansUp(t, session, settings)
+	})
+}
+
+func testSecureStorageIsVerifiedInAzureAndRemoved(t *testing.T, session *biceptesting.Session, settings liveSettings) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
 	credential, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := newLiveSession(t, ctx)
 	deployment := deployStorage(t, ctx, session, credential, settings, settings.stackName+"-secure", false)
 	primaryStorageID := deployment.Outputs["primaryStorageId"].(string)
 	defer func() {
-		if err := deployment.Teardown(context.Background()); err != nil {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cleanupCancel()
+		if err := deployment.Teardown(cleanupCtx); err != nil {
 			t.Errorf("tear down deployment: %v", err)
 		}
 	}()
@@ -54,35 +65,35 @@ func TestSecureStorageIsVerifiedInAzureAndRemoved(t *testing.T) {
 	}
 }
 
-func TestDeploymentReconcilesRemovedAuditStorageAndCleansUp(t *testing.T) {
-	settings := loadLiveSettings(t)
+func testDeploymentReconcilesRemovedAuditStorageAndCleansUp(t *testing.T, session *biceptesting.Session, settings liveSettings) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
 	credential, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := newLiveSession(t, ctx)
-	initial := deployStorage(t, ctx, session, credential, settings, settings.stackName, true)
-	primaryStorageID := initial.Outputs["primaryStorageId"].(string)
-	auditStorageID := initial.Outputs["auditStorageId"].(string)
-	if len(initial.Resources) != 2 {
-		t.Fatalf("initial resources = %d, want 2", len(initial.Resources))
-	}
-
-	reconciled := deployStorage(t, ctx, session, credential, settings, settings.stackName, false)
+	deployment := deployStorage(t, ctx, session, credential, settings, settings.stackName, true)
 	defer func() {
-		if err := reconciled.Teardown(context.Background()); err != nil {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cleanupCancel()
+		if err := deployment.Teardown(cleanupCtx); err != nil {
 			t.Errorf("tear down deployment: %v", err)
 		}
 	}()
-	if len(reconciled.Resources) != 1 || reconciled.Resources[0].ID != primaryStorageID {
-		t.Errorf("unexpected reconciled resources: %#v", reconciled.Resources)
+	primaryStorageID := deployment.Outputs["primaryStorageId"].(string)
+	auditStorageID := deployment.Outputs["auditStorageId"].(string)
+	if len(deployment.Resources) != 2 {
+		t.Fatalf("initial resources = %d, want 2", len(deployment.Resources))
+	}
+
+	deployment = deployStorage(t, ctx, session, credential, settings, settings.stackName, false)
+	if len(deployment.Resources) != 1 || deployment.Resources[0].ID != primaryStorageID {
+		t.Errorf("unexpected reconciled resources: %#v", deployment.Resources)
 	}
 	if status, _ := getAzureResource(t, ctx, credential, auditStorageID); status != http.StatusNotFound {
 		t.Errorf("audit storage status after reconciliation = %d, want 404", status)
 	}
-	if err := reconciled.Teardown(ctx); err != nil {
+	if err := deployment.Teardown(ctx); err != nil {
 		t.Fatal(err)
 	}
 	if status, _ := getAzureResource(t, ctx, credential, primaryStorageID); status != http.StatusNotFound {
@@ -105,20 +116,6 @@ func loadLiveSettings(t *testing.T) liveSettings {
 		stackName:      requireEnvironmentVariable(t, "BICEP_TEST_STACK_NAME"),
 		resourcePrefix: requireEnvironmentVariable(t, "BICEP_TEST_RESOURCE_PREFIX"),
 	}
-}
-
-func newLiveSession(t *testing.T, ctx context.Context) *biceptesting.Session {
-	t.Helper()
-	session, err := biceptesting.NewSession(ctx, "0.43.1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if err := session.Close(); err != nil {
-			t.Errorf("close session: %v", err)
-		}
-	})
-	return session
 }
 
 func deployStorage(t *testing.T, ctx context.Context, session *biceptesting.Session, credential azcore.TokenCredential, settings liveSettings, stackName string, includeAudit bool) *biceptesting.DeployResult {
