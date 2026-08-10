@@ -172,15 +172,15 @@ Review `api/python/bicep-testing.txt` and `api/python/bicep_rpc_client.txt`.
 
 ### 6. Update Documentation
 
-Update every language document, even when the capability has the same conceptual behavior:
+Update every package README, even when the capability has the same conceptual behavior:
 
-- `docs/node.md`
-- `docs/csharp.md`
-- `docs/go.md`
-- `docs/powershell.md`
-- `docs/python.md`
+- `packages/node/README.md`
+- `packages/dotnet/README.md`
+- `packages/go/README.md`
+- `packages/powershell/README.md`
+- `packages/python/README.md`
 
-Each document must explain:
+Each package README must explain:
 
 - Why a user would use the capability.
 - The language-specific public entry point and important inputs/defaults.

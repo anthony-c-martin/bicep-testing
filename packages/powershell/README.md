@@ -85,6 +85,5 @@ Live tests require an Azure `TokenCredential`, an existing resource group, and p
 ## More information
 
 - [Runnable Pester snapshot and deployment samples](https://github.com/anthony-c-martin/bicep-testing/tree/main/samples/powershell)
-- [Complete PowerShell guide](https://github.com/anthony-c-martin/bicep-testing/blob/main/docs/powershell.md)
 - [Exported commands](https://github.com/anthony-c-martin/bicep-testing/blob/main/api/powershell/AnthonyCMartin.BicepTesting.txt)
 - [Project repository](https://github.com/anthony-c-martin/bicep-testing)

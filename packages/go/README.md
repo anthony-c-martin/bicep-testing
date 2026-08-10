@@ -104,6 +104,5 @@ Lower-level Bicep integrations can use the separately versioned [bicep-rpc-clien
 ## More information
 
 - [Runnable Go snapshot and deployment samples](https://github.com/anthony-c-martin/bicep-testing/tree/main/samples/go)
-- [Complete Go guide](https://github.com/anthony-c-martin/bicep-testing/blob/main/docs/go.md)
 - [Exported API](https://github.com/anthony-c-martin/bicep-testing/blob/main/api/go/biceptesting.txt)
 - [Project repository](https://github.com/anthony-c-martin/bicep-testing)

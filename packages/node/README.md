@@ -93,7 +93,6 @@ Live tests require Azure credentials, an existing resource group, and permission
 ## More information
 
 - [Runnable Jest snapshot and deployment samples](https://github.com/anthony-c-martin/bicep-testing/tree/main/samples/node)
-- [Complete Node guide](https://github.com/anthony-c-martin/bicep-testing/blob/main/docs/node.md)
 - [Exported API](https://github.com/anthony-c-martin/bicep-testing/blob/main/api/node/bicep-testing.d.ts)
 - [Project repository](https://github.com/anthony-c-martin/bicep-testing)# @anthony-c-martin/bicep-testing
 
@@ -190,6 +189,5 @@ Live tests require Azure credentials, an existing resource group, and permission
 ## More information
 
 - [Runnable Jest snapshot and deployment samples](https://github.com/anthony-c-martin/bicep-testing/tree/main/samples/node)
-- [Complete Node guide](https://github.com/anthony-c-martin/bicep-testing/blob/main/docs/node.md)
 - [Exported API](https://github.com/anthony-c-martin/bicep-testing/blob/main/api/node/bicep-testing.d.ts)
 - [Project repository](https://github.com/anthony-c-martin/bicep-testing)

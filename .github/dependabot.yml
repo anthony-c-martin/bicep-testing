@@ -12,7 +12,10 @@ updates:
         patterns:
           - "*"
   - package-ecosystem: "npm"
-    directory: "/packages/node"
+    directories:
+      - "/packages/node"
+      - "/samples/node"
+      - "/site"
     schedule:
       interval: "weekly"
       day: "sunday"
@@ -23,7 +26,9 @@ updates:
         patterns:
           - "*"
   - package-ecosystem: "nuget"
-    directory: "/packages/dotnet"
+    directories:
+      - "/packages/dotnet"
+      - "/samples/dotnet"
     schedule:
       interval: "weekly"
       day: "sunday"
@@ -34,18 +39,10 @@ updates:
         patterns:
           - "*"
   - package-ecosystem: "gomod"
-    directory: "/packages/go"
-    schedule:
-      interval: "weekly"
-      day: "sunday"
-    cooldown:
-      default-days: 7
-    groups:
-      all-dependencies:
-        patterns:
-          - "*"
-  - package-ecosystem: "gomod"
-    directory: "/packages/go/bicep-rpc-client"
+    directories:
+      - "/packages/go"
+      - "/packages/go/bicep-rpc-client"
+      - "/samples/go"
     schedule:
       interval: "weekly"
       day: "sunday"

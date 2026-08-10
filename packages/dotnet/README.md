@@ -82,6 +82,5 @@ Live tests require Azure credentials, an existing resource group, and permission
 ## More information
 
 - [Runnable MSTest snapshot and deployment samples](https://github.com/anthony-c-martin/bicep-testing/tree/main/samples/dotnet)
-- [Complete C# guide](https://github.com/anthony-c-martin/bicep-testing/blob/main/docs/csharp.md)
 - [Exported API](https://github.com/anthony-c-martin/bicep-testing/blob/main/api/dotnet/PublicAPI.Unshipped.txt)
 - [Project repository](https://github.com/anthony-c-martin/bicep-testing)
