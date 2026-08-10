@@ -22,7 +22,7 @@ Create one session for the test suite and remove it when the suite completes:
 
 ```powershell
 BeforeAll {
-    $session = New-BicepTestSession -BicepVersion '0.43.1'
+    $session = New-BicepTestSession -BicepVersion '0.46.1'
     $snapshot = $session | Get-BicepSnapshot `
         -Path 'infra/main.bicepparam' `
         -TenantId '00000000-0000-0000-0000-000000000000' `

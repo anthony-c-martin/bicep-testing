@@ -22,7 +22,7 @@ Create and asynchronously dispose a session within the test lifetime:
 ```csharp
 using AnthonyCMartin.BicepTesting;
 
-await using var session = await BicepTestSession.CreateAsync("0.43.1");
+await using var session = await BicepTestSession.CreateAsync("0.46.1");
 var snapshot = await session.SnapshotAsync(
     "infra/main.bicepparam",
     tenantId: "00000000-0000-0000-0000-000000000000",

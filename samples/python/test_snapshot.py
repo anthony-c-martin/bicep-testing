@@ -7,7 +7,7 @@ from anthonycmartin.bicep_testing import BicepTestSession, SnapshotMetadata
 
 @pytest.fixture(scope="module")
 def session() -> Iterator[BicepTestSession]:
-    with BicepTestSession.create("0.43.1") as value:
+    with BicepTestSession.create("0.46.1") as value:
         yield value
 
 

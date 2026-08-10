@@ -30,7 +30,7 @@ metadata = SnapshotMetadata(
 	deployment_name="example-deployment",
 )
 
-with BicepTestSession.create("0.43.1") as session:
+with BicepTestSession.create("0.46.1") as session:
 	snapshot = session.snapshot("infra/main.bicepparam", metadata)
 
 storage_accounts = [

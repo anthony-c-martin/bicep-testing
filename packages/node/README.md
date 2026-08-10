@@ -26,7 +26,7 @@ let session;
 let snapshot;
 
 beforeAll(async () => {
-  session = await BicepTestSession.create('0.43.1');
+  session = await BicepTestSession.create('0.46.1');
   snapshot = await session.snapshot(
     'infra/main.bicepparam',
     '00000000-0000-0000-0000-000000000000',
@@ -122,7 +122,7 @@ let session;
 let snapshot;
 
 beforeAll(async () => {
-	session = await BicepTestSession.create('0.43.1');
+	session = await BicepTestSession.create('0.46.1');
 	snapshot = await session.snapshot(
 		'infra/main.bicepparam',
 		'00000000-0000-0000-0000-000000000000',

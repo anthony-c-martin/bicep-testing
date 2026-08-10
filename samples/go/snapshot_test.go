@@ -97,7 +97,7 @@ func testPrivateNetworkReferencesAreWiredTogether(t *testing.T, session *bicepte
 
 func newTestSession(t *testing.T) *biceptesting.Session {
 	t.Helper()
-	session, err := biceptesting.NewSession(context.Background(), "0.43.1")
+	session, err := biceptesting.NewSession(context.Background(), "0.46.1")
 	if err != nil {
 		t.Fatal(err)
 	}

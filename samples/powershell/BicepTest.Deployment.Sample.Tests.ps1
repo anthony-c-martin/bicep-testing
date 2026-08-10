@@ -37,7 +37,7 @@ Describe 'Real-world Bicep deployments' -Skip:(
     -not $env:BICEP_TEST_STACK_NAME -or
     -not $env:BICEP_TEST_RESOURCE_PREFIX) {
     BeforeAll {
-        $session = New-BicepTestSession -BicepVersion '0.43.1'
+        $session = New-BicepTestSession -BicepVersion '0.46.1'
     }
 
     AfterAll {

@@ -31,7 +31,7 @@ import (
 
 func TestStorageAccountsDisablePublicAccess(t *testing.T) {
 	ctx := context.Background()
-	session, err := biceptesting.NewSession(ctx, "0.43.1")
+	session, err := biceptesting.NewSession(ctx, "0.46.1")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -14,7 +14,7 @@ sampleDescribe('real-world Bicep snapshots', () => {
   let session;
 
   beforeAll(async () => {
-    session = await BicepTestSession.create('0.43.1');
+    session = await BicepTestSession.create('0.46.1');
   }, 60_000);
 
   afterAll(() => session.dispose());

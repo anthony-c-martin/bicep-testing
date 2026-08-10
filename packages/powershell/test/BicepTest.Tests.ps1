@@ -23,7 +23,7 @@ Describe 'AnthonyCMartin.BicepTesting module' {
     }
 
     It 'matches the reference snapshot behavior' {
-        $session = New-BicepTestSession -BicepVersion '0.43.1'
+        $session = New-BicepTestSession -BicepVersion '0.46.1'
         try {
             $snapshot = $session | Get-BicepSnapshot `
                 -Path $fixturePath `

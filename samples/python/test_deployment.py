@@ -13,7 +13,7 @@ from azure.identity import DefaultAzureCredential
 @pytest.fixture(scope="module")
 def session() -> Iterator[BicepTestSession]:
     live_settings()
-    with BicepTestSession.create("0.43.1") as value:
+    with BicepTestSession.create("0.46.1") as value:
         yield value
 
 

@@ -16,7 +16,7 @@ public sealed class SnapshotTests
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext testContext)
     {
-        session = await BicepTestSession.CreateAsync("0.43.1", testContext.CancellationToken);
+        session = await BicepTestSession.CreateAsync("0.46.1", testContext.CancellationToken);
     }
 
     [ClassCleanup]

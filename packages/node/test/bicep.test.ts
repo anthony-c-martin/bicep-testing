@@ -11,7 +11,7 @@ let tester: BicepTestSession;
 let snapshot: SnapshotResult;
 
 async function onBeforeAll() {
-  tester = await BicepTestSession.create('0.43.1');
+  tester = await BicepTestSession.create('0.46.1');
   snapshot = await tester.snapshot(
     path.join(__dirname, 'samples/snapshot/main.bicepparam'),
     TENANT_ID,

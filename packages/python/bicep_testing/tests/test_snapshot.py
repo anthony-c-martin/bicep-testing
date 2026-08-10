@@ -13,7 +13,7 @@ def test_snapshot_matches_reference_behavior() -> None:
         deployment_name="sample-deployment",
     )
 
-    with BicepTestSession.create("0.43.1") as session:
+    with BicepTestSession.create("0.46.1") as session:
         snapshot = session.snapshot(fixture, metadata)
 
     assert snapshot.diagnostics == ()

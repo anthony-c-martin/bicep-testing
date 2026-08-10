@@ -21,7 +21,7 @@ func TestSnapshotMatchesReferenceBehavior(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	session, err := NewSession(ctx, "0.43.1")
+	session, err := NewSession(ctx, "0.46.1")
 	if err != nil {
 		t.Fatalf("NewSession returned an error: %v", err)
 	}

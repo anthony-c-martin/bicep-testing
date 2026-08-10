@@ -18,7 +18,7 @@ public sealed class SnapshotTests
     public async Task Snapshot_matches_reference_behavior()
     {
         await using var session = await BicepTestSession.CreateAsync(
-            "0.43.1",
+            "0.46.1",
             TestContext.CancellationToken);
         var snapshot = await session.SnapshotAsync(
             GetFixturePath(),
