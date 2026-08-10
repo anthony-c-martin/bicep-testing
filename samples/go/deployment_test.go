@@ -17,15 +17,24 @@ import (
 	biceptesting "github.com/anthony-c-martin/bicep-testing/packages/go"
 )
 
-func TestSecureStorageIsVerifiedInAzureAndRemoved(t *testing.T) {
+func TestDeployments(t *testing.T) {
 	settings := loadLiveSettings(t)
+	session := newTestSession(t)
+	t.Run("secure storage is verified in Azure and removed", func(t *testing.T) {
+		testSecureStorageIsVerifiedInAzureAndRemoved(t, session, settings)
+	})
+	t.Run("removed audit storage is reconciled and remaining resources are cleaned up", func(t *testing.T) {
+		testDeploymentReconcilesRemovedAuditStorageAndCleansUp(t, session, settings)
+	})
+}
+
+func testSecureStorageIsVerifiedInAzureAndRemoved(t *testing.T, session *biceptesting.Session, settings liveSettings) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
 	credential, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := newLiveSession(t, ctx)
 	deployment := deployStorage(t, ctx, session, credential, settings, settings.stackName+"-secure", false)
 	primaryStorageID := deployment.Outputs["primaryStorageId"].(string)
 	defer func() {
@@ -54,15 +63,13 @@ func TestSecureStorageIsVerifiedInAzureAndRemoved(t *testing.T) {
 	}
 }
 
-func TestDeploymentReconcilesRemovedAuditStorageAndCleansUp(t *testing.T) {
-	settings := loadLiveSettings(t)
+func testDeploymentReconcilesRemovedAuditStorageAndCleansUp(t *testing.T, session *biceptesting.Session, settings liveSettings) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
 	credential, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	session := newLiveSession(t, ctx)
 	initial := deployStorage(t, ctx, session, credential, settings, settings.stackName, true)
 	primaryStorageID := initial.Outputs["primaryStorageId"].(string)
 	auditStorageID := initial.Outputs["auditStorageId"].(string)
@@ -105,20 +112,6 @@ func loadLiveSettings(t *testing.T) liveSettings {
 		stackName:      requireEnvironmentVariable(t, "BICEP_TEST_STACK_NAME"),
 		resourcePrefix: requireEnvironmentVariable(t, "BICEP_TEST_RESOURCE_PREFIX"),
 	}
-}
-
-func newLiveSession(t *testing.T, ctx context.Context) *biceptesting.Session {
-	t.Helper()
-	session, err := biceptesting.NewSession(ctx, "0.43.1")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() {
-		if err := session.Close(); err != nil {
-			t.Errorf("close session: %v", err)
-		}
-	})
-	return session
 }
 
 func deployStorage(t *testing.T, ctx context.Context, session *biceptesting.Session, credential azcore.TokenCredential, settings liveSettings, stackName string, includeAudit bool) *biceptesting.DeployResult {

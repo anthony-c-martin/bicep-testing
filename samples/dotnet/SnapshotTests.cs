@@ -9,14 +9,26 @@ public sealed class SnapshotTests
 {
     private const string TenantId = "ddbe463a-0554-485d-b589-0b17d60cd38b";
     private const string SubscriptionId = "28c9069e-23e8-47d2-b640-00d2e0f09616";
+    private static BicepTestSession session = null!;
 
     public TestContext TestContext { get; set; } = null!;
+
+    [ClassInitialize]
+    public static async Task ClassInitialize(TestContext testContext)
+    {
+        session = await BicepTestSession.CreateAsync("0.43.1", testContext.CancellationToken);
+    }
+
+    [ClassCleanup]
+    public static async Task ClassCleanup()
+    {
+        await session.DisposeAsync();
+    }
 
     [TestMethod]
     [Timeout(60_000)]
     public async Task Environment_parameters_select_topology_skus_and_tags()
     {
-        await using var session = await BicepTestSession.CreateAsync("0.43.1", TestContext.CancellationToken);
         var development = await SnapshotAsync(session, "environment-topology/dev.bicepparam");
         var production = await SnapshotAsync(session, "environment-topology/prod.bicepparam");
 
@@ -41,7 +53,6 @@ public sealed class SnapshotTests
     [Timeout(60_000)]
     public async Task Security_baseline_catches_weakened_parameters()
     {
-        await using var session = await BicepTestSession.CreateAsync("0.43.1", TestContext.CancellationToken);
         var secure = await SnapshotAsync(session, "security-baseline/secure.bicepparam");
         var insecure = await SnapshotAsync(session, "security-baseline/insecure.bicepparam");
         var secureStorage = Resource(secure, "Microsoft.Storage/storageAccounts");
@@ -64,7 +75,6 @@ public sealed class SnapshotTests
     [Timeout(60_000)]
     public async Task Private_network_references_are_wired_together()
     {
-        await using var session = await BicepTestSession.CreateAsync("0.43.1", TestContext.CancellationToken);
         var snapshot = await SnapshotAsync(session, "private-network/main.bicepparam");
         var resources = snapshot.PredictedResources.ToDictionary(resource => resource.Name);
         var networkIds = snapshot.Outputs["networkIds"];

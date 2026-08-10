@@ -36,9 +36,16 @@ Describe 'Real-world Bicep deployments' -Skip:(
     -not $env:AZURE_RESOURCE_GROUP -or
     -not $env:BICEP_TEST_STACK_NAME -or
     -not $env:BICEP_TEST_RESOURCE_PREFIX) {
+    BeforeAll {
+        $session = New-BicepTestSession -BicepVersion '0.43.1'
+    }
+
+    AfterAll {
+        $session | Remove-BicepTestSession
+    }
+
     It 'verifies secure storage in Azure and removes it afterward' {
         $credential = [Azure.Identity.DefaultAzureCredential]::new()
-        $session = New-BicepTestSession -BicepVersion '0.43.1'
         $deployment = $null
         try {
             $deployment = Start-SampleDeployment `
@@ -62,7 +69,6 @@ Describe 'Real-world Bicep deployments' -Skip:(
             if ($deployment) {
                 $deployment | Remove-BicepTestDeployment
             }
-            $session | Remove-BicepTestSession
         }
 
         (Get-AzureResourceResponse $credential $primaryStorageId).StatusCode | Should -Be 404
@@ -70,7 +76,6 @@ Describe 'Real-world Bicep deployments' -Skip:(
 
     It 'reconciles removed audit storage and cleans up remaining resources' {
         $credential = [Azure.Identity.DefaultAzureCredential]::new()
-        $session = New-BicepTestSession -BicepVersion '0.43.1'
         $reconciled = $null
         try {
             $initial = Start-SampleDeployment `
@@ -95,7 +100,6 @@ Describe 'Real-world Bicep deployments' -Skip:(
             if ($reconciled) {
                 $reconciled | Remove-BicepTestDeployment
             }
-            $session | Remove-BicepTestSession
         }
 
         (Get-AzureResourceResponse $credential $primaryStorageId).StatusCode | Should -Be 404

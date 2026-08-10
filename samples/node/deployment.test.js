@@ -18,9 +18,16 @@ async function getAzureResource(credential, resourceId) {
 }
 
 liveDescribe('real-world Bicep deployments', () => {
+  let session;
+
+  beforeAll(async () => {
+    session = await BicepTestSession.create('0.43.1');
+  }, 60_000);
+
+  afterAll(() => session.dispose());
+
   test('deploys secure storage, verifies Azure state, and cleans it up', async () => {
     const credential = new DefaultAzureCredential();
-    const session = await BicepTestSession.create('0.43.1');
     let deployment;
     let primaryStorageId;
     try {
@@ -45,14 +52,12 @@ liveDescribe('real-world Bicep deployments', () => {
       expect(deployment.resources.map(resource => resource.id)).toContain(primaryStorageId);
     } finally {
       await deployment?.teardown();
-      session.dispose();
     }
     expect((await getAzureResource(credential, primaryStorageId)).status).toBe(404);
   }, 15 * 60_000);
 
   test('reconciles a removed audit account and tears down remaining resources', async () => {
     const credential = new DefaultAzureCredential();
-    const session = await BicepTestSession.create('0.43.1');
     let reconciled;
     let primaryStorageId;
     let auditStorageId;
@@ -79,7 +84,6 @@ liveDescribe('real-world Bicep deployments', () => {
       expect((await getAzureResource(credential, auditStorageId)).status).toBe(404);
     } finally {
       await reconciled?.teardown();
-      session.dispose();
     }
     expect((await getAzureResource(credential, primaryStorageId)).status).toBe(404);
   }, 20 * 60_000);

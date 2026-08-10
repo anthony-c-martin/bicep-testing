@@ -12,8 +12,21 @@ namespace Samples;
 public sealed class DeploymentTests
 {
     private static readonly HttpClient HttpClient = new();
+    private static BicepTestSession session = null!;
 
     public TestContext TestContext { get; set; } = null!;
+
+    [ClassInitialize]
+    public static async Task ClassInitialize(TestContext testContext)
+    {
+        session = await BicepTestSession.CreateAsync("0.43.1", testContext.CancellationToken);
+    }
+
+    [ClassCleanup]
+    public static async Task ClassCleanup()
+    {
+        await session.DisposeAsync();
+    }
 
     [TestMethod]
     [Timeout(15 * 60_000)]
@@ -21,7 +34,6 @@ public sealed class DeploymentTests
     {
         var settings = LiveSettings.Load();
         var credential = new DefaultAzureCredential();
-        await using var session = await BicepTestSession.CreateAsync("0.43.1", TestContext.CancellationToken);
         DeployResult? deployment = null;
         string? primaryStorageId = null;
         try
@@ -57,7 +69,6 @@ public sealed class DeploymentTests
     {
         var settings = LiveSettings.Load();
         var credential = new DefaultAzureCredential();
-        await using var session = await BicepTestSession.CreateAsync("0.43.1", TestContext.CancellationToken);
         DeployResult? reconciled = null;
         string? primaryStorageId = null;
         string? auditStorageId = null;

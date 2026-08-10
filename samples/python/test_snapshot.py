@@ -1,10 +1,17 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
+import pytest
 from anthonycmartin.bicep_testing import BicepTestSession, SnapshotMetadata
 
 
-def snapshot(relative_path: str):
+@pytest.fixture(scope="module")
+def session() -> Iterator[BicepTestSession]:
+    with BicepTestSession.create("0.43.1") as value:
+        yield value
+
+
+def snapshot(session: BicepTestSession, relative_path: str):
     parameters = Path(__file__).parents[1] / "infra" / relative_path
     metadata = SnapshotMetadata(
         tenant_id="ddbe463a-0554-485d-b589-0b17d60cd38b",
@@ -13,8 +20,7 @@ def snapshot(relative_path: str):
         location="eastus",
         deployment_name="sample-deployment",
     )
-    with BicepTestSession.create("0.43.1") as session:
-        return session.snapshot(parameters, metadata)
+    return session.snapshot(parameters, metadata)
 
 
 def resource_by_type(result, resource_type: str):
@@ -28,9 +34,9 @@ def nested(value: dict[str, Any], *keys: str) -> Any:
     return current
 
 
-def test_environment_parameters_select_topology_skus_and_tags() -> None:
-    development = snapshot("environment-topology/dev.bicepparam")
-    production = snapshot("environment-topology/prod.bicepparam")
+def test_environment_parameters_select_topology_skus_and_tags(session: BicepTestSession) -> None:
+    development = snapshot(session, "environment-topology/dev.bicepparam")
+    production = snapshot(session, "environment-topology/prod.bicepparam")
 
     assert development.diagnostics == ()
     assert len(development.predicted_resources) == 1
@@ -49,9 +55,9 @@ def test_environment_parameters_select_topology_skus_and_tags() -> None:
     assert nested(production.predicted_resources[1].additional_properties, "sku", "name") == "Standard_GRS"
 
 
-def test_security_baseline_catches_weakened_parameters() -> None:
-    secure = snapshot("security-baseline/secure.bicepparam")
-    insecure = snapshot("security-baseline/insecure.bicepparam")
+def test_security_baseline_catches_weakened_parameters(session: BicepTestSession) -> None:
+    secure = snapshot(session, "security-baseline/secure.bicepparam")
+    insecure = snapshot(session, "security-baseline/insecure.bicepparam")
     secure_storage = resource_by_type(secure, "Microsoft.Storage/storageAccounts")
     secure_vault = resource_by_type(secure, "Microsoft.KeyVault/vaults")
     insecure_storage = resource_by_type(insecure, "Microsoft.Storage/storageAccounts")
@@ -67,8 +73,8 @@ def test_security_baseline_catches_weakened_parameters() -> None:
     assert insecure_storage.properties["allowBlobPublicAccess"] is True
 
 
-def test_private_network_references_are_wired_together() -> None:
-    result = snapshot("private-network/main.bicepparam")
+def test_private_network_references_are_wired_together(session: BicepTestSession) -> None:
+    result = snapshot(session, "private-network/main.bicepparam")
     resources = {resource.name: resource for resource in result.predicted_resources}
     network_ids = result.outputs["networkIds"]
 
