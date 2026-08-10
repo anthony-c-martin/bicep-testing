@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Bicep.RpcClient" Version="0.46.1" />
+    <PackageReference Include="Azure.Identity" Version="1.21.0" />
     <PackageReference Include="Azure.ResourceManager.Resources.DeploymentStacks" Version="1.0.1" />
   </ItemGroup>
 
