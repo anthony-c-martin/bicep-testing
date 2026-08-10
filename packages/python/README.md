@@ -90,6 +90,5 @@ Lower-level Bicep integrations can use the separately distributed [`anthonycmart
 ## More information
 
 - [Runnable pytest snapshot and deployment samples](https://github.com/anthony-c-martin/bicep-testing/tree/main/samples/python)
-- [Complete Python guide](https://github.com/anthony-c-martin/bicep-testing/blob/main/docs/python.md)
 - [Exported API](https://github.com/anthony-c-martin/bicep-testing/blob/main/api/python/bicep-testing.txt)
 - [Project repository](https://github.com/anthony-c-martin/bicep-testing)
