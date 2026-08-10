@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from "react";
-import { ArrowDown, ArrowUpRight, Check, Copy, Github } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Check, Copy, GitFork } from "lucide-react";
 import hljs from "highlight.js/lib/core";
 import csharp from "highlight.js/lib/languages/csharp";
 import go from "highlight.js/lib/languages/go";
@@ -221,7 +221,7 @@ export default function App() {
           <a href="#install">Install</a>
           <a href="#samples">Samples</a>
           <a className="github-link" href={repositoryUrl}>
-            <Github />
+            <GitFork />
             <span>GitHub</span>
           </a>
         </nav>
