@@ -16,13 +16,13 @@ Live sessions own Azure credentials and support three Deployment Stack scopes (r
 
 ## Language support
 
-- [Node](packages/node/README.md) 22 or later: `@anthony-c-martin/bicep-testing` 0.1.4 on npm
-- [C#](packages/dotnet/README.md) on .NET 10 or later: `AnthonyCMartin.BicepTesting` 0.1.4 on NuGet
-- [Go](packages/go/README.md) 1.25 or later: `github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing` v0.1.4
-- [PowerShell](packages/powershell/README.md) 7.6 or later: `AnthonyCMartin.BicepTesting` 0.1.4 on the PowerShell Gallery
-- [Python](packages/python/README.md) 3.11 or later: `anthonycmartin-bicep-testing` 0.1.4 on PyPI
+- [Node](packages/node/README.md) 22 or later: `@anthony-c-martin/bicep-testing` 0.1.5 on npm
+- [C#](packages/dotnet/README.md) on .NET 10 or later: `AnthonyCMartin.BicepTesting` 0.1.5 on NuGet
+- [Go](packages/go/README.md) 1.25 or later: `github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing` v0.1.5
+- [PowerShell](packages/powershell/README.md) 7.6 or later: `AnthonyCMartin.BicepTesting` 0.1.5 on the PowerShell Gallery
+- [Python](packages/python/README.md) 3.11 or later: `anthonycmartin-bicep-testing` 0.1.5 on PyPI
 
-Lower-level Bicep CLI integrations are published as the Go `bicep-rpc-client` module at v0.1.4 and the Python `anthonycmartin-bicep-rpc-client` distribution at 0.1.4, imported as `anthonycmartin.bicep_rpc_client`.
+Lower-level Bicep CLI integrations are published as the Go `bicep-rpc-client` module at v0.1.5 and the Python `anthonycmartin-bicep-rpc-client` distribution at 0.1.5, imported as `anthonycmartin.bicep_rpc_client`.
 
 ## Samples
 

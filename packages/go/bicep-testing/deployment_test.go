@@ -20,8 +20,6 @@ import (
 )
 
 func TestLiveDeploySupportsAllScopes(t *testing.T) {
-	t.Parallel()
-
 	tests := []struct {
 		name                       string
 		options                    DeployOptions
@@ -75,8 +73,6 @@ func TestLiveDeploySupportsAllScopes(t *testing.T) {
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
-
 			stackClient := &fakeDeploymentStackClient{}
 			var actualClientSubscription string
 			originalFactory := newDeploymentStackClient
@@ -122,8 +118,6 @@ func TestLiveDeploySupportsAllScopes(t *testing.T) {
 }
 
 func TestLiveDeployCompilesAndPreservesParameters(t *testing.T) {
-	t.Parallel()
-
 	stackClient := &fakeDeploymentStackClient{}
 	originalFactory := newDeploymentStackClient
 	newDeploymentStackClient = func(actualSubscriptionID string, credential azcore.TokenCredential) (deploymentStackClient, error) {
@@ -186,8 +180,6 @@ func TestLiveDeployCompilesAndPreservesParameters(t *testing.T) {
 }
 
 func TestValidateReturnsRichErrorResult(t *testing.T) {
-	t.Parallel()
-
 	stackClient := &fakeDeploymentStackClient{
 		validation: armdeploymentstacks.DeploymentStackValidateResult{
 			Error: &armdeploymentstacks.ErrorDetail{
@@ -231,8 +223,6 @@ func TestValidateReturnsRichErrorResult(t *testing.T) {
 }
 
 func TestDeployReturnsFailedResultAfterSubmissionAndKeepsCleanup(t *testing.T) {
-	t.Parallel()
-
 	body := `{"error":{"code":"DeploymentStackOutOfSync","message":"The stack is out of sync.","details":[{"code":"ManagedResourceFailure","message":"A managed resource failed."}]}}`
 	stackClient := &fakeDeploymentStackClient{
 		createError: &azcore.ResponseError{
@@ -281,8 +271,6 @@ func TestDeployReturnsFailedResultAfterSubmissionAndKeepsCleanup(t *testing.T) {
 }
 
 func TestDeployRejectsBadOptionsAndPresubmissionFailures(t *testing.T) {
-	t.Parallel()
-
 	t.Run("bad options", func(t *testing.T) {
 		bicep := &fakeBicepClient{compilation: successfulCompilation()}
 		session := &LiveSession{session: &Session{client: bicep}, credential: fakeCredential{}}

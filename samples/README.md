@@ -41,6 +41,6 @@ Validate every sample from the repository root:
 ./scripts/ValidateSamples.ps1
 ```
 
-The validator restores the published version 0.1.4 libraries and dependencies, then compiles, parses, or collects every sample test. It does not execute snapshot or live deployment tests, so standard CI remains credential-free and cannot create Azure resources.
+The validator restores the published version 0.1.5 libraries and dependencies, then compiles, parses, or collects every sample test. It does not execute snapshot or live deployment tests, so standard CI remains credential-free and cannot create Azure resources.
 
 To run a language's tests, use its native test command after setting the live deployment environment variables. Without those variables, the three credential-free snapshot tests run and the live validation and deployment tests are skipped.
