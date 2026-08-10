@@ -88,7 +88,7 @@ func fixturePath(t *testing.T) string {
 	if !ok {
 		t.Fatal("could not locate current test file")
 	}
-	return filepath.Join(filepath.Dir(currentFile), "..", "node", "test", "samples", "snapshot", "main.bicepparam")
+	return filepath.Join(filepath.Dir(currentFile), "..", "..", "node", "test", "samples", "snapshot", "main.bicepparam")
 }
 
 func assertResourceName(t *testing.T, resources []SnapshotResource, expected string) {

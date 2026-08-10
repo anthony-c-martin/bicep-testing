@@ -12,7 +12,7 @@ This is an independent, non-official project.
 ## Installation
 
 ```sh
-npm install --save-dev @anthony-c-martin/bicep-testing@0.1.3
+npm install --save-dev @anthony-c-martin/bicep-testing@0.1.4
 ```
 
 ## Snapshot testing
@@ -108,7 +108,7 @@ This is an independent, non-official project.
 ## Installation
 
 ```sh
-npm install --save-dev @anthony-c-martin/bicep-testing@0.1.3
+npm install --save-dev @anthony-c-martin/bicep-testing@0.1.4
 ```
 
 ## Snapshot testing

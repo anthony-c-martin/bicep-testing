@@ -43,7 +43,7 @@ If the requested behavior is ambiguous, inspect the nearest existing implementat
 - Start at `packages/node/src` and the nearest test in `packages/node/test`.
 - Inspect the equivalent implementation and test surfaces in:
   - `packages/dotnet/src/BicepTest` and `packages/dotnet/test/BicepTest.Tests`
-  - `packages/go` and, when transport behavior changes, `packages/go/bicep-rpc-client`
+  - `packages/go/bicep-testing` and, when transport behavior changes, `packages/go/bicep-rpc-client`
   - `packages/powershell/AnthonyCMartin.BicepTesting` and `packages/powershell/test`
   - `packages/python/bicep_testing/src/anthonycmartin/bicep_testing` and, when transport behavior changes, `packages/python/bicep_rpc_client`
 - Identify the smallest shared behavior contract and the cheapest focused test that can disprove the proposed implementation.
@@ -81,7 +81,7 @@ Preserve equivalent semantics while following each ecosystem's conventions.
 #### Go
 
 - Use idiomatic exported names, explicit errors, `context.Context`, and `Close` where ownership requires cleanup.
-- Keep the high-level snapshot API in the module root.
+- Keep the high-level snapshot API under `packages/go/bicep-testing`.
 - Put Bicep installation, process, pipe/socket, and JSON-RPC behavior in the standalone `packages/go/bicep-rpc-client` module.
 - Preserve Windows named-pipe and Unix-domain-socket behavior when transport code changes.
 - Add table-driven or focused Go tests next to the owning package.
@@ -144,7 +144,7 @@ Review `api/dotnet/PublicAPI.Unshipped.txt` and `api/dotnet/PublicAPI.Shipped.tx
 #### Go
 
 ```powershell
-Push-Location packages/go
+Push-Location packages/go/bicep-testing
 go generate ./...
 go run ./internal/apidoc --check
 Pop-Location
@@ -176,7 +176,8 @@ Update every package README, even when the capability has the same conceptual be
 
 - `packages/node/README.md`
 - `packages/dotnet/README.md`
-- `packages/go/README.md`
+- `packages/go/bicep-testing/README.md`
+- `packages/go/bicep-rpc-client/README.md`
 - `packages/powershell/README.md`
 - `packages/python/bicep_testing/README.md`
 - `packages/python/bicep_rpc_client/README.md`
@@ -205,7 +206,7 @@ Pop-Location
 dotnet test packages/dotnet/BicepTest.slnx --configuration Release
 
 # Go
-Push-Location packages/go
+Push-Location packages/go/bicep-testing
 gofmt -w .
 go vet ./...
 go test ./...

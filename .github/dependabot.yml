@@ -40,7 +40,7 @@ updates:
           - "*"
   - package-ecosystem: "gomod"
     directories:
-      - "/packages/go"
+      - "/packages/go/bicep-testing"
       - "/packages/go/bicep-rpc-client"
       - "/samples/go"
     schedule:

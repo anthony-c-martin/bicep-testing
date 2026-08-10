@@ -18,7 +18,7 @@ Live tests compile a `.bicepparam` file, deploy it as an Azure Deployment Stack,
 
 - [Node](packages/node/README.md) 22 or later: `@anthony-c-martin/bicep-testing` 0.1.3 on npm
 - [C#](packages/dotnet/README.md) on .NET 10 or later: `AnthonyCMartin.BicepTesting` 0.1.3 on NuGet
-- [Go](packages/go/README.md) 1.25 or later: `github.com/anthony-c-martin/bicep-testing/packages/go` v0.1.3
+- [Go](packages/go/README.md) 1.25 or later: `github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing` v0.1.3
 - [PowerShell](packages/powershell/README.md) 7.6 or later: `AnthonyCMartin.BicepTesting` 0.1.3 on the PowerShell Gallery
 - [Python](packages/python/README.md) 3.11 or later: `anthonycmartin-bicep-testing` 0.1.3 on PyPI
 

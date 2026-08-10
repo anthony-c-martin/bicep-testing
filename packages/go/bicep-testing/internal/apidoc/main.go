@@ -40,7 +40,7 @@ func main() {
 	if err != nil {
 		fatal(err)
 	}
-	repositoryRoot := filepath.Clean(filepath.Join(moduleRoot, "..", ".."))
+	repositoryRoot := filepath.Clean(filepath.Join(moduleRoot, "..", "..", ".."))
 	for _, target := range targets {
 		generated, err := generate(moduleRoot, target.packagePath)
 		if err != nil {

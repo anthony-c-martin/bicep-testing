@@ -60,7 +60,7 @@ function Test-AllVersions {
     $powerShellManifest = Import-PowerShellDataFile (Join-Path $repositoryRoot 'packages/powershell/AnthonyCMartin.BicepTesting/AnthonyCMartin.BicepTesting.psd1')
     $pythonContent = Get-Content (Join-Path $repositoryRoot 'packages/python/bicep_testing/pyproject.toml') -Raw
     $pythonRpcContent = Get-Content (Join-Path $repositoryRoot 'packages/python/bicep_rpc_client/pyproject.toml') -Raw
-    $goMod = Get-Content (Join-Path $repositoryRoot 'packages/go/go.mod') -Raw
+    $goMod = Get-Content (Join-Path $repositoryRoot 'packages/go/bicep-testing/go.mod') -Raw
 
     Assert-Version 'Node' $node.version
     Assert-Version 'Node lockfile' $nodeLock.version
@@ -136,8 +136,8 @@ function Publish-PythonPackages {
 }
 
 function Publish-GoPackages {
-    $rootModuleDirectory = Join-Path $repositoryRoot 'packages/go'
-    $rpcModuleDirectory = Join-Path $rootModuleDirectory 'bicep-rpc-client'
+    $rootModuleDirectory = Join-Path $repositoryRoot 'packages/go/bicep-testing'
+    $rpcModuleDirectory = Join-Path $repositoryRoot 'packages/go/bicep-rpc-client'
     Push-Location $rootModuleDirectory
     try {
         Invoke-NativeCommand go @('test', './...')
@@ -158,7 +158,7 @@ function Publish-GoPackages {
         Pop-Location
     }
 
-    if ($rootModule -ne 'github.com/anthony-c-martin/bicep-testing/packages/go') {
+    if ($rootModule -ne 'github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing') {
         throw "Unexpected root Go module path: $rootModule"
     }
     if ($rpcModule -ne 'github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client') {
@@ -172,7 +172,7 @@ function Publish-GoPackages {
     }
     $tags = @(
         @{ Name = "packages/go/bicep-rpc-client/v$releaseVersion"; Message = "Release Go RPC client v$releaseVersion" }
-        @{ Name = "packages/go/v$releaseVersion"; Message = "Release Go test library v$releaseVersion" }
+        @{ Name = "packages/go/bicep-testing/v$releaseVersion"; Message = "Release Go test library v$releaseVersion" }
     )
     foreach ($tag in $tags) {
         & git -C $repositoryRoot rev-parse --quiet --verify "refs/tags/$($tag.Name)" *> $null

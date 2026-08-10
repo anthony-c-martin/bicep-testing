@@ -87,33 +87,38 @@ Project conventions:
 
 ## Go
 
-Prerequisite: Go 1.24 or later.
+Prerequisite: Go 1.25 or later.
 
 Test from the repository root:
 
 ```sh
-cd packages/go
+cd packages/go/bicep-testing
 go test ./...
 go run ./internal/apidoc --check
+cd ../bicep-rpc-client
+go test ./...
 ```
 
 Format and analyze Go changes before submitting them:
 
 ```sh
-cd packages/go
+cd packages/go/bicep-testing
+gofmt -w .
+go vet ./...
+cd ../bicep-rpc-client
 gofmt -w .
 go vet ./...
 ```
 
-Review the Go public API in `api/go`. After an intentional API change, run `go generate ./...` from `packages/go` and include both affected baselines in the pull request.
+Review the Go public API in `api/go`. After an intentional API change, run `go generate ./...` from `packages/go/bicep-testing` and include both affected baselines in the pull request.
 
 Project conventions:
 
-- Module path: `github.com/anthony-c-martin/bicep-testing/packages/go`
+- Module path: `github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing`
 - Package name: `biceptesting`
 - Keep exported names idiomatic to Go rather than reproducing the Node API naming exactly.
-- Keep the public snapshot API in the module root.
-- Keep Bicep installation, process, pipe, and JSON-RPC behavior in the standalone `bicep-rpc-client` module.
+- Keep the public snapshot API in `packages/go/bicep-testing`.
+- Keep Bicep installation, process, pipe, and JSON-RPC behavior in `packages/go/bicep-rpc-client`.
 - Preserve both Windows named-pipe and Unix-domain-socket support when changing the transport.
 
 ## PowerShell

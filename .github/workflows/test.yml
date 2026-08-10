@@ -60,10 +60,10 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v7
       with:
-        go-version-file: packages/go/go.mod
+        go-version-file: packages/go/bicep-testing/go.mod
 
     - name: Test
-      working-directory: packages/go
+      working-directory: packages/go/bicep-testing
       run: go test ./...
 
     - name: Test RPC client
@@ -71,7 +71,7 @@ jobs:
       run: go test ./...
 
     - name: Check public API
-      working-directory: packages/go
+      working-directory: packages/go/bicep-testing
       run: go run ./internal/apidoc --check
 
   powershell:

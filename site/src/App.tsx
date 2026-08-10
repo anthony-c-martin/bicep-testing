@@ -88,11 +88,12 @@ const languages: readonly LanguageSample[] = [
     label: "Go",
     highlightLanguage: "go",
     packageManager: "Go modules",
-    runtime: "Go 1.24+",
-    install: "go get github.com/anthony-c-martin/bicep-testing/packages/go",
+    runtime: "Go 1.25+",
+    install:
+      "go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing",
     registry: "pkg.go.dev",
     packageUrl:
-      "https://pkg.go.dev/github.com/anthony-c-martin/bicep-testing/packages/go",
+      "https://pkg.go.dev/github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing",
     snapshotName: "snapshot_test.go",
     deploymentName: "deployment_test.go",
     snapshot: goSnapshot,
@@ -231,7 +232,7 @@ export default function App() {
           <div className="hero-content">
             <div className="hero-intro">
               <p className="eyebrow">
-                <span /> Test framework for Bicep
+                <span /> Language-agnostic Bicep Testing
               </p>
               <h1>Bicep Testing Framework</h1>
               <p className="hero-lede">

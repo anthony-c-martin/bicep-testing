@@ -135,7 +135,7 @@ jobs:
         fetch-depth: 0
     - uses: actions/setup-go@v7
       with:
-        go-version-file: packages/go/go.mod
+        go-version-file: packages/go/bicep-testing/go.mod
     - name: Publish
       shell: pwsh
       run: ./scripts/Publish.ps1 -Package Go -Version $env:RELEASE_VERSION -CommitSha '${{ github.sha }}' -SkipPublish:([bool]::Parse($env:DRY_RUN))

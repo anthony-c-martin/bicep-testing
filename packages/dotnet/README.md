@@ -12,7 +12,7 @@ This is an independent, non-official project.
 ## Installation
 
 ```sh
-dotnet add package AnthonyCMartin.BicepTesting --version 0.1.3
+dotnet add package AnthonyCMartin.BicepTesting --version 0.1.4
 ```
 
 ## Snapshot testing
