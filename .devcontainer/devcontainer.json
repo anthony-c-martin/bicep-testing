@@ -26,7 +26,7 @@
   },
   "mounts": [
     "source=bicep-testing-npm,target=/home/vscode/.npm,type=volume",
-    "source=bicep-testing-nuget,target=/home/vscode/.nuget/packages,type=volume",
+    "source=bicep-testing-nuget,target=/home/vscode/.nuget,type=volume",
     "source=bicep-testing-go,target=/go/pkg/mod,type=volume",
     "source=bicep-testing-pip,target=/home/vscode/.cache/pip,type=volume"
   ],
