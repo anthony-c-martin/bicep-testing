@@ -1,0 +1,103 @@
+[assembly: System.Reflection.AssemblyMetadata("RepositoryUrl", "https://github.com/anthony-c-martin/bicep-testing")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("BicepTest.Tests")]
+[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v10.0", FrameworkDisplayName=".NET 10.0")]
+namespace AnthonyCMartin.BicepTesting
+{
+    public sealed class BicepTestSession : System.IAsyncDisposable, System.IDisposable
+    {
+        public void Dispose() { }
+        public System.Threading.Tasks.ValueTask DisposeAsync() { }
+        public System.Threading.Tasks.Task<AnthonyCMartin.BicepTesting.SnapshotResult> SnapshotAsync(AnthonyCMartin.BicepTesting.SnapshotOptions options, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<AnthonyCMartin.BicepTesting.BicepTestSession> CreateAsync(string bicepVersion, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public sealed class DeployOptions
+    {
+        public DeployOptions() { }
+        public required string FilePath { get; init; }
+        public string? Location { get; init; }
+        public string? ManagementGroupId { get; init; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement> ParameterOverrides { get; init; }
+        public string? ResourceGroup { get; init; }
+        public string StackName { get; init; }
+        public string? SubscriptionId { get; init; }
+    }
+    public sealed class DeployResult : System.IAsyncDisposable
+    {
+        public AnthonyCMartin.BicepTesting.OperationError? Error { get; }
+        public string? ErrorCode { get; }
+        public string? ErrorMessage { get; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, System.Text.Json.JsonElement> Outputs { get; }
+        public System.Collections.Generic.IReadOnlyList<AnthonyCMartin.BicepTesting.DeploymentResource> Resources { get; }
+        public bool Succeeded { get; }
+        public System.Threading.Tasks.ValueTask DisposeAsync() { }
+        public System.Threading.Tasks.Task TeardownAsync(System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public sealed class DeploymentResource : System.IEquatable<AnthonyCMartin.BicepTesting.DeploymentResource>
+    {
+        public DeploymentResource(string Id, string? Type) { }
+        public string Id { get; init; }
+        public string? Type { get; init; }
+    }
+    public sealed class LiveBicepTestSession : System.IAsyncDisposable, System.IDisposable
+    {
+        public System.Threading.Tasks.Task<AnthonyCMartin.BicepTesting.DeployResult> DeployAsync(AnthonyCMartin.BicepTesting.DeployOptions options, System.Threading.CancellationToken cancellationToken = default) { }
+        public void Dispose() { }
+        public System.Threading.Tasks.ValueTask DisposeAsync() { }
+        public System.Threading.Tasks.Task<AnthonyCMartin.BicepTesting.SnapshotResult> SnapshotAsync(AnthonyCMartin.BicepTesting.SnapshotOptions options, System.Threading.CancellationToken cancellationToken = default) { }
+        public System.Threading.Tasks.Task<AnthonyCMartin.BicepTesting.ValidateResult> ValidateAsync(AnthonyCMartin.BicepTesting.DeployOptions options, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<AnthonyCMartin.BicepTesting.LiveBicepTestSession> CreateAsync(string bicepVersion, Azure.Core.TokenCredential credential, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public sealed class OperationError
+    {
+        public string? Code { get; }
+        public string? Message { get; }
+        public System.BinaryData RawData { get; }
+    }
+    public sealed class SnapshotOptions
+    {
+        public SnapshotOptions() { }
+        public string DeploymentName { get; init; }
+        public required string FilePath { get; init; }
+        public string? Location { get; init; }
+        public string? ResourceGroup { get; init; }
+        public string? SubscriptionId { get; init; }
+        public string? TenantId { get; init; }
+    }
+    public sealed class SnapshotResource
+    {
+        public SnapshotResource() { }
+        [System.Text.Json.Serialization.JsonExtensionData]
+        public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement>? AdditionalProperties { get; init; }
+        [System.Text.Json.Serialization.JsonPropertyName("apiVersion")]
+        public string ApiVersion { get; init; }
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public string Id { get; init; }
+        [System.Text.Json.Serialization.JsonPropertyName("location")]
+        public string? Location { get; init; }
+        [System.Text.Json.Serialization.JsonPropertyName("name")]
+        public string Name { get; init; }
+        [System.Text.Json.Serialization.JsonPropertyName("properties")]
+        public System.Text.Json.JsonElement Properties { get; init; }
+        [System.Text.Json.Serialization.JsonPropertyName("type")]
+        public string Type { get; init; }
+    }
+    public sealed class SnapshotResult
+    {
+        public SnapshotResult() { }
+        [System.Text.Json.Serialization.JsonPropertyName("diagnostics")]
+        public string[] Diagnostics { get; init; }
+        [System.Text.Json.Serialization.JsonPropertyName("outputs")]
+        public System.Collections.Generic.Dictionary<string, System.Text.Json.JsonElement> Outputs { get; init; }
+        [System.Text.Json.Serialization.JsonPropertyName("predictedResources")]
+        public AnthonyCMartin.BicepTesting.SnapshotResource[] PredictedResources { get; init; }
+    }
+    public sealed class ValidateResult
+    {
+        public string? CorrelationId { get; }
+        public AnthonyCMartin.BicepTesting.OperationError? Error { get; }
+        public string? ErrorCode { get; }
+        public string? ErrorMessage { get; }
+        public bool IsValid { get; }
+        public System.Collections.Generic.IReadOnlyList<AnthonyCMartin.BicepTesting.DeploymentResource> Resources { get; }
+    }
+}

@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace Samples;
 
 [TestClass]
-public sealed class SnapshotTests
+public sealed class OfflineTests
 {
     private const string TenantId = "ddbe463a-0554-485d-b589-0b17d60cd38b";
     private const string SubscriptionId = "28c9069e-23e8-47d2-b640-00d2e0f09616";
@@ -98,12 +98,15 @@ public sealed class SnapshotTests
     private async Task<SnapshotResult> SnapshotAsync(BicepTestSession session, string relativePath)
     {
         return await session.SnapshotAsync(
-            InfraPath(relativePath),
-            TenantId,
-            SubscriptionId,
-            "sample-rg",
-            "eastus",
-            "sample-deployment",
+            new SnapshotOptions
+            {
+                FilePath = InfraPath(relativePath),
+                TenantId = TenantId,
+                SubscriptionId = SubscriptionId,
+                ResourceGroup = "sample-rg",
+                Location = "eastus",
+                DeploymentName = "sample-deployment",
+            },
             TestContext.CancellationToken);
     }
 

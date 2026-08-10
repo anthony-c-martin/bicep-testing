@@ -1,8 +1,8 @@
 import * as path from 'path';
 import { BicepTestSession, SnapshotResult } from "../src";
 
-const TENANT_ID = '00000000-0000-0000-0000-000000000000';
-const SUBSCRIPTION_ID = '00000000-0000-0000-0000-000000000000';
+const TENANT_ID = 'ddbe463a-0554-485d-b589-0b17d60cd38b';
+const SUBSCRIPTION_ID = '28c9069e-23e8-47d2-b640-00d2e0f09616';
 const RESOURCE_GROUP = 'test-rg';
 const LOCATION = 'eastus';
 const DEPLOYMENT_NAME = 'test-deployment';

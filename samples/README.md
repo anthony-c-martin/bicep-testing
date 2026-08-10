@@ -20,16 +20,17 @@ Snapshot tests evaluate these scenarios locally without Azure credentials or a s
 
 ## Live deployment scenarios
 
+- **Azure validation** runs Deployment Stack preflight validation and checks the expected storage resource without creating a stack or resources.
 - **Secure storage** deploys an ephemeral storage account, verifies its security properties through an authenticated Azure Resource Manager request, and confirms teardown removed it.
 - **Deployment reconciliation** deploys primary and audit storage accounts, updates the same Deployment Stack to remove the audit account, verifies Azure reconciled the change, and confirms final teardown removed the remaining account.
 
-Both scenarios use [`infra/live-storage/main.bicepparam`](infra/live-storage/main.bicepparam) and inexpensive `Standard_LRS` storage accounts. Deployment tests always delete the stack and its managed resources during cleanup.
+All three live scenarios use [`infra/live-storage/main.bicepparam`](infra/live-storage/main.bicepparam) and inexpensive `Standard_LRS` storage accounts. Deployment tests always delete the stack and its managed resources during cleanup.
 
 Live deployment tests are skipped unless all of these environment variables are set:
 
 - `AZURE_SUBSCRIPTION_ID`: subscription containing the target resource group.
 - `AZURE_RESOURCE_GROUP`: existing resource group used by the Deployment Stack.
-- `BICEP_TEST_STACK_NAME`: unique stack name for this test run.
+- `BICEP_TEST_STACK_NAME`: base stack name used by Go, Node, PowerShell, and Python live samples.
 - `BICEP_TEST_RESOURCE_PREFIX`: unique lowercase alphanumeric prefix for globally named resources.
 
 The default Azure credential chain for the language must also be able to deploy and delete resources in the target resource group. Use disposable test resources and never reuse a stack that manages non-test infrastructure.
@@ -40,6 +41,6 @@ Validate every sample from the repository root:
 ./scripts/ValidateSamples.ps1
 ```
 
-The validator restores the published version 0.1.4 libraries and dependencies, then compiles, parses, or collects every sample test. It does not execute snapshot or live deployment tests, so standard CI remains credential-free and cannot create Azure resources.
+The validator restores the published version 0.1.5 libraries and dependencies, then compiles, parses, or collects every sample test. It does not execute snapshot or live deployment tests, so standard CI remains credential-free and cannot create Azure resources.
 
-To run a language's tests, use its native test command after setting the live deployment environment variables. Without those variables, the three credential-free snapshot tests run and the two deployment tests are skipped.
+To run a language's tests, use its native test command after setting the live deployment environment variables. Without those variables, the three credential-free snapshot tests run and the live validation and deployment tests are skipped.

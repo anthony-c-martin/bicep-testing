@@ -7,7 +7,7 @@ An independent Go client for programmatically interacting with the [Bicep CLI](h
 ### Install the module
 
 ```sh
-go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client@v0.1.4
+go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client@v0.1.5
 ```
 
 ### Initialize the client
@@ -212,8 +212,8 @@ for _, edge := range result.Edges {
 result, err := client.GetSnapshot(ctx, biceprpcclient.GetSnapshotRequest{
 	Path: "./main.bicepparam",
 	Metadata: biceprpcclient.SnapshotMetadata{
-		TenantID:       "00000000-0000-0000-0000-000000000000",
-		SubscriptionID: "00000000-0000-0000-0000-000000000000",
+		TenantID:       "ddbe463a-0554-485d-b589-0b17d60cd38b",
+		SubscriptionID: "28c9069e-23e8-47d2-b640-00d2e0f09616",
 		ResourceGroup:  "my-resource-group",
 		Location:       "eastus",
 		DeploymentName: "my-deployment",

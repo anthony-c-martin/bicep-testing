@@ -1,6 +1,6 @@
 const path = require('node:path');
 const { DefaultAzureCredential } = require('@azure/identity');
-const { BicepTestSession } = require('@anthony-c-martin/bicep-testing');
+const { LiveBicepTestSession } = require('@anthony-c-martin/bicep-testing');
 
 const subscriptionId = process.env.AZURE_SUBSCRIPTION_ID;
 const resourceGroup = process.env.AZURE_RESOURCE_GROUP;
@@ -19,25 +19,42 @@ async function getAzureResource(credential, resourceId) {
 
 liveDescribe('real-world Bicep deployments', () => {
   let session;
+  const credential = new DefaultAzureCredential();
 
   beforeAll(async () => {
-    session = await BicepTestSession.create('0.46.1');
+    session = await LiveBicepTestSession.create('0.46.1', credential);
   }, 60_000);
 
   afterAll(() => session.dispose());
 
+  test('validates the stack before deployment', async () => {
+    const result = await session.validate({
+      filePath: parametersPath,
+      subscriptionId,
+      resourceGroup,
+      stackName: `${stackName}-validation`,
+      parameterOverrides: { resourcePrefix, includeAuditStorage: false },
+    });
+
+    expect(result.isValid).toBe(true);
+    expect(result.error).toBeUndefined();
+    expect(result.resources).toEqual(expect.arrayContaining([
+      expect.objectContaining({ type: 'Microsoft.Storage/storageAccounts' }),
+    ]));
+  }, 15 * 60_000);
+
   test('deploys secure storage, verifies Azure state, and cleans it up', async () => {
-    const credential = new DefaultAzureCredential();
     let deployment;
     let primaryStorageId;
     try {
-      deployment = await session.deploy(credential, {
+      deployment = await session.deploy({
         filePath: parametersPath,
         subscriptionId,
         resourceGroup,
         stackName: `${stackName}-secure`,
         parameterOverrides: { resourcePrefix, includeAuditStorage: false },
       });
+      expect(deployment.succeeded).toBe(true);
       primaryStorageId = deployment.outputs.primaryStorageId;
       const response = await getAzureResource(credential, primaryStorageId);
       expect(response.ok).toBe(true);
@@ -57,29 +74,30 @@ liveDescribe('real-world Bicep deployments', () => {
   }, 15 * 60_000);
 
   test('reconciles a removed audit account and tears down remaining resources', async () => {
-    const credential = new DefaultAzureCredential();
     let deployment;
     let primaryStorageId;
     let auditStorageId;
     try {
-      deployment = await session.deploy(credential, {
+      deployment = await session.deploy({
         filePath: parametersPath,
         subscriptionId,
         resourceGroup,
         stackName,
         parameterOverrides: { resourcePrefix, includeAuditStorage: true },
       });
+      expect(deployment.succeeded).toBe(true);
       primaryStorageId = deployment.outputs.primaryStorageId;
       auditStorageId = deployment.outputs.auditStorageId;
       expect(deployment.resources).toHaveLength(2);
 
-      deployment = await session.deploy(credential, {
+      deployment = await session.deploy({
         filePath: parametersPath,
         subscriptionId,
         resourceGroup,
         stackName,
         parameterOverrides: { resourcePrefix, includeAuditStorage: false },
       });
+      expect(deployment.succeeded).toBe(true);
       expect(deployment.resources.map(resource => resource.id)).toEqual([primaryStorageId]);
       expect((await getAzureResource(credential, auditStorageId)).status).toBe(404);
     } finally {

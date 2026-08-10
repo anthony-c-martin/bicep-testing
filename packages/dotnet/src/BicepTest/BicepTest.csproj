@@ -5,28 +5,21 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <PackageId>AnthonyCMartin.BicepTesting</PackageId>
-    <Version>0.1.4</Version>
+    <Version>0.1.5</Version>
     <AssemblyName>AnthonyCMartin.BicepTesting</AssemblyName>
     <RootNamespace>AnthonyCMartin.BicepTesting</RootNamespace>
     <Description>Test library for interacting with the Bicep CLI.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/anthony-c-martin/bicep-testing</RepositoryUrl>
-    <WarningsAsErrors>$(WarningsAsErrors);RS0016;RS0017</WarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Bicep.RpcClient" Version="0.46.1" />
     <PackageReference Include="Azure.ResourceManager.Resources.DeploymentStacks" Version="1.0.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="5.6.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="../../../../api/dotnet/PublicAPI.Shipped.txt" />
-    <AdditionalFiles Include="../../../../api/dotnet/PublicAPI.Unshipped.txt" />
     <None Include="../../README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 

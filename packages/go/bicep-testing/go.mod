@@ -5,7 +5,7 @@ go 1.25.0
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.22.0
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armdeploymentstacks v1.0.1
-	github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client v0.1.4
+	github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client v0.1.5
 )
 
 require (

@@ -12,7 +12,7 @@ This is an independent, non-official project.
 ## Installation
 
 ```sh
-python -m pip install anthonycmartin-bicep-testing==0.1.4
+python -m pip install anthonycmartin-bicep-testing==0.1.5
 ```
 
 ## Snapshot testing
@@ -23,8 +23,8 @@ Use `BicepTestSession` as a context manager so its Bicep process is always close
 from anthonycmartin.bicep_testing import BicepTestSession, SnapshotMetadata
 
 metadata = SnapshotMetadata(
-	tenant_id="00000000-0000-0000-0000-000000000000",
-	subscription_id="00000000-0000-0000-0000-000000000000",
+	tenant_id="ddbe463a-0554-485d-b589-0b17d60cd38b",
+	subscription_id="28c9069e-23e8-47d2-b640-00d2e0f09616",
 	resource_group="example-rg",
 	location="eastus",
 	deployment_name="example-deployment",
@@ -50,6 +50,8 @@ assert all(
 
 Snapshot tests run locally. The subscription, tenant, resource group, location, and deployment values provide evaluation context only; they do not need to exist, and no Azure credentials are required.
 
+`BicepTestSession` is intentionally offline-only. Use `LiveBicepTestSession` for Azure validation and deployment.
+
 ## Snapshot results
 
 `snapshot()` returns an immutable `SnapshotResult` containing:
@@ -62,28 +64,65 @@ Each resource exposes its name, type, API version, location, properties, and add
 
 ## Live deployment testing
 
-Use `deploy()` only when a test must inspect a real Azure resource or service response. The result is also a context manager, so teardown runs when an assertion fails:
+Use `LiveBicepTestSession` when a test must inspect real Azure resources or service responses. The live session owns the credential and forwards snapshot operations:
 
 ```python
-import uuid
-
 from azure.identity import DefaultAzureCredential
+from anthonycmartin.bicep_testing import (
+	LiveBicepTestSession,
+	ResourceGroupDeployOptions,
+)
 
-with session.deploy(
-	DefaultAzureCredential(),
-	"infra/main.bicepparam",
-	subscription_id,
-	resource_group,
-	f"bicep-test-{uuid.uuid4().hex}",
-	{"env": "integration"},
-) as deployment:
-	assert any(
-		resource.type == "Microsoft.Storage/storageAccounts"
-		for resource in deployment.resources
+with LiveBicepTestSession.create("0.46.1", DefaultAzureCredential()) as session:
+	validation = session.validate(
+		ResourceGroupDeployOptions(
+			file_path="infra/main.bicepparam",
+			subscription_id=subscription_id,
+			resource_group=resource_group,
+		)
 	)
+	assert validation.is_valid
+
+	with session.deploy(
+		ResourceGroupDeployOptions(
+			file_path="infra/main.bicepparam",
+			subscription_id=subscription_id,
+			resource_group=resource_group,
+			parameter_overrides={"env": "integration"},
+		)
+	) as deployment:
+		assert deployment.succeeded
+		assert any(
+			resource.type == "Microsoft.Storage/storageAccounts"
+			for resource in deployment.resources
+		)
 ```
 
-Live tests require Azure credentials, an existing resource group, and permission to create and delete Deployment Stacks and their managed resources. Closing the result is idempotent and deletes the stack and all resources it manages. Use a unique stack name and keep the result in a context manager.
+Live tests require Azure credentials and permission to create and delete Deployment Stacks and their managed resources.
+
+Deployment options are immutable dataclasses:
+
+- `ResourceGroupDeployOptions(file_path, subscription_id, resource_group, location=None, stack_name=..., parameter_overrides=...)`
+- `SubscriptionDeployOptions(file_path, subscription_id, location, stack_name=..., parameter_overrides=...)`
+- `ManagementGroupDeployOptions(file_path, management_group_id, location, stack_name=..., parameter_overrides=...)`
+
+`stack_name` defaults to `bicep-test-<32 lowercase hex characters>`.
+
+`validate()` returns immutable `ValidateResult` with:
+
+- `is_valid`
+- `resources`
+- `correlation_id`
+- `error` (`OperationError` with `code`, `message`, `raw_data`)
+
+`deploy()` returns immutable `DeployResult` for both success and post-submission Azure failures, with:
+
+- `succeeded`
+- `error`, `error_code`, `error_message`
+- `outputs`
+- `resources`
+
+`DeployResult` is a context manager and supports idempotent teardown via `close()`. A `404` during deletion is treated as already removed.
 
 Lower-level Bicep integrations can use the separately distributed [`anthonycmartin-bicep-rpc-client`](https://github.com/anthony-c-martin/bicep-testing/tree/main/packages/python/bicep_rpc_client).
 

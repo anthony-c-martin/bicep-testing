@@ -18,6 +18,7 @@
 ## Tests And Samples
 
 - Reuse deterministic Bicep fixtures under `samples/infra`; do not duplicate equivalent fixtures per language.
+- In samples, use `ddbe463a-0554-485d-b589-0b17d60cd38b` as the fake tenant ID and `28c9069e-23e8-47d2-b640-00d2e0f09616` as the fake subscription ID instead of all-zero GUIDs.
 - Use the native test framework for each ecosystem: Jest, MSTest, Go `testing`, Pester, and pytest.
 - Consumer samples under `samples/<language>` are packaging tests as well as usage examples. Keep `scripts/ValidateSamples.ps1` able to compile and run all five.
 - Keep equivalent behavioral assertions aligned across languages while expressing them idiomatically.

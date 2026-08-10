@@ -17,6 +17,9 @@
     "ghcr.io/devcontainers/features/powershell:2": {
       "version": "7.6",
       "modules": "Pester==5.7.1"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
     }
   },
   "containerEnv": {

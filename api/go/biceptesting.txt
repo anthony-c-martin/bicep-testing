@@ -6,21 +6,28 @@ TYPES
 
 type DeployOptions struct {
 	FilePath           string
+	ManagementGroupID  string
 	SubscriptionID     string
 	ResourceGroup      string
+	Location           string
 	StackName          string
 	ParameterOverrides map[string]json.RawMessage
 }
-    DeployOptions identifies a Bicep parameters file and its resource-group
-    Deployment Stack.
+    DeployOptions identifies a Bicep parameters file and its Deployment Stack
+    scope.
 
 type DeployResult struct {
-	Outputs   map[string]any
-	Resources []DeploymentResource
+	Succeeded    bool
+	Error        *OperationError
+	ErrorCode    string
+	ErrorMessage string
+	Outputs      map[string]any
+	Resources    []DeploymentResource
 
 	// Has unexported fields.
 }
-    DeployResult contains deployed outputs and resources and owns their cleanup.
+    DeployResult contains deployment status, outputs, resources, and cleanup
+    ownership.
 
 func (result *DeployResult) Teardown(ctx context.Context) error
     Teardown deletes the Deployment Stack and all resources it manages.
@@ -33,11 +40,41 @@ type DeploymentResource struct {
 }
     DeploymentResource identifies a resource managed by a Deployment Stack.
 
+type LiveSession struct {
+	// Has unexported fields.
+}
+    LiveSession owns a credential and an offline session for snapshot,
+    validation, and deployment.
+
+func NewLiveSession(ctx context.Context, bicepVersion string, credential azcore.TokenCredential) (*LiveSession, error)
+    NewLiveSession creates a credential-owning live session.
+
+func (session *LiveSession) Close() error
+    Close disconnects from the Bicep CLI and terminates its process.
+
+func (session *LiveSession) Deploy(ctx context.Context, options DeployOptions) (*DeployResult, error)
+    Deploy compiles and deploys a Bicep parameters file as a Deployment Stack.
+    Pre-submission failures return an error. Post-submission Azure failures
+    return a failed DeployResult.
+
+func (session *LiveSession) Snapshot(ctx context.Context, filePath string, metadata SnapshotMetadata) (*SnapshotResult, error)
+    Snapshot forwards to the owned offline session.
+
+func (session *LiveSession) Validate(ctx context.Context, options DeployOptions) (*ValidateResult, error)
+    Validate compiles and validates a Bicep parameters file as a Deployment
+    Stack.
+
+type OperationError struct {
+	Code    string
+	Message string
+	RawData json.RawMessage
+}
+    OperationError captures an Azure operation failure.
+
 type Session struct {
 	// Has unexported fields.
 }
-    Session owns a pinned Bicep CLI used to evaluate and deploy infrastructure
-    under test.
+    Session owns a pinned Bicep CLI used to evaluate infrastructure under test.
 
 func NewSession(ctx context.Context, bicepVersion string) (*Session, error)
     NewSession installs the requested Bicep CLI version if needed and starts its
@@ -45,10 +82,6 @@ func NewSession(ctx context.Context, bicepVersion string) (*Session, error)
 
 func (session *Session) Close() error
     Close disconnects from the Bicep CLI and terminates its process.
-
-func (session *Session) Deploy(ctx context.Context, credential azcore.TokenCredential, options DeployOptions) (*DeployResult, error)
-    Deploy compiles and deploys a Bicep parameters file as a resource-group
-    Deployment Stack.
 
 func (session *Session) Snapshot(
 	ctx context.Context,
@@ -83,3 +116,13 @@ type SnapshotResult struct {
 }
     SnapshotResult is the predicted result of evaluating a Bicep parameters
     file.
+
+type ValidateResult struct {
+	IsValid       bool
+	Resources     []DeploymentResource
+	CorrelationID string
+	Error         *OperationError
+	ErrorCode     string
+	ErrorMessage  string
+}
+    ValidateResult describes a Deployment Stack validation response.

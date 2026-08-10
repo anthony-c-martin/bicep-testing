@@ -6,21 +6,21 @@ import go from "highlight.js/lib/languages/go";
 import javascript from "highlight.js/lib/languages/javascript";
 import powershell from "highlight.js/lib/languages/powershell";
 import python from "highlight.js/lib/languages/python";
-import nodeSnapshot from "../../samples/node/snapshot.test.js?raw";
-import nodeDeployment from "../../samples/node/deployment.test.js?raw";
-import csharpSnapshot from "../../samples/dotnet/SnapshotTests.cs?raw";
-import csharpDeployment from "../../samples/dotnet/DeploymentTests.cs?raw";
-import goSnapshot from "../../samples/go/snapshot_test.go?raw";
-import goDeployment from "../../samples/go/deployment_test.go?raw";
-import powershellSnapshot from "../../samples/powershell/BicepTest.Sample.Tests.ps1?raw";
-import powershellDeployment from "../../samples/powershell/BicepTest.Deployment.Sample.Tests.ps1?raw";
-import pythonSnapshot from "../../samples/python/test_snapshot.py?raw";
-import pythonDeployment from "../../samples/python/test_deployment.py?raw";
+import nodeOffline from "../../samples/node/snapshot.test.js?raw";
+import nodeLive from "../../samples/node/deployment.test.js?raw";
+import csharpOffline from "../../samples/dotnet/OfflineTests.cs?raw";
+import csharpLive from "../../samples/dotnet/LiveTests.cs?raw";
+import goOffline from "../../samples/go/snapshot_test.go?raw";
+import goLive from "../../samples/go/deployment_test.go?raw";
+import powershellOffline from "../../samples/powershell/BicepTest.Sample.Tests.ps1?raw";
+import powershellLive from "../../samples/powershell/BicepTest.Deployment.Sample.Tests.ps1?raw";
+import pythonOffline from "../../samples/python/test_snapshot.py?raw";
+import pythonLive from "../../samples/python/test_deployment.py?raw";
 
 const repositoryUrl = "https://github.com/anthony-c-martin/bicep-testing";
 
 type LanguageId = "node" | "csharp" | "go" | "powershell" | "python";
-type SampleKind = "snapshot" | "deployment";
+type SampleKind = "offline" | "live";
 
 interface LanguageSample {
   id: LanguageId;
@@ -31,10 +31,10 @@ interface LanguageSample {
   install: string;
   registry: string;
   packageUrl: string;
-  snapshotName: string;
-  deploymentName: string;
-  snapshot: string;
-  deployment: string;
+  offlineName: string;
+  liveName: string;
+  offline: string;
+  live: string;
 }
 
 interface LanguageTabsProps {
@@ -64,10 +64,10 @@ const languages: readonly LanguageSample[] = [
     install: "npm install --save-dev @anthony-c-martin/bicep-testing",
     registry: "npm",
     packageUrl: "https://www.npmjs.com/package/@anthony-c-martin/bicep-testing",
-    snapshotName: "snapshot.test.js",
-    deploymentName: "deployment.test.js",
-    snapshot: nodeSnapshot,
-    deployment: nodeDeployment,
+    offlineName: "snapshot.test.js",
+    liveName: "deployment.test.js",
+    offline: nodeOffline,
+    live: nodeLive,
   },
   {
     id: "csharp",
@@ -78,10 +78,10 @@ const languages: readonly LanguageSample[] = [
     install: "dotnet add package AnthonyCMartin.BicepTesting",
     registry: "NuGet",
     packageUrl: "https://www.nuget.org/packages/AnthonyCMartin.BicepTesting",
-    snapshotName: "SnapshotTests.cs",
-    deploymentName: "DeploymentTests.cs",
-    snapshot: csharpSnapshot,
-    deployment: csharpDeployment,
+    offlineName: "OfflineTests.cs",
+    liveName: "LiveTests.cs",
+    offline: csharpOffline,
+    live: csharpLive,
   },
   {
     id: "go",
@@ -94,10 +94,10 @@ const languages: readonly LanguageSample[] = [
     registry: "pkg.go.dev",
     packageUrl:
       "https://pkg.go.dev/github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing",
-    snapshotName: "snapshot_test.go",
-    deploymentName: "deployment_test.go",
-    snapshot: goSnapshot,
-    deployment: goDeployment,
+    offlineName: "snapshot_test.go",
+    liveName: "deployment_test.go",
+    offline: goOffline,
+    live: goLive,
   },
   {
     id: "powershell",
@@ -109,10 +109,10 @@ const languages: readonly LanguageSample[] = [
     registry: "PowerShell Gallery",
     packageUrl:
       "https://www.powershellgallery.com/packages/AnthonyCMartin.BicepTesting",
-    snapshotName: "BicepTest.Sample.Tests.ps1",
-    deploymentName: "BicepTest.Deployment.Sample.Tests.ps1",
-    snapshot: powershellSnapshot,
-    deployment: powershellDeployment,
+    offlineName: "BicepTest.Sample.Tests.ps1",
+    liveName: "BicepTest.Deployment.Sample.Tests.ps1",
+    offline: powershellOffline,
+    live: powershellLive,
   },
   {
     id: "python",
@@ -123,10 +123,10 @@ const languages: readonly LanguageSample[] = [
     install: "python -m pip install anthonycmartin-bicep-testing",
     registry: "PyPI",
     packageUrl: "https://pypi.org/project/anthonycmartin-bicep-testing/",
-    snapshotName: "test_snapshot.py",
-    deploymentName: "test_deployment.py",
-    snapshot: pythonSnapshot,
-    deployment: pythonDeployment,
+    offlineName: "test_snapshot.py",
+    liveName: "test_deployment.py",
+    offline: pythonOffline,
+    live: pythonLive,
   },
 ];
 
@@ -199,11 +199,11 @@ function CopyButton({ value, label }: CopyButtonProps) {
 
 export default function App() {
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageId>("node");
-  const [sampleKind, setSampleKind] = useState<SampleKind>("snapshot");
+  const [sampleKind, setSampleKind] = useState<SampleKind>("offline");
   const language = getLanguage(selectedLanguage);
   const sampleCode = language[sampleKind];
   const sampleName =
-    sampleKind === "snapshot" ? language.snapshotName : language.deploymentName;
+    sampleKind === "offline" ? language.offlineName : language.liveName;
   const highlightedSample = highlight(sampleCode, language.highlightLanguage);
 
   return (
@@ -238,7 +238,7 @@ export default function App() {
               <p className="hero-lede">
                 Language-native libraries for testing Bicep files from Jest,
                 MSTest, Go testing, Pester, or pytest. Tests can inspect planned
-                infrastructure locally or validate deployed resources in Azure.
+                infrastructure locally or validate and deploy resources in Azure.
               </p>
               <div className="hero-actions">
                 <a className="button button-primary" href="#install">
@@ -252,7 +252,7 @@ export default function App() {
             <div className="hero-details">
               <div className="hero-use-cases">
                 <article>
-                  <span>01 / Snapshot tests</span>
+                  <span>01 / Offline tests</span>
                   <h2>Check planned infrastructure locally</h2>
                   <p>
                     Compile a <code>.bicepparam</code> file and assert on
@@ -261,12 +261,12 @@ export default function App() {
                   </p>
                 </article>
                 <article>
-                  <span>02 / Deployment tests</span>
+                  <span>02 / Live tests</span>
                   <h2>Verify real Azure behavior</h2>
                   <p>
-                    Deploy with an Azure Deployment Stack, inspect resources and
-                    service responses, then remove the stack and its managed
-                    test resources.
+                    Validate templates against Azure or deploy with an Azure
+                    Deployment Stack, inspect service responses, and clean up
+                    managed test resources.
                   </p>
                 </article>
               </div>
@@ -275,7 +275,7 @@ export default function App() {
                 <p>
                   Choose a language in the selector below. The install command,
                   guide link, and inline source all update together. Open the
-                  Samples section and switch between Snapshot and Deployment to
+                  Samples section and switch between Offline and Live to
                   compare both test styles.
                 </p>
               </div>
@@ -333,17 +333,17 @@ export default function App() {
               <div className="kind-switch" aria-label="Sample type">
                 <button
                   type="button"
-                  className={sampleKind === "snapshot" ? "active" : ""}
-                  onClick={() => setSampleKind("snapshot")}
+                  className={sampleKind === "offline" ? "active" : ""}
+                  onClick={() => setSampleKind("offline")}
                 >
-                  Snapshot
+                  Offline
                 </button>
                 <button
                   type="button"
-                  className={sampleKind === "deployment" ? "active" : ""}
-                  onClick={() => setSampleKind("deployment")}
+                  className={sampleKind === "live" ? "active" : ""}
+                  onClick={() => setSampleKind("live")}
                 >
-                  Deployment
+                  Live
                 </button>
               </div>
               <span className="file-name">{sampleName}</span>

@@ -12,7 +12,7 @@ This is an independent, non-official project.
 ## Installation
 
 ```sh
-go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing@v0.1.4
+go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing@v0.1.5
 ```
 
 ## Snapshot testing
@@ -42,8 +42,8 @@ func TestStorageAccountsDisablePublicAccess(t *testing.T) {
 	})
 
 	snapshot, err := session.Snapshot(ctx, "infra/main.bicepparam", biceptesting.SnapshotMetadata{
-		TenantID:       "00000000-0000-0000-0000-000000000000",
-		SubscriptionID: "00000000-0000-0000-0000-000000000000",
+		TenantID:       "ddbe463a-0554-485d-b589-0b17d60cd38b",
+		SubscriptionID: "28c9069e-23e8-47d2-b640-00d2e0f09616",
 		ResourceGroup:  "example-rg",
 		Location:       "eastus",
 		DeploymentName: "example-deployment",
@@ -78,26 +78,70 @@ Snapshot tests run locally. The subscription, tenant, resource group, location, 
 
 ## Live deployment testing
 
-Use `Deploy()` only when a test must inspect a real Azure resource or service response:
+Use `LiveSession` only when a test must inspect a real Azure resource or service response:
 
 ```go
-deployment, err := session.Deploy(ctx, credential, biceptesting.DeployOptions{
-	FilePath:       "infra/main.bicepparam",
-	SubscriptionID: subscriptionID,
-	ResourceGroup:  resourceGroup,
-	StackName:      fmt.Sprintf("bicep-test-%d", time.Now().UnixNano()),
-})
+credential, err := azidentity.NewDefaultAzureCredential(nil)
+if err != nil {
+	t.Fatal(err)
+}
+
+live, err := biceptesting.NewLiveSession(ctx, "0.46.1", credential)
 if err != nil {
 	t.Fatal(err)
 }
 t.Cleanup(func() {
+	if err := live.Close(); err != nil {
+		t.Errorf("close live session: %v", err)
+	}
+})
+
+options := biceptesting.DeployOptions{
+	FilePath:       "infra/main.bicepparam",
+	SubscriptionID: subscriptionID,
+	ResourceGroup:  resourceGroup,
+	ParameterOverrides: map[string]json.RawMessage{
+		"env": json.RawMessage(`"integration"`),
+	},
+}
+
+validation, err := live.Validate(ctx, options)
+if err != nil {
+	t.Fatal(err)
+}
+if !validation.IsValid {
+	t.Fatalf("validation failed: %s", validation.ErrorMessage)
+}
+
+deployment, err := live.Deploy(ctx, options)
+if err != nil {
+	t.Fatal(err)
+}
+defer func() {
 	if err := deployment.Teardown(context.Background()); err != nil {
 		t.Errorf("tear down deployment: %v", err)
 	}
 })
+if !deployment.Succeeded {
+	t.Fatalf("deployment failed: %s", deployment.ErrorMessage)
+}
 ```
 
-Live tests require an `azcore.TokenCredential`, an existing resource group, and permission to create and delete Deployment Stacks and their managed resources. `Teardown()` deletes the stack and all resources it manages. Concurrent calls share an active deletion, successful cleanup is idempotent, and a failed deletion can be retried. Use a unique stack name and register teardown immediately after deployment.
+`Session` remains offline-only and still provides `Snapshot()`. `LiveSession` owns both a credential and an offline session, forwards `Snapshot()`, and adds `Validate()` and `Deploy()`.
+
+`DeployOptions` supports three scopes:
+
+- resource group: set `SubscriptionID` and `ResourceGroup` (`Location` optional)
+- subscription: set `SubscriptionID` and `Location`
+- management group: set `ManagementGroupID` and `Location`
+
+`FilePath` is always required. `StackName` is optional and defaults to a unique `bicep-test-...` value. `ParameterOverrides` is optional.
+
+`Validate()` returns `IsValid`, validated `Resources`, `CorrelationID`, and an optional `Error` with `ErrorCode`, `ErrorMessage`, and raw service JSON.
+
+`Deploy()` returns an `error` only for pre-submission failures (invalid options, compilation errors, or client construction failures). After Azure submission, failures are returned as a non-nil `DeployResult` with `Succeeded == false`, `Error`, and a working `Teardown()` handle.
+
+Live tests require Azure credentials and permission to validate, create, and delete Deployment Stacks and their managed resources at the selected scope. `Teardown()` deletes the stack and all resources it manages, treats `404` as already cleaned up, shares one active deletion across concurrent callers, is idempotent after success, and allows retries after failed deletion attempts.
 
 Lower-level Bicep integrations can use the separately versioned [bicep-rpc-client module](https://github.com/anthony-c-martin/bicep-testing/tree/main/packages/go/bicep-rpc-client).
 

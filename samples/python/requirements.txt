@@ -1,4 +1,4 @@
-anthonycmartin-bicep-rpc-client==0.1.4
-anthonycmartin-bicep-testing==0.1.4
+anthonycmartin-bicep-rpc-client==0.1.5
+anthonycmartin-bicep-testing==0.1.5
 azure-identity>=1.25.3
 pytest>=9.1.1
