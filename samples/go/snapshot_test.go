@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	biceptesting "github.com/anthony-c-martin/bicep-testing/packages/go"
+	biceptesting "github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing"
 )
 
 func TestSnapshots(t *testing.T) {

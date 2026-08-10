@@ -1,6 +1,6 @@
 BeforeAll {
     $parametersPath = Join-Path $PSScriptRoot '../infra/live-storage/main.bicepparam'
-    Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.3 -Force
+    Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.4 -Force
 
     function Get-AzureResourceResponse($Credential, [string] $ResourceId) {
         $tokenContext = [Azure.Core.TokenRequestContext]::new(

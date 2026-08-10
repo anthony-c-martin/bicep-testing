@@ -14,7 +14,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	biceptesting "github.com/anthony-c-martin/bicep-testing/packages/go"
+	biceptesting "github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing"
 )
 
 func TestDeployments(t *testing.T) {
