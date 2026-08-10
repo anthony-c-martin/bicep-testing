@@ -9,6 +9,12 @@ PARAMETER SET __AllParameterSets
   -SubscriptionId <System.String>
   -TenantId <System.String>
 
+FUNCTION New-BicepLiveTestSession
+
+PARAMETER SET __AllParameterSets
+  -BicepVersion <System.String> [Mandatory, Position=0]
+  -Credential <System.Object> [Mandatory]
+
 FUNCTION New-BicepTestSession
 
 PARAMETER SET __AllParameterSets
@@ -28,13 +34,60 @@ PARAMETER SET __AllParameterSets
 
 FUNCTION Start-BicepTestDeployment
 
-PARAMETER SET __AllParameterSets
+PARAMETER SET ManagementGroup
   -Session <System.Object> [Mandatory, Position=0, ValueFromPipeline]
   -Confirm <System.Management.Automation.SwitchParameter>
-  -Credential <System.Object> [Mandatory]
+  -Location <System.String> [Mandatory]
+  -ManagementGroupId <System.String> [Mandatory]
+  -ParameterOverrides <System.Collections.Hashtable>
+  -Path <System.String> [Mandatory]
+  -StackName <System.String>
+  -WhatIf <System.Management.Automation.SwitchParameter>
+
+PARAMETER SET ResourceGroup
+  -Session <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+  -Confirm <System.Management.Automation.SwitchParameter>
+  -Location <System.String>
   -ParameterOverrides <System.Collections.Hashtable>
   -Path <System.String> [Mandatory]
   -ResourceGroup <System.String> [Mandatory]
-  -StackName <System.String> [Mandatory]
+  -StackName <System.String>
   -SubscriptionId <System.String> [Mandatory]
   -WhatIf <System.Management.Automation.SwitchParameter>
+
+PARAMETER SET Subscription
+  -Session <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+  -Confirm <System.Management.Automation.SwitchParameter>
+  -Location <System.String> [Mandatory]
+  -ParameterOverrides <System.Collections.Hashtable>
+  -Path <System.String> [Mandatory]
+  -StackName <System.String>
+  -SubscriptionId <System.String> [Mandatory]
+  -WhatIf <System.Management.Automation.SwitchParameter>
+
+FUNCTION Test-BicepTestDeployment
+
+PARAMETER SET ManagementGroup
+  -Session <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+  -Location <System.String> [Mandatory]
+  -ManagementGroupId <System.String> [Mandatory]
+  -ParameterOverrides <System.Collections.Hashtable>
+  -Path <System.String> [Mandatory]
+  -StackName <System.String>
+
+PARAMETER SET ResourceGroup
+  -Session <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+  -Location <System.String>
+  -ParameterOverrides <System.Collections.Hashtable>
+  -Path <System.String> [Mandatory]
+  -ResourceGroup <System.String> [Mandatory]
+  -StackName <System.String>
+  -SubscriptionId <System.String> [Mandatory]
+
+PARAMETER SET Subscription
+  -Session <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+  -Location <System.String> [Mandatory]
+  -ParameterOverrides <System.Collections.Hashtable>
+  -Path <System.String> [Mandatory]
+  -StackName <System.String>
+  -SubscriptionId <System.String> [Mandatory]

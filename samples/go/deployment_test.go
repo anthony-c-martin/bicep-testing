@@ -19,23 +19,46 @@ import (
 
 func TestDeployments(t *testing.T) {
 	settings := loadLiveSettings(t)
-	session := newTestSession(t)
-	t.Run("secure storage is verified in Azure and removed", func(t *testing.T) {
-		testSecureStorageIsVerifiedInAzureAndRemoved(t, session, settings)
-	})
-	t.Run("removed audit storage is reconciled and remaining resources are cleaned up", func(t *testing.T) {
-		testDeploymentReconcilesRemovedAuditStorageAndCleansUp(t, session, settings)
-	})
-}
-
-func testSecureStorageIsVerifiedInAzureAndRemoved(t *testing.T, session *biceptesting.Session, settings liveSettings) {
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
-	defer cancel()
 	credential, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	deployment := deployStorage(t, ctx, session, credential, settings, settings.stackName+"-secure", false)
+	session := newLiveTestSession(t, credential)
+	t.Run("template validates in Azure before deployment", func(t *testing.T) {
+		testTemplateValidatesInAzure(t, session, settings)
+	})
+	t.Run("secure storage is verified in Azure and removed", func(t *testing.T) {
+		testSecureStorageIsVerifiedInAzureAndRemoved(t, session, credential, settings)
+	})
+	t.Run("removed audit storage is reconciled and remaining resources are cleaned up", func(t *testing.T) {
+		testDeploymentReconcilesRemovedAuditStorageAndCleansUp(t, session, credential, settings)
+	})
+}
+
+func testTemplateValidatesInAzure(t *testing.T, session *biceptesting.LiveSession, settings liveSettings) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+
+	validation := validateStorage(t, ctx, session, settings, settings.stackName+"-validation", false)
+	if !validation.IsValid {
+		t.Fatalf("validation failed: %s", validation.ErrorMessage)
+	}
+	found := false
+	for _, resource := range validation.Resources {
+		if resource.Type == "Microsoft.Storage/storageAccounts" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("validated resources did not include storage accounts: %#v", validation.Resources)
+	}
+}
+
+func testSecureStorageIsVerifiedInAzureAndRemoved(t *testing.T, session *biceptesting.LiveSession, credential azcore.TokenCredential, settings liveSettings) {
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
+	defer cancel()
+	deployment := deployStorage(t, ctx, session, settings, settings.stackName+"-secure", false)
 	primaryStorageID := deployment.Outputs["primaryStorageId"].(string)
 	defer func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 5*time.Minute)
@@ -65,14 +88,10 @@ func testSecureStorageIsVerifiedInAzureAndRemoved(t *testing.T, session *bicepte
 	}
 }
 
-func testDeploymentReconcilesRemovedAuditStorageAndCleansUp(t *testing.T, session *biceptesting.Session, settings liveSettings) {
+func testDeploymentReconcilesRemovedAuditStorageAndCleansUp(t *testing.T, session *biceptesting.LiveSession, credential azcore.TokenCredential, settings liveSettings) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
-	credential, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	deployment := deployStorage(t, ctx, session, credential, settings, settings.stackName, true)
+	deployment := deployStorage(t, ctx, session, settings, settings.stackName, true)
 	defer func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cleanupCancel()
@@ -86,7 +105,7 @@ func testDeploymentReconcilesRemovedAuditStorageAndCleansUp(t *testing.T, sessio
 		t.Fatalf("initial resources = %d, want 2", len(deployment.Resources))
 	}
 
-	deployment = deployStorage(t, ctx, session, credential, settings, settings.stackName, false)
+	deployment = deployStorage(t, ctx, session, settings, settings.stackName, false)
 	if len(deployment.Resources) != 1 || deployment.Resources[0].ID != primaryStorageID {
 		t.Errorf("unexpected reconciled resources: %#v", deployment.Resources)
 	}
@@ -108,6 +127,20 @@ type liveSettings struct {
 	resourcePrefix string
 }
 
+func newLiveTestSession(t *testing.T, credential azcore.TokenCredential) *biceptesting.LiveSession {
+	t.Helper()
+	session, err := biceptesting.NewLiveSession(context.Background(), "0.46.1", credential)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := session.Close(); err != nil {
+			t.Errorf("close live session: %v", err)
+		}
+	})
+	return session
+}
+
 func loadLiveSettings(t *testing.T) liveSettings {
 	t.Helper()
 	return liveSettings{
@@ -118,13 +151,13 @@ func loadLiveSettings(t *testing.T) liveSettings {
 	}
 }
 
-func deployStorage(t *testing.T, ctx context.Context, session *biceptesting.Session, credential azcore.TokenCredential, settings liveSettings, stackName string, includeAudit bool) *biceptesting.DeployResult {
+func validateStorage(t *testing.T, ctx context.Context, session *biceptesting.LiveSession, settings liveSettings, stackName string, includeAudit bool) *biceptesting.ValidateResult {
 	t.Helper()
 	parametersPath, err := filepath.Abs(filepath.Join("..", "infra", "live-storage", "main.bicepparam"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	deployment, err := session.Deploy(ctx, credential, biceptesting.DeployOptions{
+	validation, err := session.Validate(ctx, biceptesting.DeployOptions{
 		FilePath: parametersPath, SubscriptionID: settings.subscriptionID, ResourceGroup: settings.resourceGroup, StackName: stackName,
 		ParameterOverrides: map[string]json.RawMessage{
 			"resourcePrefix":      json.RawMessage(strconv.Quote(settings.resourcePrefix)),
@@ -133,6 +166,33 @@ func deployStorage(t *testing.T, ctx context.Context, session *biceptesting.Sess
 	})
 	if err != nil {
 		t.Fatal(err)
+	}
+	return validation
+}
+
+func deployStorage(t *testing.T, ctx context.Context, session *biceptesting.LiveSession, settings liveSettings, stackName string, includeAudit bool) *biceptesting.DeployResult {
+	t.Helper()
+	validation := validateStorage(t, ctx, session, settings, stackName+"-validate", includeAudit)
+	if !validation.IsValid {
+		t.Fatalf("validation failed: %s", validation.ErrorMessage)
+	}
+
+	parametersPath, err := filepath.Abs(filepath.Join("..", "infra", "live-storage", "main.bicepparam"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	deployment, err := session.Deploy(ctx, biceptesting.DeployOptions{
+		FilePath: parametersPath, SubscriptionID: settings.subscriptionID, ResourceGroup: settings.resourceGroup, StackName: stackName,
+		ParameterOverrides: map[string]json.RawMessage{
+			"resourcePrefix":      json.RawMessage(strconv.Quote(settings.resourcePrefix)),
+			"includeAuditStorage": json.RawMessage(strconv.FormatBool(includeAudit)),
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !deployment.Succeeded {
+		t.Fatalf("deployment failed: %s", deployment.ErrorMessage)
 	}
 	return deployment
 }

@@ -1,8 +1,25 @@
 CLASS BicepTestSession
   close(self) -> 'None'
   create(bicep_version: 'str') -> 'Self'
-  deploy(self, credential: 'Any', file_path: 'str | os.PathLike[str]', subscription_id: 'str', resource_group: 'str', stack_name: 'str', parameter_overrides: 'dict[str, Any] | None' = None) -> 'DeployResult'
   snapshot(self, file_path: 'str | os.PathLike[str]', metadata: 'SnapshotMetadata | None' = None) -> 'SnapshotResult'
+
+CLASS LiveBicepTestSession
+  close(self) -> 'None'
+  create(bicep_version: 'str', credential: 'Any') -> 'Self'
+  deploy(self, options: 'DeployOptions') -> 'DeployResult'
+  snapshot(self, file_path: 'str | os.PathLike[str]', metadata: 'SnapshotMetadata | None' = None) -> 'SnapshotResult'
+  validate(self, options: 'DeployOptions') -> 'ValidateResult'
+
+CLASS DeployOptions
+
+CLASS ResourceGroupDeployOptions
+  ResourceGroupDeployOptions(file_path: 'str | os.PathLike[str]', stack_name: 'str' = <factory>, parameter_overrides: 'Mapping[str, Any]' = <factory>, subscription_id: 'str' = '', resource_group: 'str' = '', location: 'str | None' = None) -> None
+
+CLASS SubscriptionDeployOptions
+  SubscriptionDeployOptions(file_path: 'str | os.PathLike[str]', stack_name: 'str' = <factory>, parameter_overrides: 'Mapping[str, Any]' = <factory>, subscription_id: 'str' = '', location: 'str' = '') -> None
+
+CLASS ManagementGroupDeployOptions
+  ManagementGroupDeployOptions(file_path: 'str | os.PathLike[str]', stack_name: 'str' = <factory>, parameter_overrides: 'Mapping[str, Any]' = <factory>, management_group_id: 'str' = '', location: 'str' = '') -> None
 
 CLASS DeployResult
   DeployResult()
@@ -11,11 +28,17 @@ CLASS DeployResult
 CLASS DeploymentResource
   DeploymentResource(id: 'str', type: 'str | None' = None) -> None
 
+CLASS ValidateResult
+  ValidateResult(resources: 'tuple[DeploymentResource, ...]', correlation_id: 'str | None', error: 'OperationError | None' = None) -> None
+
+CLASS OperationError
+  OperationError(code: 'str | None', message: 'str | None', raw_data: 'Mapping[str, Any]') -> None
+
 CLASS SnapshotMetadata
   SnapshotMetadata(tenant_id: 'str | None' = None, subscription_id: 'str | None' = None, resource_group: 'str | None' = None, location: 'str | None' = None, deployment_name: 'str | None' = None) -> None
 
 CLASS SnapshotResource
-  SnapshotResource(id: 'str', type: 'str', name: 'str', api_version: 'str', location: 'str | None' = None, properties: 'dict[str, Any]' = <factory>, additional_properties: 'dict[str, Any]' = <factory>) -> None
+  SnapshotResource(id: 'str', type: 'str', name: 'str', api_version: 'str', location: 'str | None' = None, properties: 'Mapping[str, Any]' = <factory>, additional_properties: 'Mapping[str, Any]' = <factory>) -> None
 
 CLASS SnapshotResult
-  SnapshotResult(predicted_resources: 'tuple[SnapshotResource, ...]', diagnostics: 'tuple[str, ...]', outputs: 'dict[str, Any]') -> None
+  SnapshotResult(predicted_resources: 'tuple[SnapshotResource, ...]', diagnostics: 'tuple[str, ...]', outputs: 'Mapping[str, Any]') -> None

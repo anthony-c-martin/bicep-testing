@@ -62,25 +62,51 @@ Snapshot tests run locally. The subscription, tenant, resource group, location, 
 
 ## Live deployment testing
 
-Use `Start-BicepTestDeployment` only when a test must inspect a real Azure resource or service response:
+Use a separate live session when a test must inspect real Azure resources or service responses:
 
 ```powershell
-$deployment = $session | Start-BicepTestDeployment `
-    -Credential $credential `
-    -Path 'infra/main.bicepparam' `
-    -SubscriptionId $env:AZURE_SUBSCRIPTION_ID `
-    -ResourceGroup $env:AZURE_RESOURCE_GROUP `
-    -StackName "bicep-test-$([guid]::NewGuid().ToString('N'))"
+$liveSession = New-BicepLiveTestSession `
+    -BicepVersion '0.46.1' `
+    -Credential ([Azure.Identity.DefaultAzureCredential]::new())
 
 try {
-    $deployment.Resources.Type | Should -Contain 'Microsoft.Storage/storageAccounts'
+    $validation = $liveSession | Test-BicepTestDeployment `
+        -Path 'infra/main.bicepparam' `
+        -SubscriptionId $env:AZURE_SUBSCRIPTION_ID `
+        -ResourceGroup $env:AZURE_RESOURCE_GROUP `
+        -StackName "bicep-test-$([guid]::NewGuid().ToString('N'))"
+
+    $validation.IsValid | Should -BeTrue
+
+    $deployment = $liveSession | Start-BicepTestDeployment `
+        -Path 'infra/main.bicepparam' `
+        -SubscriptionId $env:AZURE_SUBSCRIPTION_ID `
+        -ResourceGroup $env:AZURE_RESOURCE_GROUP `
+        -StackName "bicep-test-$([guid]::NewGuid().ToString('N'))"
+
+    try {
+        $deployment.Resources.Type | Should -Contain 'Microsoft.Storage/storageAccounts'
+    }
+    finally {
+        $deployment | Remove-BicepTestDeployment
+    }
 }
 finally {
-    $deployment | Remove-BicepTestDeployment
+    $liveSession | Remove-BicepTestSession
 }
 ```
 
-Live tests require an Azure `TokenCredential`, an existing resource group, and permission to create and delete Deployment Stacks and their managed resources. `Start-BicepTestDeployment` and `Remove-BicepTestDeployment` support `-WhatIf` and `-Confirm`. Removal is idempotent and deletes the stack and all resources it manages. Use a unique stack name and keep removal in a `finally` block.
+`New-BicepLiveTestSession` binds your Azure credential once and reuses it for validation and deployment calls. `Test-BicepTestDeployment` returns the underlying `ValidateResult` (including `Error` for service-side failures). `Start-BicepTestDeployment` returns the underlying `DeployResult` (including `Error` for post-submission failures).
+
+Live validation and deployment both support scope-aware parameter sets:
+
+- Resource group scope: `-SubscriptionId -ResourceGroup` with optional `-Location`
+- Subscription scope: `-SubscriptionId -Location`
+- Management group scope: `-ManagementGroupId -Location`
+
+`-Path` is required in all cases. `-StackName` is optional, and defaults to the .NET generated stack name when omitted. `-ParameterOverrides` accepts a hashtable and is forwarded to deployment parameter values.
+
+Live tests require an Azure `TokenCredential` and permission to validate, create, and delete Deployment Stacks and their managed resources in the target scope. `Start-BicepTestDeployment` and `Remove-BicepTestDeployment` support `-WhatIf` and `-Confirm`. Removal is idempotent and deletes the stack and all resources it manages.
 
 ## More information
 

@@ -1,12 +1,31 @@
 """Test Bicep infrastructure by evaluating deployment snapshots locally."""
 
-from .models import DeployResult, DeploymentResource, SnapshotMetadata, SnapshotResource, SnapshotResult
-from .session import BicepTestSession
+from .models import (
+    DeployOptions,
+    DeployResult,
+    DeploymentResource,
+    ManagementGroupDeployOptions,
+    OperationError,
+    ResourceGroupDeployOptions,
+    SnapshotMetadata,
+    SnapshotResource,
+    SnapshotResult,
+    SubscriptionDeployOptions,
+    ValidateResult,
+)
+from .session import BicepTestSession, LiveBicepTestSession
 
 __all__ = [
     "BicepTestSession",
+    "LiveBicepTestSession",
+    "DeployOptions",
+    "ResourceGroupDeployOptions",
+    "SubscriptionDeployOptions",
+    "ManagementGroupDeployOptions",
     "DeployResult",
     "DeploymentResource",
+    "ValidateResult",
+    "OperationError",
     "SnapshotMetadata",
     "SnapshotResource",
     "SnapshotResult",

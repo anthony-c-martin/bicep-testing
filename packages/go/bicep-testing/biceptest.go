@@ -19,7 +19,7 @@ type bicepClient interface {
 	Close() error
 }
 
-// Session owns a pinned Bicep CLI used to evaluate and deploy infrastructure under test.
+// Session owns a pinned Bicep CLI used to evaluate infrastructure under test.
 type Session struct {
 	client bicepClient
 }

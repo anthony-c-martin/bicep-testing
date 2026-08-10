@@ -12,14 +12,28 @@ BeforeAll {
             -SkipHttpErrorCheck
     }
 
+    function Get-SampleValidation(
+        $Session,
+        [string] $StackName,
+        [bool] $IncludeAuditStorage
+    ) {
+        $Session | Test-BicepTestDeployment `
+            -Path $parametersPath `
+            -SubscriptionId $env:AZURE_SUBSCRIPTION_ID `
+            -ResourceGroup $env:AZURE_RESOURCE_GROUP `
+            -StackName $StackName `
+            -ParameterOverrides @{
+                resourcePrefix = $env:BICEP_TEST_RESOURCE_PREFIX
+                includeAuditStorage = $IncludeAuditStorage
+            }
+    }
+
     function Start-SampleDeployment(
         $Session,
-        $Credential,
         [string] $StackName,
         [bool] $IncludeAuditStorage
     ) {
         $Session | Start-BicepTestDeployment `
-            -Credential $Credential `
             -Path $parametersPath `
             -SubscriptionId $env:AZURE_SUBSCRIPTION_ID `
             -ResourceGroup $env:AZURE_RESOURCE_GROUP `
@@ -37,7 +51,8 @@ Describe 'Real-world Bicep deployments' -Skip:(
     -not $env:BICEP_TEST_STACK_NAME -or
     -not $env:BICEP_TEST_RESOURCE_PREFIX) {
     BeforeAll {
-        $session = New-BicepTestSession -BicepVersion '0.46.1'
+        $credential = [Azure.Identity.DefaultAzureCredential]::new()
+        $session = New-BicepLiveTestSession -BicepVersion '0.46.1' -Credential $credential
     }
 
     AfterAll {
@@ -45,14 +60,19 @@ Describe 'Real-world Bicep deployments' -Skip:(
     }
 
     It 'verifies secure storage in Azure and removes it afterward' {
-        $credential = [Azure.Identity.DefaultAzureCredential]::new()
         $deployment = $null
         try {
-            $deployment = Start-SampleDeployment `
+            $validation = Get-SampleValidation `
                 -Session $session `
-                -Credential $credential `
                 -StackName "$env:BICEP_TEST_STACK_NAME-secure" `
                 -IncludeAuditStorage $false
+            $validation.IsValid | Should -BeTrue
+
+            $deployment = Start-SampleDeployment `
+                -Session $session `
+                -StackName "$env:BICEP_TEST_STACK_NAME-secure" `
+                -IncludeAuditStorage $false
+            $deployment.Succeeded | Should -BeTrue
             $primaryStorageId = $deployment.Outputs['primaryStorageId'].GetString()
             $response = Get-AzureResourceResponse $credential $primaryStorageId
             $storage = $response.Content | ConvertFrom-Json
@@ -75,23 +95,34 @@ Describe 'Real-world Bicep deployments' -Skip:(
     }
 
     It 'reconciles removed audit storage and cleans up remaining resources' {
-        $credential = [Azure.Identity.DefaultAzureCredential]::new()
         $deployment = $null
         try {
-            $deployment = Start-SampleDeployment `
+            $validation = Get-SampleValidation `
                 -Session $session `
-                -Credential $credential `
                 -StackName $env:BICEP_TEST_STACK_NAME `
                 -IncludeAuditStorage $true
+            $validation.IsValid | Should -BeTrue
+
+            $deployment = Start-SampleDeployment `
+                -Session $session `
+                -StackName $env:BICEP_TEST_STACK_NAME `
+                -IncludeAuditStorage $true
+            $deployment.Succeeded | Should -BeTrue
             $primaryStorageId = $deployment.Outputs['primaryStorageId'].GetString()
             $auditStorageId = $deployment.Outputs['auditStorageId'].GetString()
             $deployment.Resources | Should -HaveCount 2
 
-            $deployment = Start-SampleDeployment `
+            $validation = Get-SampleValidation `
                 -Session $session `
-                -Credential $credential `
                 -StackName $env:BICEP_TEST_STACK_NAME `
                 -IncludeAuditStorage $false
+            $validation.IsValid | Should -BeTrue
+
+            $deployment = Start-SampleDeployment `
+                -Session $session `
+                -StackName $env:BICEP_TEST_STACK_NAME `
+                -IncludeAuditStorage $false
+            $deployment.Succeeded | Should -BeTrue
             $deployment.Resources | Should -HaveCount 1
             $deployment.Resources[0].Id | Should -Be $primaryStorageId
             (Get-AzureResourceResponse $credential $auditStorageId).StatusCode | Should -Be 404
