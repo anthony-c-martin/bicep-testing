@@ -484,7 +484,7 @@ svg {
 }
 footer {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr 1fr;
   align-items: center;
   gap: 24px;
   padding: 36px var(--gutter);
@@ -494,10 +494,6 @@ footer {
 }
 footer .brand {
   color: white;
-}
-footer p {
-  margin: 0;
-  text-align: center;
 }
 footer > div {
   display: flex;
@@ -521,12 +517,6 @@ footer a {
   }
   .section-heading > p:last-child {
     grid-column: 2;
-  }
-  footer {
-    grid-template-columns: 1fr 1fr;
-  }
-  footer p {
-    display: none;
   }
 }
 @media (max-width: 640px) {

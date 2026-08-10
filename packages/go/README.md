@@ -1,4 +1,4 @@
-# Bicep Testing for Go
+# Bicep Testing Framework for Go
 
 Test the resources, outputs, and diagnostics produced by a Bicep deployment without deploying to Azure. The package can also run opt-in integration tests against a real Azure Deployment Stack when an assertion requires live resources.
 
