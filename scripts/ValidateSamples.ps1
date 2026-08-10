@@ -99,9 +99,7 @@ try {
 
     Write-Host 'Building the Go sample tests against local modules with a temporary modfile...'
     $goModFile = Join-Path $goWork 'go.local.mod'
-    $goSumFile = Join-Path $goWork 'go.local.sum'
     Copy-Item -LiteralPath (Join-Path $repositoryRoot 'samples/go/go.mod') -Destination $goModFile -Force
-    Copy-Item -LiteralPath (Join-Path $repositoryRoot 'samples/go/go.sum') -Destination $goSumFile -Force
     Add-Content -LiteralPath $goModFile -Value ""
     Add-Content -LiteralPath $goModFile -Value "replace github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing => $repositoryRoot/packages/go/bicep-testing"
     Add-Content -LiteralPath $goModFile -Value "replace github.com/anthony-c-martin/bicep-testing/packages/go/bicep-rpc-client => $repositoryRoot/packages/go/bicep-rpc-client"
@@ -110,25 +108,26 @@ try {
     try {
         Invoke-NativeCommand {
             $env:GOMODCACHE = "$goModCache"
-            go test -run '^$' -modfile "$goModFile" .
+            $env:GOSUMDB = 'off'
+            go test -run '^$' -mod=mod -modfile "$goModFile" .
         } 'Go sample build'
     }
     finally {
         Remove-Item Env:GOMODCACHE -ErrorAction SilentlyContinue
+        Remove-Item Env:GOSUMDB -ErrorAction SilentlyContinue
         Pop-Location
     }
 
     Write-Host 'Importing local PowerShell module and parsing sample tests...'
-    $psModuleVersionPath = New-Directory (Join-Path $psModules 'AnthonyCMartin.BicepTesting/0.1.5')
+    $psModuleVersionPath = New-Directory (Join-Path $psModules 'AnthonyCMartin.BicepTesting/0.1.6')
     Copy-Item -Path (Join-Path $repositoryRoot 'packages/powershell/AnthonyCMartin.BicepTesting/*') -Destination $psModuleVersionPath -Recurse -Force
     $originalPSModulePath = $env:PSModulePath
     try {
         $env:PSModulePath = "$psModules$([IO.Path]::PathSeparator)$originalPSModulePath"
-        Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.5 -Force
+        Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.6 -Force
         foreach ($command in @(
             'Get-BicepSnapshot',
             'New-BicepTestSession',
-            'New-BicepLiveTestSession',
             'Start-BicepTestDeployment',
             'Test-BicepTestDeployment',
             'Remove-BicepTestDeployment',

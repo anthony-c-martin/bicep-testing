@@ -110,13 +110,17 @@ svg {
 .global-language-switcher .language-tabs button {
   color: #b9c0c7;
   border-color: #414850;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease;
 }
-.global-language-switcher .language-tabs button[aria-selected="true"] {
+.global-language-switcher .language-tabs button:hover {
   color: var(--white);
   background: #30363e;
 }
-.global-language-switcher .language-tabs button[aria-selected="true"]::after {
-  background: var(--mint);
+.global-language-switcher .language-tabs button[aria-selected="true"] {
+  color: var(--white);
+  background: var(--azure);
 }
 .hero {
   position: relative;

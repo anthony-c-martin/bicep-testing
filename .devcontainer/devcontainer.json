@@ -27,14 +27,15 @@
   },
   "containerEnv": {
     "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "GOMODCACHE": "/home/vscode/.cache/go-mod",
     "POWERSHELL_TELEMETRY_OPTOUT": "1",
     "PIP_DISABLE_PIP_VERSION_CHECK": "1"
   },
   "mounts": [
+    "source=bicep-testing-bicep,target=/home/vscode/.bicep,type=volume",
     "source=bicep-testing-npm,target=/home/vscode/.npm,type=volume",
     "source=bicep-testing-nuget,target=/home/vscode/.nuget,type=volume",
-    "source=bicep-testing-go,target=/go/pkg/mod,type=volume",
-    "source=bicep-testing-pip,target=/home/vscode/.cache/pip,type=volume"
+    "source=bicep-testing-cache,target=/home/vscode/.cache,type=volume"
   ],
   "customizations": {
     "vscode": {

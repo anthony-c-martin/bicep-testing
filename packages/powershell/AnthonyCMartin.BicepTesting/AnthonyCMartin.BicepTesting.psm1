@@ -46,26 +46,13 @@ function New-BicepTestSession {
     )
 
     Import-BicepTestAssembly
-    $method = $script:BicepTestSessionType.GetMethod('CreateAsync')
-    $task = $method.Invoke($null, @($BicepVersion, [Threading.CancellationToken]::None))
-    $task.GetAwaiter().GetResult()
-}
-
-function New-BicepLiveTestSession {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory, Position = 0)]
-        [ValidateNotNullOrEmpty()]
-        [string] $BicepVersion,
-
-        [Parameter(Mandatory)]
-        [ValidateNotNull()]
-        [object] $Credential
-    )
-
-    Import-BicepTestAssembly
+    $credentialType = [AppDomain]::CurrentDomain.GetAssemblies() |
+        Where-Object { $_.GetName().Name -eq 'Azure.Identity' } |
+        Select-Object -First 1 |
+        ForEach-Object { $_.GetType('Azure.Identity.AzurePowerShellCredential', $true) }
+    $credential = [Activator]::CreateInstance($credentialType)
     $method = $script:LiveBicepTestSessionType.GetMethod('CreateAsync')
-    $task = $method.Invoke($null, @($BicepVersion, $Credential, [Threading.CancellationToken]::None))
+    $task = $method.Invoke($null, @($BicepVersion, $credential, [Threading.CancellationToken]::None))
     $task.GetAwaiter().GetResult()
 }
 
@@ -363,4 +350,4 @@ function Remove-BicepTestDeployment {
     }
 }
 
-Export-ModuleMember -Function Get-BicepSnapshot, New-BicepLiveTestSession, New-BicepTestSession, Remove-BicepTestDeployment, Remove-BicepTestSession, Start-BicepTestDeployment, Test-BicepTestDeployment
+Export-ModuleMember -Function Get-BicepSnapshot, New-BicepTestSession, Remove-BicepTestDeployment, Remove-BicepTestSession, Start-BicepTestDeployment, Test-BicepTestDeployment

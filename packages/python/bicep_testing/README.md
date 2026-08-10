@@ -12,7 +12,7 @@ This is an independent, non-official project.
 ## Installation
 
 ```sh
-python -m pip install anthonycmartin-bicep-testing==0.1.5
+python -m pip install anthonycmartin-bicep-testing==0.1.6
 ```
 
 ## Snapshot testing

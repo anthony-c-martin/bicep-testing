@@ -1,15 +1,9 @@
 BeforeAll {
     $parametersPath = Join-Path $PSScriptRoot '../infra/live-storage/main.bicepparam'
-    Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.5 -Force
+    Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.6 -Force
 
-    function Get-AzureResourceResponse($Credential, [string] $ResourceId) {
-        $tokenContext = [Azure.Core.TokenRequestContext]::new(
-            [string[]] @('https://management.azure.com/.default'))
-        $token = $Credential.GetToken($tokenContext, [Threading.CancellationToken]::None)
-        Invoke-WebRequest `
-            -Uri "https://management.azure.com${ResourceId}?api-version=2023-05-01" `
-            -Headers @{ Authorization = "Bearer $($token.Token)" } `
-            -SkipHttpErrorCheck
+    function Get-AzureResourceResponse([string] $ResourceId) {
+        Invoke-AzRestMethod -Path "${ResourceId}?api-version=2023-05-01" -Method GET
     }
 
     function Get-SampleValidation(
@@ -51,8 +45,7 @@ Describe 'Real-world Bicep deployments' -Skip:(
     -not $env:BICEP_TEST_STACK_NAME -or
     -not $env:BICEP_TEST_RESOURCE_PREFIX) {
     BeforeAll {
-        $credential = [Azure.Identity.DefaultAzureCredential]::new()
-        $session = New-BicepLiveTestSession -BicepVersion '0.46.1' -Credential $credential
+        $session = New-BicepTestSession -BicepVersion '0.46.1'
     }
 
     AfterAll {
@@ -74,7 +67,7 @@ Describe 'Real-world Bicep deployments' -Skip:(
                 -IncludeAuditStorage $false
             $deployment.Succeeded | Should -BeTrue
             $primaryStorageId = $deployment.Outputs['primaryStorageId'].GetString()
-            $response = Get-AzureResourceResponse $credential $primaryStorageId
+            $response = Get-AzureResourceResponse $primaryStorageId
             $storage = $response.Content | ConvertFrom-Json
 
             $response.StatusCode | Should -Be 200
@@ -91,7 +84,7 @@ Describe 'Real-world Bicep deployments' -Skip:(
             }
         }
 
-        (Get-AzureResourceResponse $credential $primaryStorageId).StatusCode | Should -Be 404
+        (Get-AzureResourceResponse $primaryStorageId).StatusCode | Should -Be 404
     }
 
     It 'reconciles removed audit storage and cleans up remaining resources' {
@@ -125,7 +118,7 @@ Describe 'Real-world Bicep deployments' -Skip:(
             $deployment.Succeeded | Should -BeTrue
             $deployment.Resources | Should -HaveCount 1
             $deployment.Resources[0].Id | Should -Be $primaryStorageId
-            (Get-AzureResourceResponse $credential $auditStorageId).StatusCode | Should -Be 404
+            (Get-AzureResourceResponse $auditStorageId).StatusCode | Should -Be 404
         }
         finally {
             if ($deployment) {
@@ -133,6 +126,6 @@ Describe 'Real-world Bicep deployments' -Skip:(
             }
         }
 
-        (Get-AzureResourceResponse $credential $primaryStorageId).StatusCode | Should -Be 404
+        (Get-AzureResourceResponse $primaryStorageId).StatusCode | Should -Be 404
     }
 }

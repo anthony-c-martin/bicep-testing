@@ -317,7 +317,7 @@ export default function App() {
         <section className="samples-section" id="samples">
           <div className="section-heading">
             <p className="section-kicker">Runnable samples</p>
-            <h2>Explore the complete tests</h2>
+            <h2>See more usage examples</h2>
             <p>
               Open the real {language.label} test files in GitHub to see the
               complete setup, assertions, and cleanup flow.

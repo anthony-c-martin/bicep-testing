@@ -14,62 +14,74 @@ export const go: LanguageSample = {
     "https://pkg.go.dev/github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing",
   guideUrl: `${repositoryUrl}/blob/main/packages/go/bicep-testing/README.md`,
   testCommand: "go test ./...",
-  offlineStarter: `func TestAllStorageAccountsDisableAnonymousAccess(t *testing.T) {
+  offlineStarter: `func TestBicepSnapshots(t *testing.T) {
   ctx := context.Background()
   session, err := biceptesting.NewSession(ctx, "0.46.1")
   if err != nil { t.Fatal(err) }
   t.Cleanup(func() { _ = session.Close() })
 
-  snapshot, err := session.Snapshot(ctx, "infra/main.bicepparam",
-    biceptesting.SnapshotMetadata{
-      TenantID:       "${fakeTenantId}",
-      SubscriptionID: "${fakeSubscriptionId}",
-      ResourceGroup:  "example-rg",
-      Location:       "eastus",
-    })
-  if err != nil { t.Fatal(err) }
+  t.Run("all storage accounts disable anonymous access", func(t *testing.T) {
+    snapshot, err := session.Snapshot(ctx, "infra/main.bicepparam",
+      biceptesting.SnapshotMetadata{
+        TenantID:       "${fakeTenantId}",
+        SubscriptionID: "${fakeSubscriptionId}",
+        ResourceGroup:  "example-rg",
+        Location:       "eastus",
+      })
+    if err != nil { t.Fatal(err) }
 
-  for _, resource := range snapshot.PredictedResources {
-    if strings.EqualFold(resource.Type, "Microsoft.Storage/storageAccounts") {
-      if resource.Properties["allowBlobPublicAccess"] != false {
-        t.Errorf("%s allows anonymous access", resource.Name)
+    for _, resource := range snapshot.PredictedResources {
+      if strings.EqualFold(resource.Type, "Microsoft.Storage/storageAccounts") {
+        if resource.Properties["allowBlobPublicAccess"] != false {
+          t.Errorf("%s allows anonymous access", resource.Name)
+        }
       }
     }
-  }
+  })
 }`,
-  liveValidateStarter: `credential, err := azidentity.NewDefaultAzureCredential(nil)
-if err != nil { t.Fatal(err) }
+  liveValidateStarter: `func TestLiveBicep(t *testing.T) {
+  ctx := context.Background()
+  credential, err := azidentity.NewDefaultAzureCredential(nil)
+  if err != nil { t.Fatal(err) }
 
-session, err := biceptesting.NewLiveSession(ctx, "0.46.1", credential)
-if err != nil { t.Fatal(err) }
-defer session.Close()
+  session, err := biceptesting.NewLiveSession(ctx, "0.46.1", credential)
+  if err != nil { t.Fatal(err) }
+  t.Cleanup(func() { _ = session.Close() })
 
-validation, err := session.Validate(ctx, biceptesting.DeployOptions{
-  FilePath:       "infra/main.bicepparam",
-  SubscriptionID: os.Getenv("AZURE_SUBSCRIPTION_ID"),
-  ResourceGroup:  os.Getenv("AZURE_RESOURCE_GROUP"),
-})
-if err != nil { t.Fatal(err) }
-if !validation.IsValid { t.Fatal(validation.ErrorMessage) }`,
-  liveDeployStarter: `credential, err := azidentity.NewDefaultAzureCredential(nil)
-if err != nil { t.Fatal(err) }
+  t.Run("template passes Azure validation", func(t *testing.T) {
+    validation, err := session.Validate(ctx, biceptesting.DeployOptions{
+      FilePath:       "infra/main.bicepparam",
+      SubscriptionID: os.Getenv("AZURE_SUBSCRIPTION_ID"),
+      ResourceGroup:  os.Getenv("AZURE_RESOURCE_GROUP"),
+    })
+    if err != nil { t.Fatal(err) }
+    if !validation.IsValid { t.Fatal(validation.ErrorMessage) }
+  })
+}`,
+  liveDeployStarter: `func TestLiveBicep(t *testing.T) {
+  ctx := context.Background()
+  credential, err := azidentity.NewDefaultAzureCredential(nil)
+  if err != nil { t.Fatal(err) }
 
-session, err := biceptesting.NewLiveSession(ctx, "0.46.1", credential)
-if err != nil { t.Fatal(err) }
-defer session.Close()
+  session, err := biceptesting.NewLiveSession(ctx, "0.46.1", credential)
+  if err != nil { t.Fatal(err) }
+  t.Cleanup(func() { _ = session.Close() })
 
-deployment, err := session.Deploy(ctx, biceptesting.DeployOptions{
-  FilePath:       "infra/main.bicepparam",
-  SubscriptionID: os.Getenv("AZURE_SUBSCRIPTION_ID"),
-  ResourceGroup:  os.Getenv("AZURE_RESOURCE_GROUP"),
-})
-if err != nil { t.Fatal(err) }
-defer func() {
-  if err := deployment.Teardown(context.Background()); err != nil {
-    t.Errorf("teardown: %v", err)
-  }
-}()
-if !deployment.Succeeded { t.Fatal(deployment.ErrorMessage) }`,
+  t.Run("template deploys successfully", func(t *testing.T) {
+    deployment, err := session.Deploy(ctx, biceptesting.DeployOptions{
+      FilePath:       "infra/main.bicepparam",
+      SubscriptionID: os.Getenv("AZURE_SUBSCRIPTION_ID"),
+      ResourceGroup:  os.Getenv("AZURE_RESOURCE_GROUP"),
+    })
+    if err != nil { t.Fatal(err) }
+    defer func() {
+      if err := deployment.Teardown(context.Background()); err != nil {
+        t.Errorf("teardown: %v", err)
+      }
+    }()
+    if !deployment.Succeeded { t.Fatal(deployment.ErrorMessage) }
+  })
+}`,
   offlineSampleUrl: `${repositoryUrl}/blob/main/samples/go/snapshot_test.go`,
   liveSampleUrl: `${repositoryUrl}/blob/main/samples/go/deployment_test.go`,
 };

@@ -10,35 +10,12 @@ BeforeAll {
     $location = 'eastus'
     $deploymentName = 'test-deployment'
 
-    $libraryPath = Join-Path $repositoryRoot 'packages/powershell/AnthonyCMartin.BicepTesting/lib/net10.0'
-    $azureCorePath = Join-Path $libraryPath 'Azure.Core.dll'
-    $systemClientModelPath = Join-Path $libraryPath 'System.ClientModel.dll'
-    Add-Type -Path $azureCorePath
-    Add-Type -Path $systemClientModelPath
-    if (-not ('PesterTokenCredential' -as [type])) {
-        Add-Type -TypeDefinition @'
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Azure.Core;
-
-public sealed class PesterTokenCredential : TokenCredential
-{
-    public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
-        => new AccessToken("pester-token", DateTimeOffset.UtcNow.AddMinutes(5));
-
-    public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
-        => new ValueTask<AccessToken>(GetToken(requestContext, cancellationToken));
-}
-'@ -ReferencedAssemblies @($azureCorePath, $systemClientModelPath)
-    }
 }
 
 Describe 'AnthonyCMartin.BicepTesting module' {
     It 'exports only the supported commands' {
         (Get-Command -Module AnthonyCMartin.BicepTesting).Name | Should -Be @(
             'Get-BicepSnapshot'
-            'New-BicepLiveTestSession'
             'New-BicepTestSession'
             'Remove-BicepTestDeployment'
             'Remove-BicepTestSession'
@@ -47,11 +24,8 @@ Describe 'AnthonyCMartin.BicepTesting module' {
         )
     }
 
-    It 'creates and disposes a live test session' {
-        $session = New-BicepLiveTestSession `
-            -BicepVersion '0.46.1' `
-            -Credential ([PesterTokenCredential]::new())
-
+    It 'creates a session for offline and live tests using the Azure PowerShell context' {
+        $session = New-BicepTestSession -BicepVersion '0.46.1'
         try {
             $session.GetType().FullName | Should -Be 'AnthonyCMartin.BicepTesting.LiveBicepTestSession'
         }

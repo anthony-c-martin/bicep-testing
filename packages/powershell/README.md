@@ -12,8 +12,8 @@ This is an independent, non-official project.
 ## Installation
 
 ```powershell
-Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.5 -Repository PSGallery
-Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.5
+Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.6 -Repository PSGallery
+Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.6
 ```
 
 ## Snapshot testing
@@ -65,9 +65,8 @@ Snapshot tests run locally. The subscription, tenant, resource group, location, 
 Use a separate live session when a test must inspect real Azure resources or service responses:
 
 ```powershell
-$liveSession = New-BicepLiveTestSession `
-    -BicepVersion '0.46.1' `
-    -Credential ([Azure.Identity.DefaultAzureCredential]::new())
+Connect-AzAccount
+$liveSession = New-BicepTestSession -BicepVersion '0.46.1'
 
 try {
     $validation = $liveSession | Test-BicepTestDeployment `
@@ -96,7 +95,7 @@ finally {
 }
 ```
 
-`New-BicepLiveTestSession` binds your Azure credential once and reuses it for validation and deployment calls. `Test-BicepTestDeployment` returns the underlying `ValidateResult` (including `Error` for service-side failures). `Start-BicepTestDeployment` returns the underlying `DeployResult` (including `Error` for post-submission failures).
+`New-BicepTestSession` supports both offline snapshots and live tests. It uses the account selected by `Connect-AzAccount` only when validation or deployment needs Azure access. `Test-BicepTestDeployment` returns the underlying `ValidateResult` (including `Error` for service-side failures). `Start-BicepTestDeployment` returns the underlying `DeployResult` (including `Error` for post-submission failures).
 
 Live validation and deployment both support scope-aware parameter sets:
 
@@ -106,7 +105,7 @@ Live validation and deployment both support scope-aware parameter sets:
 
 `-Path` is required in all cases. `-StackName` is optional, and defaults to the .NET generated stack name when omitted. `-ParameterOverrides` accepts a hashtable and is forwarded to deployment parameter values.
 
-Live tests require an Azure `TokenCredential` and permission to validate, create, and delete Deployment Stacks and their managed resources in the target scope. `Start-BicepTestDeployment` and `Remove-BicepTestDeployment` support `-WhatIf` and `-Confirm`. Removal is idempotent and deletes the stack and all resources it manages.
+Live tests require an Azure PowerShell account with permission to validate, create, and delete Deployment Stacks and their managed resources in the target scope. Authenticate with `Connect-AzAccount` before running them. `Start-BicepTestDeployment` and `Remove-BicepTestDeployment` support `-WhatIf` and `-Confirm`. Removal is idempotent and deletes the stack and all resources it manages.
 
 ## More information
 

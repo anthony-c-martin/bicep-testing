@@ -14,61 +14,109 @@ export const csharp: LanguageSample = {
   testCommand: "dotnet test",
   offlineStarter: `using AnthonyCMartin.BicepTesting;
 
-[TestMethod]
-public async Task All_storage_accounts_disable_anonymous_access()
+[TestClass]
+public sealed class OfflineTests
 {
-    await using var session = await BicepTestSession.CreateAsync("0.46.1");
+  private static BicepTestSession session = null!;
+
+  [ClassInitialize]
+  public static async Task Initialize(TestContext context)
+  {
+    session = await BicepTestSession.CreateAsync("0.46.1");
+  }
+
+  [ClassCleanup]
+  public static async Task Cleanup() => await session.DisposeAsync();
+
+  [TestMethod]
+  public async Task All_storage_accounts_disable_anonymous_access()
+  {
     var snapshot = await session.SnapshotAsync(new SnapshotOptions
     {
-        FilePath = "infra/main.bicepparam",
-        TenantId = "${fakeTenantId}",
-        SubscriptionId = "${fakeSubscriptionId}",
-        ResourceGroup = "example-rg",
-        Location = "eastus",
+      FilePath = "infra/main.bicepparam",
+      TenantId = "${fakeTenantId}",
+      SubscriptionId = "${fakeSubscriptionId}",
+      ResourceGroup = "example-rg",
+      Location = "eastus",
     });
 
     Assert.IsTrue(snapshot.PredictedResources
-    .Where(resource => resource.Type.Equals(
-      "Microsoft.Storage/storageAccounts",
-      StringComparison.OrdinalIgnoreCase))
+      .Where(resource => resource.Type.Equals(
+        "Microsoft.Storage/storageAccounts",
+        StringComparison.OrdinalIgnoreCase))
       .All(resource =>
         !resource.Properties.GetProperty("allowBlobPublicAccess").GetBoolean()));
+  }
 }`,
   liveValidateStarter: `using AnthonyCMartin.BicepTesting;
-  using Azure.Identity;
+using Azure.Identity;
 
-  await using var session = await LiveBicepTestSession.CreateAsync(
-    "0.46.1",
-    new DefaultAzureCredential());
-  var validation = await session.ValidateAsync(new DeployOptions
+[TestClass]
+public sealed class LiveTests
+{
+  private static LiveBicepTestSession session = null!;
+
+  [ClassInitialize]
+  public static async Task Initialize(TestContext context)
   {
-    FilePath = "infra/main.bicepparam",
-    SubscriptionId = subscriptionId,
-    ResourceGroup = resourceGroup,
-  });
-
-  Assert.IsTrue(validation.IsValid, validation.ErrorMessage);`,
-  liveDeployStarter: `using AnthonyCMartin.BicepTesting;
-  using Azure.Identity;
-
-  await using var session = await LiveBicepTestSession.CreateAsync(
-    "0.46.1",
-    new DefaultAzureCredential());
-  var deployment = await session.DeployAsync(new DeployOptions
-  {
-    FilePath = "infra/main.bicepparam",
-    SubscriptionId = subscriptionId,
-    ResourceGroup = resourceGroup,
-  });
-
-  try
-  {
-    Assert.IsTrue(deployment.Succeeded, deployment.ErrorMessage);
+    session = await LiveBicepTestSession.CreateAsync(
+      "0.46.1", new DefaultAzureCredential());
   }
-  finally
+
+  [ClassCleanup]
+  public static async Task Cleanup() => await session.DisposeAsync();
+
+  [TestMethod]
+  public async Task Template_passes_Azure_validation()
   {
-    await deployment.TeardownAsync();
-  }`,
+    var validation = await session.ValidateAsync(new DeployOptions
+    {
+      FilePath = "infra/main.bicepparam",
+      SubscriptionId = subscriptionId,
+      ResourceGroup = resourceGroup,
+    });
+
+    Assert.IsTrue(validation.IsValid, validation.ErrorMessage);
+  }
+}`,
+  liveDeployStarter: `using AnthonyCMartin.BicepTesting;
+using Azure.Identity;
+
+[TestClass]
+public sealed class LiveTests
+{
+  private static LiveBicepTestSession session = null!;
+
+  [ClassInitialize]
+  public static async Task Initialize(TestContext context)
+  {
+    session = await LiveBicepTestSession.CreateAsync(
+      "0.46.1", new DefaultAzureCredential());
+  }
+
+  [ClassCleanup]
+  public static async Task Cleanup() => await session.DisposeAsync();
+
+  [TestMethod]
+  public async Task Template_deploys_successfully()
+  {
+    var deployment = await session.DeployAsync(new DeployOptions
+    {
+      FilePath = "infra/main.bicepparam",
+      SubscriptionId = subscriptionId,
+      ResourceGroup = resourceGroup,
+    });
+
+    try
+    {
+      Assert.IsTrue(deployment.Succeeded, deployment.ErrorMessage);
+    }
+    finally
+    {
+      await deployment.TeardownAsync();
+    }
+  }
+}`,
   offlineSampleUrl: `${repositoryUrl}/blob/main/samples/dotnet/OfflineTests.cs`,
   liveSampleUrl: `${repositoryUrl}/blob/main/samples/dotnet/LiveTests.cs`,
 };

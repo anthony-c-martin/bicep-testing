@@ -12,7 +12,7 @@ This is an independent, non-official project.
 ## Installation
 
 ```sh
-go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing@v0.1.5
+go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing@v0.1.6
 ```
 
 ## Snapshot testing

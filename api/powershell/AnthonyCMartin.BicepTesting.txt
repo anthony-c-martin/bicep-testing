@@ -9,12 +9,6 @@ PARAMETER SET __AllParameterSets
   -SubscriptionId <System.String>
   -TenantId <System.String>
 
-FUNCTION New-BicepLiveTestSession
-
-PARAMETER SET __AllParameterSets
-  -BicepVersion <System.String> [Mandatory, Position=0]
-  -Credential <System.Object> [Mandatory]
-
 FUNCTION New-BicepTestSession
 
 PARAMETER SET __AllParameterSets

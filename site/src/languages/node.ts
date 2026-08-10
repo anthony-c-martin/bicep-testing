@@ -14,9 +14,16 @@ export const node: LanguageSample = {
   testCommand: "npm test",
   offlineStarter: `const { BicepTestSession } = require('@anthony-c-martin/bicep-testing');
 
-test('all storage accounts disable anonymous access', async () => {
-  const session = await BicepTestSession.create('0.46.1');
-  try {
+describe('Bicep snapshots', () => {
+  let session;
+
+  beforeAll(async () => {
+    session = await BicepTestSession.create('0.46.1');
+  });
+
+  afterAll(() => session.dispose());
+
+  test('all storage accounts disable anonymous access', async () => {
     const snapshot = await session.snapshot(
       'infra/main.bicepparam',
       '${fakeTenantId}',
@@ -28,46 +35,57 @@ test('all storage accounts disable anonymous access', async () => {
       .filter(resource => resource.type.toLowerCase() === 'microsoft.storage/storageaccounts')
       .every(resource => resource.properties.allowBlobPublicAccess === false)
     ).toBe(true);
-  } finally {
-    session.dispose();
-  }
+  });
 });`,
   liveValidateStarter: `const { DefaultAzureCredential } = require('@azure/identity');
 const { LiveBicepTestSession } = require('@anthony-c-martin/bicep-testing');
 
-const session = await LiveBicepTestSession.create(
-  '0.46.1',
-  new DefaultAzureCredential(),
-);
-try {
-  const validation = await session.validate({
-    filePath: 'infra/main.bicepparam',
-    subscriptionId: process.env.AZURE_SUBSCRIPTION_ID,
-    resourceGroup: process.env.AZURE_RESOURCE_GROUP,
+describe('live Bicep tests', () => {
+  let session;
+
+  beforeAll(async () => {
+    session = await LiveBicepTestSession.create(
+      '0.46.1', new DefaultAzureCredential());
   });
-  expect(validation.isValid).toBe(true);
-} finally {
-  session.dispose();
-}`,
+
+  afterAll(() => session.dispose());
+
+  test('template passes Azure validation', async () => {
+    const validation = await session.validate({
+      filePath: 'infra/main.bicepparam',
+      subscriptionId: process.env.AZURE_SUBSCRIPTION_ID,
+      resourceGroup: process.env.AZURE_RESOURCE_GROUP,
+    });
+    expect(validation.isValid).toBe(true);
+  });
+});`,
   liveDeployStarter: `const { DefaultAzureCredential } = require('@azure/identity');
 const { LiveBicepTestSession } = require('@anthony-c-martin/bicep-testing');
 
-const session = await LiveBicepTestSession.create(
-  '0.46.1',
-  new DefaultAzureCredential(),
-);
-let deployment;
-try {
-  deployment = await session.deploy({
-    filePath: 'infra/main.bicepparam',
-    subscriptionId: process.env.AZURE_SUBSCRIPTION_ID,
-    resourceGroup: process.env.AZURE_RESOURCE_GROUP,
+describe('live Bicep tests', () => {
+  let session;
+
+  beforeAll(async () => {
+    session = await LiveBicepTestSession.create(
+      '0.46.1', new DefaultAzureCredential());
   });
-  expect(deployment.succeeded).toBe(true);
-} finally {
-  await deployment?.teardown();
-  session.dispose();
-}`,
+
+  afterAll(() => session.dispose());
+
+  test('template deploys successfully', async () => {
+    let deployment;
+    try {
+      deployment = await session.deploy({
+        filePath: 'infra/main.bicepparam',
+        subscriptionId: process.env.AZURE_SUBSCRIPTION_ID,
+        resourceGroup: process.env.AZURE_RESOURCE_GROUP,
+      });
+      expect(deployment.succeeded).toBe(true);
+    } finally {
+      await deployment?.teardown();
+    }
+  });
+});`,
   offlineSampleUrl: `${repositoryUrl}/blob/main/samples/node/snapshot.test.js`,
   liveSampleUrl: `${repositoryUrl}/blob/main/samples/node/deployment.test.js`,
 };

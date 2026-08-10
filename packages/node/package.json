@@ -1,6 +1,6 @@
 {
   "name": "@anthony-c-martin/bicep-testing",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Test library for interacting with the Bicep CLI.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

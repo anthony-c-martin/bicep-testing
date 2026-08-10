@@ -12,17 +12,22 @@ export const python: LanguageSample = {
   packageUrl: "https://pypi.org/project/anthonycmartin-bicep-testing/",
   guideUrl: `${repositoryUrl}/blob/main/packages/python/bicep_testing/README.md`,
   testCommand: "python -m pytest",
-  offlineStarter: `from anthonycmartin.bicep_testing import BicepTestSession, SnapshotMetadata
+    offlineStarter: `import pytest
+from anthonycmartin.bicep_testing import BicepTestSession, SnapshotMetadata
 
-def test_all_storage_accounts_disable_anonymous_access():
+@pytest.fixture(scope="module")
+def session():
+        with BicepTestSession.create("0.46.1") as value:
+                yield value
+
+def test_all_storage_accounts_disable_anonymous_access(session):
     metadata = SnapshotMetadata(
         tenant_id="${fakeTenantId}",
         subscription_id="${fakeSubscriptionId}",
         resource_group="example-rg",
         location="eastus",
     )
-    with BicepTestSession.create("0.46.1") as session:
-        snapshot = session.snapshot("infra/main.bicepparam", metadata)
+    snapshot = session.snapshot("infra/main.bicepparam", metadata)
 
     assert all(
         resource.properties["allowBlobPublicAccess"] is False
@@ -30,14 +35,20 @@ def test_all_storage_accounts_disable_anonymous_access():
         if resource.type.casefold() == "microsoft.storage/storageaccounts"
     )`,
   liveValidateStarter: `from azure.identity import DefaultAzureCredential
+import pytest
 from anthonycmartin.bicep_testing import (
     LiveBicepTestSession,
     ResourceGroupDeployOptions,
 )
 
-with LiveBicepTestSession.create(
-    "0.46.1", DefaultAzureCredential()
-) as session:
+@pytest.fixture(scope="module")
+def session():
+    with LiveBicepTestSession.create(
+        "0.46.1", DefaultAzureCredential()
+    ) as value:
+        yield value
+
+def test_template_passes_azure_validation(session):
     validation = session.validate(ResourceGroupDeployOptions(
         file_path="infra/main.bicepparam",
         subscription_id=subscription_id,
@@ -45,14 +56,20 @@ with LiveBicepTestSession.create(
     ))
     assert validation.is_valid`,
   liveDeployStarter: `from azure.identity import DefaultAzureCredential
+import pytest
 from anthonycmartin.bicep_testing import (
     LiveBicepTestSession,
     ResourceGroupDeployOptions,
 )
 
-with LiveBicepTestSession.create(
-    "0.46.1", DefaultAzureCredential()
-) as session:
+@pytest.fixture(scope="module")
+def session():
+    with LiveBicepTestSession.create(
+        "0.46.1", DefaultAzureCredential()
+    ) as value:
+        yield value
+
+def test_template_deploys_successfully(session):
     options = ResourceGroupDeployOptions(
         file_path="infra/main.bicepparam",
         subscription_id=subscription_id,

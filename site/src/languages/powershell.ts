@@ -37,37 +37,45 @@ export const powershell: LanguageSample = {
         }
     }
 }`,
-  liveValidateStarter: `$session = New-BicepLiveTestSession ${powershellContinuation}
-    -BicepVersion '0.46.1' ${powershellContinuation}
-    -Credential ([Azure.Identity.DefaultAzureCredential]::new())
+  liveValidateStarter: `Describe 'Live Bicep validation' {
+    BeforeAll {
+        Connect-AzAccount
+        $session = New-BicepTestSession -BicepVersion '0.46.1'
+    }
 
-try {
-    $validation = $session | Test-BicepTestDeployment ${powershellContinuation}
-        -Path 'infra/main.bicepparam' ${powershellContinuation}
-        -SubscriptionId $env:AZURE_SUBSCRIPTION_ID ${powershellContinuation}
-        -ResourceGroup $env:AZURE_RESOURCE_GROUP
+    AfterAll { $session | Remove-BicepTestSession }
 
-    $validation.IsValid | Should -BeTrue
-}
-finally {
-    $session | Remove-BicepTestSession
+    It 'passes Azure validation' {
+        $validation = $session | Test-BicepTestDeployment ${powershellContinuation}
+            -Path 'infra/main.bicepparam' ${powershellContinuation}
+            -SubscriptionId $env:AZURE_SUBSCRIPTION_ID ${powershellContinuation}
+            -ResourceGroup $env:AZURE_RESOURCE_GROUP
+
+        $validation.IsValid | Should -BeTrue
+    }
 }`,
-  liveDeployStarter: `$session = New-BicepLiveTestSession ${powershellContinuation}
-    -BicepVersion '0.46.1' ${powershellContinuation}
-    -Credential ([Azure.Identity.DefaultAzureCredential]::new())
+  liveDeployStarter: `Describe 'Live Bicep deployment' {
+    BeforeAll {
+        Connect-AzAccount
+        $session = New-BicepTestSession -BicepVersion '0.46.1'
+    }
 
-$deployment = $null
-try {
-    $deployment = $session | Start-BicepTestDeployment ${powershellContinuation}
-        -Path 'infra/main.bicepparam' ${powershellContinuation}
-        -SubscriptionId $env:AZURE_SUBSCRIPTION_ID ${powershellContinuation}
-        -ResourceGroup $env:AZURE_RESOURCE_GROUP
+    AfterAll { $session | Remove-BicepTestSession }
 
-    $deployment.Succeeded | Should -BeTrue
-}
-finally {
-    if ($deployment) { $deployment | Remove-BicepTestDeployment }
-    $session | Remove-BicepTestSession
+    It 'deploys successfully' {
+        $deployment = $null
+        try {
+            $deployment = $session | Start-BicepTestDeployment ${powershellContinuation}
+                -Path 'infra/main.bicepparam' ${powershellContinuation}
+                -SubscriptionId $env:AZURE_SUBSCRIPTION_ID ${powershellContinuation}
+                -ResourceGroup $env:AZURE_RESOURCE_GROUP
+
+            $deployment.Succeeded | Should -BeTrue
+        }
+        finally {
+            if ($deployment) { $deployment | Remove-BicepTestDeployment }
+        }
+    }
 }`,
   offlineSampleUrl: `${repositoryUrl}/blob/main/samples/powershell/BicepTest.Sample.Tests.ps1`,
   liveSampleUrl: `${repositoryUrl}/blob/main/samples/powershell/BicepTest.Deployment.Sample.Tests.ps1`,
