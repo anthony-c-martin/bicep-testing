@@ -1,8 +1,6 @@
 using Bicep.RpcClient;
 using Bicep.RpcClient.Models;
-using Azure;
 using Azure.Core;
-using Azure.ResourceManager;
 using Azure.ResourceManager.Resources.DeploymentStacks;
 using Azure.ResourceManager.Resources.DeploymentStacks.Models;
 using System.Text.Json;
@@ -19,7 +17,7 @@ public sealed class BicepTestSession : IDisposable, IAsyncDisposable
 
     private readonly IBicepClient client;
 
-    private BicepTestSession(IBicepClient client)
+    internal BicepTestSession(IBicepClient client)
     {
         this.client = client;
     }
@@ -30,33 +28,26 @@ public sealed class BicepTestSession : IDisposable, IAsyncDisposable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(bicepVersion);
 
-        var factory = new PooledBicepClientFactory();
-        var client = await factory.Initialize(
-            BicepClientConfiguration.Default with { BicepVersion = bicepVersion },
-            cancellationToken);
+        var client = await CreateClientAsync(bicepVersion, cancellationToken);
         return new BicepTestSession(client);
     }
 
     public async Task<SnapshotResult> SnapshotAsync(
-        string filePath,
-        string? tenantId = null,
-        string? subscriptionId = null,
-        string? resourceGroup = null,
-        string? location = null,
-        string? deploymentName = null,
+        SnapshotOptions options,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.FilePath);
 
         var response = await client.GetSnapshot(
             new GetSnapshotRequest(
-                Path.GetFullPath(filePath),
+                Path.GetFullPath(options.FilePath),
                 new GetSnapshotRequest.MetadataDefinition(
-                    tenantId,
-                    subscriptionId,
-                    resourceGroup,
-                    location,
-                    deploymentName),
+                    options.TenantId,
+                    options.SubscriptionId,
+                    options.ResourceGroup,
+                    options.Location,
+                    options.DeploymentName),
                 ExternalInputs: null),
             cancellationToken);
 
@@ -64,49 +55,15 @@ public sealed class BicepTestSession : IDisposable, IAsyncDisposable
             ?? throw new InvalidDataException("The Bicep snapshot response could not be deserialized.");
     }
 
-    public async Task<DeployResult> DeployAsync(
-        TokenCredential credential,
-        DeployOptions options,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(credential);
-        ArgumentNullException.ThrowIfNull(options);
-        ArgumentException.ThrowIfNullOrWhiteSpace(options.FilePath);
-        ArgumentException.ThrowIfNullOrWhiteSpace(options.SubscriptionId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(options.ResourceGroup);
-        ArgumentException.ThrowIfNullOrWhiteSpace(options.StackName);
-
-        var overrides = options.ParameterOverrides.ToDictionary(
-            item => item.Key,
-            item => JsonNode.Parse(item.Value.GetRawText())!);
-        var compilation = await client.CompileParams(
-            new CompileParamsRequest(Path.GetFullPath(options.FilePath), overrides),
-            cancellationToken);
-        if (!compilation.Success || compilation.Template is null || compilation.Parameters is null)
-        {
-            var diagnostics = string.Join(Environment.NewLine, compilation.Diagnostics);
-            throw new InvalidDataException(
-                $"Bicep parameter compilation failed{(diagnostics.Length > 0 ? $":{Environment.NewLine}{diagnostics}" : ".")}");
-        }
-
-        var stackData = BuildDeploymentStackData(compilation.Template, compilation.Parameters);
-
-        var armClient = new ArmClient(credential, options.SubscriptionId);
-        var resourceGroupId = new ResourceIdentifier(
-            $"/subscriptions/{options.SubscriptionId}/resourceGroups/{options.ResourceGroup}");
-        var operation = await armClient.GetDeploymentStacks(resourceGroupId).CreateOrUpdateAsync(
-            WaitUntil.Completed,
-            options.StackName,
-            stackData,
-            cancellationToken);
-        return DeployResult.FromStack(operation.Value);
-    }
-
-    internal static DeploymentStackData BuildDeploymentStackData(string template, string parametersJson)
+    internal static DeploymentStackData BuildDeploymentStackData(
+        string template,
+        string parametersJson,
+        string? location = null)
     {
         using var parameterDocument = JsonDocument.Parse(parametersJson);
         var stackData = new DeploymentStackData
         {
+            Location = location,
             Template = BinaryData.FromString(template),
             ActionOnUnmanage = new ActionOnUnmanage(UnmanageActionResourceMode.Delete)
             {
@@ -156,6 +113,80 @@ public sealed class BicepTestSession : IDisposable, IAsyncDisposable
         }
 
         return stackData;
+    }
+
+    internal async Task<(string Template, string Parameters)> CompileDeploymentAsync(
+        DeployOptions options,
+        CancellationToken cancellationToken)
+    {
+        var overrides = options.ParameterOverrides.ToDictionary(
+            item => item.Key,
+            item => JsonNode.Parse(item.Value.GetRawText())!);
+        var compilation = await client.CompileParams(
+            new CompileParamsRequest(Path.GetFullPath(options.FilePath), overrides),
+            cancellationToken);
+        if (!compilation.Success || compilation.Template is null || compilation.Parameters is null)
+        {
+            var diagnostics = string.Join(Environment.NewLine, compilation.Diagnostics);
+            throw new InvalidDataException(
+                $"Bicep parameter compilation failed{(diagnostics.Length > 0 ? $":{Environment.NewLine}{diagnostics}" : ".")}");
+        }
+
+        return (compilation.Template, compilation.Parameters);
+    }
+
+    internal static void ValidateDeployOptions(DeployOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.FilePath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.StackName);
+
+        _ = BuildDeploymentScope(options);
+
+        if (options.ResourceGroup is null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(options.Location);
+        }
+    }
+
+    internal static ResourceIdentifier BuildDeploymentScope(DeployOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (options.ManagementGroupId is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(options.ManagementGroupId);
+            if (options.SubscriptionId is not null || options.ResourceGroup is not null)
+            {
+                throw new ArgumentException(
+                    "SubscriptionId and ResourceGroup must not be set with ManagementGroupId.",
+                    nameof(options));
+            }
+
+            return new ResourceIdentifier(
+                $"/providers/Microsoft.Management/managementGroups/{options.ManagementGroupId}");
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.SubscriptionId);
+        if (options.ResourceGroup is null)
+        {
+            return new ResourceIdentifier($"/subscriptions/{options.SubscriptionId}");
+        }
+
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.ResourceGroup);
+        return new ResourceIdentifier(
+            $"/subscriptions/{options.SubscriptionId}/resourceGroups/{options.ResourceGroup}");
+    }
+
+    private static async Task<IBicepClient> CreateClientAsync(
+        string bicepVersion,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(bicepVersion);
+        var factory = new PooledBicepClientFactory();
+        return await factory.Initialize(
+            BicepClientConfiguration.Default with { BicepVersion = bicepVersion },
+            cancellationToken);
     }
 
     public void Dispose() => client.Dispose();

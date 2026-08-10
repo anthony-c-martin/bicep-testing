@@ -14,17 +14,20 @@ public sealed class DeployResult : IAsyncDisposable
     private DeployResult(
         IReadOnlyDictionary<string, JsonElement> outputs,
         IReadOnlyList<DeploymentResource> resources,
+        OperationError? error,
         Func<Task> deleteAsync)
     {
         this.deleteAsync = deleteAsync;
         Outputs = outputs;
         Resources = resources;
+        Error = error;
     }
 
-    internal DeployResult(Func<Task> deleteAsync)
+    internal DeployResult(Func<Task> deleteAsync, OperationError? error = null)
         : this(
             new Dictionary<string, JsonElement>(),
             Array.Empty<DeploymentResource>(),
+            error,
             deleteAsync)
     {
     }
@@ -32,6 +35,14 @@ public sealed class DeployResult : IAsyncDisposable
     public IReadOnlyDictionary<string, JsonElement> Outputs { get; }
 
     public IReadOnlyList<DeploymentResource> Resources { get; }
+
+    public bool Succeeded => Error is null;
+
+    public OperationError? Error { get; }
+
+    public string? ErrorCode => Error?.Code;
+
+    public string? ErrorMessage => Error?.Message;
 
     internal static DeployResult FromStack(DeploymentStackResource stack)
     {
@@ -51,8 +62,13 @@ public sealed class DeployResult : IAsyncDisposable
             .Where(resource => resource.Id is not null)
             .Select(resource => new DeploymentResource(resource.Id!.ToString(), resource.Type?.ToString()))
             .ToArray();
-        return new DeployResult(outputs, resources, () => DeleteAsync(stack));
+        return new DeployResult(outputs, resources, error: null, () => DeleteAsync(stack));
     }
+
+    internal static DeployResult FromStackReference(DeploymentStackResource stack) =>
+        new(() => DeleteAsync(stack));
+
+    internal DeployResult WithError(Exception error) => new(deleteAsync, OperationError.FromException(error));
 
     public Task TeardownAsync(CancellationToken cancellationToken = default)
     {
@@ -72,14 +88,20 @@ public sealed class DeployResult : IAsyncDisposable
 
     private static async Task DeleteAsync(DeploymentStackResource stack)
     {
-        await stack.DeleteAsync(
-            WaitUntil.Completed,
-            UnmanageActionResourceMode.Delete,
-            UnmanageActionResourceGroupMode.Delete,
-            UnmanageActionManagementGroupMode.Delete,
-            ResourcesWithoutDeleteSupportAction.Fail,
-            bypassStackOutOfSyncError: false,
-            CancellationToken.None);
+        try
+        {
+            await stack.DeleteAsync(
+                WaitUntil.Completed,
+                UnmanageActionResourceMode.Delete,
+                UnmanageActionResourceGroupMode.Delete,
+                UnmanageActionManagementGroupMode.Delete,
+                ResourcesWithoutDeleteSupportAction.Fail,
+                bypassStackOutOfSyncError: false,
+                CancellationToken.None);
+        }
+        catch (RequestFailedException exception) when (exception.Status == 404)
+        {
+        }
     }
 }
 

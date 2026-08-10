@@ -29,8 +29,8 @@ beforeAll(async () => {
   session = await BicepTestSession.create('0.46.1');
   snapshot = await session.snapshot(
     'infra/main.bicepparam',
-    '00000000-0000-0000-0000-000000000000',
-    '00000000-0000-0000-0000-000000000000',
+	'ddbe463a-0554-485d-b589-0b17d60cd38b',
+	'28c9069e-23e8-47d2-b640-00d2e0f09616',
     'example-rg',
     'eastus',
     'example-deployment',
@@ -125,8 +125,8 @@ beforeAll(async () => {
 	session = await BicepTestSession.create('0.46.1');
 	snapshot = await session.snapshot(
 		'infra/main.bicepparam',
-		'00000000-0000-0000-0000-000000000000',
-		'00000000-0000-0000-0000-000000000000',
+		'ddbe463a-0554-485d-b589-0b17d60cd38b',
+		'28c9069e-23e8-47d2-b640-00d2e0f09616',
 		'example-rg',
 		'eastus',
 		'example-deployment',

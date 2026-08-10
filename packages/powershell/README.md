@@ -25,8 +25,8 @@ BeforeAll {
     $session = New-BicepTestSession -BicepVersion '0.46.1'
     $snapshot = $session | Get-BicepSnapshot `
         -Path 'infra/main.bicepparam' `
-        -TenantId '00000000-0000-0000-0000-000000000000' `
-        -SubscriptionId '00000000-0000-0000-0000-000000000000' `
+        -TenantId 'ddbe463a-0554-485d-b589-0b17d60cd38b' `
+        -SubscriptionId '28c9069e-23e8-47d2-b640-00d2e0f09616' `
         -ResourceGroup 'example-rg' `
         -Location 'eastus' `
         -DeploymentName 'example-deployment'

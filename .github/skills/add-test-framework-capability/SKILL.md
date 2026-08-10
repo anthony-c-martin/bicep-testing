@@ -131,15 +131,16 @@ Review `api/node/bicep-testing.d.ts`.
 
 #### C#
 
-Build once to collect RS0016/RS0017 diagnostics, then apply the analyzer's public API updates using the IDE code fix or `dotnet format`:
+Run the PublicApiGenerator approval test in update mode, then rerun it normally to check the reviewed baseline:
 
 ```powershell
-dotnet build packages/dotnet/src/BicepTest/BicepTest.csproj --configuration Release
-dotnet format packages/dotnet/src/BicepTest/BicepTest.csproj analyzers --diagnostics RS0016 RS0017
-dotnet build packages/dotnet/src/BicepTest/BicepTest.csproj --configuration Release
+$env:UPDATE_PUBLIC_API = 'true'
+dotnet test packages/dotnet/test/BicepTest.Tests/BicepTest.Tests.csproj --configuration Release --filter 'FullyQualifiedName~PublicApiTests'
+Remove-Item Env:UPDATE_PUBLIC_API
+dotnet test packages/dotnet/test/BicepTest.Tests/BicepTest.Tests.csproj --configuration Release --filter 'FullyQualifiedName~PublicApiTests'
 ```
 
-Review `api/dotnet/PublicAPI.Unshipped.txt` and `api/dotnet/PublicAPI.Shipped.txt`. Never suppress RS0016 or RS0017 to bypass an intentional API update.
+Review `api/dotnet/PublicAPI.txt`. Do not update the baseline without reviewing whether every API change is intentional.
 
 #### Go
 

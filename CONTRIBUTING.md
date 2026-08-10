@@ -75,7 +75,13 @@ dotnet test packages/dotnet/BicepTest.slnx
 dotnet pack packages/dotnet/src/BicepTest/BicepTest.csproj --configuration Release
 ```
 
-Review the C# public API in `api/dotnet/PublicAPI.Unshipped.txt`. The Public API analyzer fails the build when a declaration is added or removed without updating this file. Apply the RS0016 or RS0017 code fix after reviewing an intentional API change.
+Review the C# public API in `api/dotnet/PublicAPI.txt`. The PublicApiGenerator approval test fails when the generated API differs from this file. After reviewing an intentional API change, update the baseline with:
+
+```powershell
+$env:UPDATE_PUBLIC_API = 'true'
+dotnet test packages/dotnet/test/BicepTest.Tests/BicepTest.Tests.csproj --configuration Release --filter 'FullyQualifiedName~PublicApiTests'
+Remove-Item Env:UPDATE_PUBLIC_API
+```
 
 Project conventions:
 

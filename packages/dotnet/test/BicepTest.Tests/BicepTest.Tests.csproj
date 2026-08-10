@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" Version="4.3.3" />
+    <PackageReference Include="PublicApiGenerator" Version="11.5.4" />
   </ItemGroup>
 
   <ItemGroup>

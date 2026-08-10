@@ -9,18 +9,23 @@ using System.Text.Json;
 namespace Samples;
 
 [TestClass]
-public sealed class DeploymentTests
+public sealed class LiveTests
 {
     private static readonly HttpClient HttpClient = new();
     private static readonly TimeSpan CleanupTimeout = TimeSpan.FromMinutes(5);
-    private static BicepTestSession session = null!;
+    private static DefaultAzureCredential credential = null!;
+    private static LiveBicepTestSession session = null!;
 
     public TestContext TestContext { get; set; } = null!;
 
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext testContext)
     {
-        session = await BicepTestSession.CreateAsync("0.46.1", testContext.CancellationToken);
+        credential = new DefaultAzureCredential();
+        session = await LiveBicepTestSession.CreateAsync(
+            "0.46.1",
+            credential,
+            testContext.CancellationToken);
     }
 
     [ClassCleanup]
@@ -30,16 +35,31 @@ public sealed class DeploymentTests
     }
 
     [TestMethod]
+    [Timeout(5 * 60_000)]
+    public async Task Secure_storage_template_is_valid_in_Azure()
+    {
+        var settings = LiveSettings.Load();
+        var validation = await session.ValidateAsync(
+            CreateDeployOptions(settings, CreateParameterOverrides(settings, false)),
+            TestContext.CancellationToken);
+
+        Assert.IsTrue(validation.IsValid, validation.ErrorMessage);
+        Assert.IsTrue(validation.Resources.Any(
+            resource => resource.Type == "Microsoft.Storage/storageAccounts"));
+    }
+
+    [TestMethod]
     [Timeout(15 * 60_000)]
     public async Task Secure_storage_is_verified_in_Azure_and_removed()
     {
         var settings = LiveSettings.Load();
-        var credential = new DefaultAzureCredential();
         DeployResult? deployment = null;
         string? primaryStorageId = null;
         try
         {
-            deployment = await DeployAsync(session, credential, settings, $"{settings.StackName}-secure", false);
+            deployment = await DeployAsync(
+                session,
+                CreateDeployOptions(settings, CreateParameterOverrides(settings, false)));
             primaryStorageId = deployment.Outputs["primaryStorageId"].GetString()!;
             using var response = await GetAzureResourceAsync(credential, primaryStorageId);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
@@ -70,18 +90,20 @@ public sealed class DeploymentTests
     public async Task Deployment_reconciles_removed_audit_storage_and_cleans_up()
     {
         var settings = LiveSettings.Load();
-        var credential = new DefaultAzureCredential();
         DeployResult? deployment = null;
         string? primaryStorageId = null;
         string? auditStorageId = null;
         try
         {
-            deployment = await DeployAsync(session, credential, settings, settings.StackName, true);
+            var parameterOverrides = CreateParameterOverrides(settings, true);
+            var options = CreateDeployOptions(settings, parameterOverrides);
+            deployment = await DeployAsync(session, options);
             primaryStorageId = deployment.Outputs["primaryStorageId"].GetString()!;
             auditStorageId = deployment.Outputs["auditStorageId"].GetString()!;
             Assert.HasCount(2, deployment.Resources);
 
-            deployment = await DeployAsync(session, credential, settings, settings.StackName, false);
+            parameterOverrides["includeAuditStorage"] = JsonSerializer.SerializeToElement(false);
+            deployment = await DeployAsync(session, options);
             Assert.HasCount(1, deployment.Resources);
             Assert.AreEqual(primaryStorageId, deployment.Resources[0].Id);
             using var removedAudit = await GetAzureResourceAsync(credential, auditStorageId);
@@ -101,28 +123,31 @@ public sealed class DeploymentTests
     }
 
     private async Task<DeployResult> DeployAsync(
-        BicepTestSession session,
-        TokenCredential credential,
-        LiveSettings settings,
-        string stackName,
-        bool includeAuditStorage)
+        LiveBicepTestSession session,
+        DeployOptions options)
     {
-        return await session.DeployAsync(
-            credential,
-            new DeployOptions
-            {
-                FilePath = InfraPath("live-storage/main.bicepparam"),
-                SubscriptionId = settings.SubscriptionId,
-                ResourceGroup = settings.ResourceGroup,
-                StackName = stackName,
-                ParameterOverrides = new Dictionary<string, JsonElement>
-                {
-                    ["resourcePrefix"] = JsonSerializer.SerializeToElement(settings.ResourcePrefix),
-                    ["includeAuditStorage"] = JsonSerializer.SerializeToElement(includeAuditStorage),
-                },
-            },
-            TestContext.CancellationToken);
+        var deployment = await session.DeployAsync(options, TestContext.CancellationToken);
+        Assert.IsTrue(deployment.Succeeded, deployment.ErrorMessage);
+        return deployment;
     }
+
+    private static DeployOptions CreateDeployOptions(
+        LiveSettings settings,
+        IReadOnlyDictionary<string, JsonElement> parameterOverrides) => new()
+        {
+            FilePath = InfraPath("live-storage/main.bicepparam"),
+            SubscriptionId = settings.SubscriptionId,
+            ResourceGroup = settings.ResourceGroup,
+            ParameterOverrides = parameterOverrides,
+        };
+
+    private static Dictionary<string, JsonElement> CreateParameterOverrides(
+        LiveSettings settings,
+        bool includeAuditStorage) => new()
+        {
+            ["resourcePrefix"] = JsonSerializer.SerializeToElement(settings.ResourcePrefix),
+            ["includeAuditStorage"] = JsonSerializer.SerializeToElement(includeAuditStorage),
+        };
 
     private async Task<HttpResponseMessage> GetAzureResourceAsync(TokenCredential credential, string resourceId)
     {
@@ -139,12 +164,11 @@ public sealed class DeploymentTests
     private static string InfraPath(string relativePath) => Path.GetFullPath(
         Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "infra", relativePath));
 
-    private sealed record LiveSettings(string SubscriptionId, string ResourceGroup, string StackName, string ResourcePrefix)
+    private sealed record LiveSettings(string SubscriptionId, string ResourceGroup, string ResourcePrefix)
     {
         public static LiveSettings Load() => new(
             Require("AZURE_SUBSCRIPTION_ID"),
             Require("AZURE_RESOURCE_GROUP"),
-            Require("BICEP_TEST_STACK_NAME"),
             Require("BICEP_TEST_RESOURCE_PREFIX"));
 
         private static string Require(string name)

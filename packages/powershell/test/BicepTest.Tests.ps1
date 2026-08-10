@@ -4,8 +4,8 @@ BeforeAll {
     Import-Module $modulePath -Force
 
     $fixturePath = Join-Path $repositoryRoot 'packages/node/test/samples/snapshot/main.bicepparam'
-    $tenantId = '00000000-0000-0000-0000-000000000000'
-    $subscriptionId = '00000000-0000-0000-0000-000000000000'
+    $tenantId = 'ddbe463a-0554-485d-b589-0b17d60cd38b'
+    $subscriptionId = '28c9069e-23e8-47d2-b640-00d2e0f09616'
     $resourceGroup = 'test-rg'
     $location = 'eastus'
     $deploymentName = 'test-deployment'
