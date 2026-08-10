@@ -19,7 +19,11 @@ from .models import DeployResult, DeploymentResource, SnapshotMetadata, Snapshot
 
 class _DeploymentStacksOperations(Protocol):
     def begin_create_or_update_at_resource_group(
-        self, resource_group: str, stack_name: str, deployment_stack: dict[str, Any]
+        self,
+        resource_group: str,
+        stack_name: str,
+        deployment_stack: dict[str, Any],
+        /,
     ) -> Any: ...
 
     def begin_delete_at_resource_group(

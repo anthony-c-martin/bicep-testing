@@ -1,6 +1,6 @@
 BeforeAll {
     $parametersPath = Join-Path $PSScriptRoot '../infra/live-storage/main.bicepparam'
-    Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.0 -Force
+    Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.3 -Force
 
     function Get-AzureResourceResponse($Credential, [string] $ResourceId) {
         $tokenContext = [Azure.Core.TokenRequestContext]::new(
@@ -76,29 +76,29 @@ Describe 'Real-world Bicep deployments' -Skip:(
 
     It 'reconciles removed audit storage and cleans up remaining resources' {
         $credential = [Azure.Identity.DefaultAzureCredential]::new()
-        $reconciled = $null
+        $deployment = $null
         try {
-            $initial = Start-SampleDeployment `
+            $deployment = Start-SampleDeployment `
                 -Session $session `
                 -Credential $credential `
                 -StackName $env:BICEP_TEST_STACK_NAME `
                 -IncludeAuditStorage $true
-            $primaryStorageId = $initial.Outputs['primaryStorageId'].GetString()
-            $auditStorageId = $initial.Outputs['auditStorageId'].GetString()
-            $initial.Resources | Should -HaveCount 2
+            $primaryStorageId = $deployment.Outputs['primaryStorageId'].GetString()
+            $auditStorageId = $deployment.Outputs['auditStorageId'].GetString()
+            $deployment.Resources | Should -HaveCount 2
 
-            $reconciled = Start-SampleDeployment `
+            $deployment = Start-SampleDeployment `
                 -Session $session `
                 -Credential $credential `
                 -StackName $env:BICEP_TEST_STACK_NAME `
                 -IncludeAuditStorage $false
-            $reconciled.Resources | Should -HaveCount 1
-            $reconciled.Resources[0].Id | Should -Be $primaryStorageId
+            $deployment.Resources | Should -HaveCount 1
+            $deployment.Resources[0].Id | Should -Be $primaryStorageId
             (Get-AzureResourceResponse $credential $auditStorageId).StatusCode | Should -Be 404
         }
         finally {
-            if ($reconciled) {
-                $reconciled | Remove-BicepTestDeployment
+            if ($deployment) {
+                $deployment | Remove-BicepTestDeployment
             }
         }
 

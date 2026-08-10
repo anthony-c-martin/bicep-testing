@@ -54,7 +54,7 @@ updates:
           - "*"
   - package-ecosystem: "pip"
     directories:
-      - "/packages/python"
+      - "/packages/python/bicep_testing"
       - "/packages/python/bicep_rpc_client"
       - "/samples/python"
     schedule:

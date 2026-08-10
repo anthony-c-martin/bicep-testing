@@ -1,4 +1,3 @@
-import { Bicep } from '@azure/bicep-rpc-client';
 import { TokenCredential } from '@azure/core-auth';
 export type DeployOptions = {
     filePath: string;
@@ -9,7 +8,7 @@ export type DeployOptions = {
 };
 export declare class BicepTestSession {
     private bicep;
-    constructor(bicep: Bicep);
+    private constructor();
     static create(bicepVersion: string): Promise<BicepTestSession>;
     snapshot(filePath: string, tenantId?: string, subscriptionId?: string, resourceGroup?: string, location?: string, deploymentName?: string): Promise<SnapshotResult>;
     deploy(credential: TokenCredential, options: DeployOptions): Promise<DeployResult>;

@@ -12,6 +12,7 @@ namespace Samples;
 public sealed class DeploymentTests
 {
     private static readonly HttpClient HttpClient = new();
+    private static readonly TimeSpan CleanupTimeout = TimeSpan.FromMinutes(5);
     private static BicepTestSession session = null!;
 
     public TestContext TestContext { get; set; } = null!;
@@ -55,7 +56,8 @@ public sealed class DeploymentTests
         {
             if (deployment is not null)
             {
-                await deployment.TeardownAsync(TestContext.CancellationToken);
+                using var cleanup = new CancellationTokenSource(CleanupTimeout);
+                await deployment.TeardownAsync(cleanup.Token);
             }
         }
 
@@ -69,27 +71,28 @@ public sealed class DeploymentTests
     {
         var settings = LiveSettings.Load();
         var credential = new DefaultAzureCredential();
-        DeployResult? reconciled = null;
+        DeployResult? deployment = null;
         string? primaryStorageId = null;
         string? auditStorageId = null;
         try
         {
-            var initial = await DeployAsync(session, credential, settings, settings.StackName, true);
-            primaryStorageId = initial.Outputs["primaryStorageId"].GetString()!;
-            auditStorageId = initial.Outputs["auditStorageId"].GetString()!;
-            Assert.HasCount(2, initial.Resources);
+            deployment = await DeployAsync(session, credential, settings, settings.StackName, true);
+            primaryStorageId = deployment.Outputs["primaryStorageId"].GetString()!;
+            auditStorageId = deployment.Outputs["auditStorageId"].GetString()!;
+            Assert.HasCount(2, deployment.Resources);
 
-            reconciled = await DeployAsync(session, credential, settings, settings.StackName, false);
-            Assert.HasCount(1, reconciled.Resources);
-            Assert.AreEqual(primaryStorageId, reconciled.Resources[0].Id);
+            deployment = await DeployAsync(session, credential, settings, settings.StackName, false);
+            Assert.HasCount(1, deployment.Resources);
+            Assert.AreEqual(primaryStorageId, deployment.Resources[0].Id);
             using var removedAudit = await GetAzureResourceAsync(credential, auditStorageId);
             Assert.AreEqual(HttpStatusCode.NotFound, removedAudit.StatusCode);
         }
         finally
         {
-            if (reconciled is not null)
+            if (deployment is not null)
             {
-                await reconciled.TeardownAsync(TestContext.CancellationToken);
+                using var cleanup = new CancellationTokenSource(CleanupTimeout);
+                await deployment.TeardownAsync(cleanup.Token);
             }
         }
 

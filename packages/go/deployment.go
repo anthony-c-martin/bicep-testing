@@ -1,6 +1,7 @@
 package biceptesting
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -38,8 +39,9 @@ type DeployResult struct {
 	client        deploymentStackClient
 	resourceGroup string
 	stackName     string
-	teardownOnce  sync.Once
-	teardownErr   error
+	teardownMu    sync.Mutex
+	teardownWait  chan struct{}
+	teardownDone  bool
 }
 
 type deploymentStackClient interface {
@@ -89,7 +91,7 @@ func (session *Session) Deploy(ctx context.Context, credential azcore.TokenCrede
 	}
 	var parameterFile struct {
 		Parameters map[string]struct {
-			Value     any `json:"value"`
+			Value     json.RawMessage `json:"value"`
 			Reference *struct {
 				KeyVault struct {
 					ID string `json:"id"`
@@ -104,7 +106,14 @@ func (session *Session) Deploy(ctx context.Context, credential azcore.TokenCrede
 	}
 	parameters := make(map[string]*armdeploymentstacks.DeploymentParameter, len(parameterFile.Parameters))
 	for name, parameter := range parameterFile.Parameters {
-		deploymentParameter := &armdeploymentstacks.DeploymentParameter{Value: parameter.Value}
+		deploymentParameter := &armdeploymentstacks.DeploymentParameter{}
+		if parameter.Value != nil {
+			if bytes.Equal(bytes.TrimSpace(parameter.Value), []byte("null")) {
+				deploymentParameter.Value = azcore.NullValue[*any]()
+			} else if err := json.Unmarshal(parameter.Value, &deploymentParameter.Value); err != nil {
+				return nil, fmt.Errorf("decode deployment parameter %q: %w", name, err)
+			}
+		}
 		if parameter.Reference != nil {
 			deploymentParameter.Reference = &armdeploymentstacks.KeyVaultParameterReference{
 				KeyVault:      &armdeploymentstacks.KeyVaultReference{ID: &parameter.Reference.KeyVault.ID},
@@ -154,12 +163,38 @@ func (session *Session) Deploy(ctx context.Context, credential azcore.TokenCrede
 	return result, nil
 }
 
-// Teardown deletes the Deployment Stack and all resources it manages. Repeated calls return the first result.
+// Teardown deletes the Deployment Stack and all resources it manages.
+// Concurrent calls share an active deletion, and a failed deletion can be retried.
 func (result *DeployResult) Teardown(ctx context.Context) error {
-	result.teardownOnce.Do(func() {
-		result.teardownErr = result.client.delete(ctx, result.resourceGroup, result.stackName)
-	})
-	return result.teardownErr
+	for {
+		result.teardownMu.Lock()
+		if result.teardownDone {
+			result.teardownMu.Unlock()
+			return nil
+		}
+		if wait := result.teardownWait; wait != nil {
+			result.teardownMu.Unlock()
+			select {
+			case <-wait:
+				continue
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		}
+
+		wait := make(chan struct{})
+		result.teardownWait = wait
+		result.teardownMu.Unlock()
+
+		err := result.client.delete(ctx, result.resourceGroup, result.stackName)
+
+		result.teardownMu.Lock()
+		result.teardownDone = err == nil
+		result.teardownWait = nil
+		close(wait)
+		result.teardownMu.Unlock()
+		return err
+	}
 }
 
 func (client *azureDeploymentStackClient) createOrUpdate(ctx context.Context, resourceGroup, stackName string, stack armdeploymentstacks.DeploymentStack) (armdeploymentstacks.DeploymentStack, error) {

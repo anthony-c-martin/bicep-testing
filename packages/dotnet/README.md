@@ -12,7 +12,7 @@ This is an independent, non-official project.
 ## Installation
 
 ```sh
-dotnet add package AnthonyCMartin.BicepTesting --version 0.1.2
+dotnet add package AnthonyCMartin.BicepTesting --version 0.1.3
 ```
 
 ## Snapshot testing
@@ -77,7 +77,7 @@ Assert.IsTrue(deployment.Resources.Any(
     resource => resource.Type == "Microsoft.Storage/storageAccounts"));
 ```
 
-Live tests require Azure credentials, an existing resource group, and permission to create and delete Deployment Stacks and their managed resources. Asynchronous disposal is idempotent and deletes the stack and all resources it manages. Use a unique stack name and keep the result in an `await using` scope.
+Live tests require Azure credentials, an existing resource group, and permission to create and delete Deployment Stacks and their managed resources. Asynchronous disposal is idempotent and deletes the stack and all resources it manages. Concurrent teardown calls share the same deletion; canceling one caller's wait does not cancel cleanup. Use a unique stack name and keep the result in an `await using` scope.
 
 ## More information
 

@@ -1,11 +1,11 @@
 # Publishing packages
 
-All packages are released together from one repository tag. Pushing a semantic-version tag such as `v0.1.2` starts `.github/workflows/publish.yml`, which verifies the tag against every package manifest, runs the package tests and public API checks, builds the artifacts, and publishes through protected GitHub environments.
+All packages are released together from one repository tag. Pushing a semantic-version tag such as `v0.1.3` starts `.github/workflows/publish.yml`, which verifies the tag against every package manifest, runs the package tests and public API checks, builds the artifacts, and publishes through protected GitHub environments.
 
 The workflow delegates package behavior to `scripts/Publish.ps1`. Select a release unit with `-Package Validate`, `Node`, `DotNet`, `PowerShell`, `Python`, or `Go`, and pass the shared version with `-Version`. The `Python` selector builds both Python distributions together. Use `-SkipPublish` to run validation, tests, and packaging without uploading or creating tags:
 
 ```powershell
-./scripts/Publish.ps1 -Package Node -Version 0.1.2 -SkipPublish
+./scripts/Publish.ps1 -Package Node -Version 0.1.3 -SkipPublish
 ```
 
 For .NET and Python, the script builds release artifacts and the workflow performs the final upload using each registry's trusted-publishing identity. NuGet.org exchanges the GitHub OIDC token for a temporary API key immediately before `dotnet nuget push`; no long-lived NuGet key is stored in GitHub.
@@ -39,7 +39,7 @@ The Go proxy requires path-prefixed tags for modules in subdirectories. The work
 | Node | `packages/node/package.json` and `package-lock.json` |
 | .NET | `packages/dotnet/src/BicepTest/BicepTest.csproj` |
 | PowerShell | `packages/powershell/AnthonyCMartin.BicepTesting/AnthonyCMartin.BicepTesting.psd1` |
-| Python test library | `packages/python/pyproject.toml` |
+| Python test library | `packages/python/bicep_testing/pyproject.toml` |
 | Python RPC client | `packages/python/bicep_rpc_client/pyproject.toml` |
 | Go test library and RPC client | Repository tag, converted to path-prefixed tags by the workflow |
 
@@ -48,8 +48,8 @@ For example:
 ```sh
 git switch main
 git pull --ff-only
-git tag -a v0.1.2 -m "Release v0.1.2"
-git push origin v0.1.2
+git tag -a v0.1.3 -m "Release v0.1.3"
+git push origin v0.1.3
 ```
 
 Registry versions are immutable. If publishing succeeds but a later verification step fails, fix the issue and release a new patch version rather than reusing the tag.

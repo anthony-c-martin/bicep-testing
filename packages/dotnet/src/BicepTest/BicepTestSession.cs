@@ -89,14 +89,30 @@ public sealed class BicepTestSession : IDisposable, IAsyncDisposable
                 $"Bicep parameter compilation failed{(diagnostics.Length > 0 ? $":{Environment.NewLine}{diagnostics}" : ".")}");
         }
 
-        using var parameterDocument = JsonDocument.Parse(compilation.Parameters);
+        var stackData = BuildDeploymentStackData(compilation.Template, compilation.Parameters);
+
+        var armClient = new ArmClient(credential, options.SubscriptionId);
+        var resourceGroupId = new ResourceIdentifier(
+            $"/subscriptions/{options.SubscriptionId}/resourceGroups/{options.ResourceGroup}");
+        var operation = await armClient.GetDeploymentStacks(resourceGroupId).CreateOrUpdateAsync(
+            WaitUntil.Completed,
+            options.StackName,
+            stackData,
+            cancellationToken);
+        return DeployResult.FromStack(operation.Value);
+    }
+
+    internal static DeploymentStackData BuildDeploymentStackData(string template, string parametersJson)
+    {
+        using var parameterDocument = JsonDocument.Parse(parametersJson);
         var stackData = new DeploymentStackData
         {
-            Template = BinaryData.FromString(compilation.Template),
+            Template = BinaryData.FromString(template),
             ActionOnUnmanage = new ActionOnUnmanage(UnmanageActionResourceMode.Delete)
             {
                 ResourceGroups = UnmanageActionResourceGroupMode.Delete,
                 ManagementGroups = UnmanageActionManagementGroupMode.Delete,
+                ResourcesWithoutDeleteSupport = ResourcesWithoutDeleteSupportAction.Fail,
             },
             DenySettings = new DeploymentStackDenySettings(DeploymentStackDenySettingsMode.None),
         };
@@ -111,10 +127,19 @@ public sealed class BicepTestSession : IDisposable, IAsyncDisposable
                 }
                 else if (parameter.Value.TryGetProperty("reference", out var reference))
                 {
-                    var keyVaultId = reference.GetProperty("keyVault").GetProperty("id").GetString()
-                        ?? throw new InvalidDataException("A Key Vault parameter reference must include a vault ID.");
-                    var secretName = reference.GetProperty("secretName").GetString()
-                        ?? throw new InvalidDataException("A Key Vault parameter reference must include a secret name.");
+                    if (!reference.TryGetProperty("keyVault", out var keyVault)
+                        || !keyVault.TryGetProperty("id", out var keyVaultIdElement)
+                        || keyVaultIdElement.GetString() is not { } keyVaultId)
+                    {
+                        throw new InvalidDataException("A Key Vault parameter reference must include a vault ID.");
+                    }
+
+                    if (!reference.TryGetProperty("secretName", out var secretNameElement)
+                        || secretNameElement.GetString() is not { } secretName)
+                    {
+                        throw new InvalidDataException("A Key Vault parameter reference must include a secret name.");
+                    }
+
                     item.Reference = new KeyVaultParameterReference(new ResourceIdentifier(keyVaultId), secretName)
                     {
                         SecretVersion = reference.TryGetProperty("secretVersion", out var secretVersion)
@@ -126,15 +151,7 @@ public sealed class BicepTestSession : IDisposable, IAsyncDisposable
             }
         }
 
-        var armClient = new ArmClient(credential, options.SubscriptionId);
-        var resourceGroupId = new ResourceIdentifier(
-            $"/subscriptions/{options.SubscriptionId}/resourceGroups/{options.ResourceGroup}");
-        var operation = await armClient.GetDeploymentStacks(resourceGroupId).CreateOrUpdateAsync(
-            WaitUntil.Completed,
-            options.StackName,
-            stackData,
-            cancellationToken);
-        return DeployResult.FromStack(operation.Value);
+        return stackData;
     }
 
     public void Dispose() => client.Dispose();

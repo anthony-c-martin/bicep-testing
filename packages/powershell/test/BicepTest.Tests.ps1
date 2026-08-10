@@ -58,4 +58,73 @@ Describe 'AnthonyCMartin.BicepTesting module' {
             $session | Remove-BicepTestSession
         }
     }
-}
+
+    It 'honors WhatIf before starting a deployment' {
+        $session = [pscustomobject] @{ DeployCalls = 0 }
+        $session | Add-Member -MemberType ScriptMethod -Name DeployAsync -Value {
+            $this.DeployCalls++
+            [Threading.Tasks.Task]::FromResult([object] [pscustomobject] @{})
+        }
+
+        $result = $session | Start-BicepTestDeployment `
+            -Credential ([pscustomobject] @{}) `
+            -Path (Join-Path $repositoryRoot 'samples/infra/main.bicepparam') `
+            -SubscriptionId $subscriptionId `
+            -ResourceGroup $resourceGroup `
+            -StackName 'test-stack' `
+            -WhatIf
+
+        $result | Should -BeNullOrEmpty
+        $session.DeployCalls | Should -Be 0
+    }
+
+    It 'translates deployment options and parameter overrides' {
+        $deployment = [pscustomobject] @{}
+        $session = [pscustomobject] @{ DeployCalls = 0; Options = $null }
+        $session | Add-Member -MemberType ScriptMethod -Name DeployAsync -Value {
+            param($Credential, $Options, $CancellationToken)
+            $this.DeployCalls++
+            $this.Options = $Options
+            [Threading.Tasks.Task]::FromResult([object] $deployment)
+        }.GetNewClosure()
+
+        $result = $session | Start-BicepTestDeployment `
+            -Credential ([pscustomobject] @{}) `
+            -Path (Join-Path $repositoryRoot 'samples/infra/main.bicepparam') `
+            -SubscriptionId $subscriptionId `
+            -ResourceGroup $resourceGroup `
+            -StackName 'test-stack' `
+            -ParameterOverrides @{ environment = 'test' }
+
+        $result | Should -Be $deployment
+        $session.DeployCalls | Should -Be 1
+        $session.Options.SubscriptionId | Should -Be $subscriptionId
+        $session.Options.ResourceGroup | Should -Be $resourceGroup
+        $session.Options.StackName | Should -Be 'test-stack'
+        $session.Options.ParameterOverrides['environment'].GetString() | Should -Be 'test'
+    }
+
+    It 'honors WhatIf before removing a deployment' {
+        $deployment = [pscustomobject] @{ TeardownCalls = 0 }
+        $deployment | Add-Member -MemberType ScriptMethod -Name TeardownAsync -Value {
+            $this.TeardownCalls++
+            [Threading.Tasks.Task]::CompletedTask
+        }
+
+        $deployment | Remove-BicepTestDeployment -WhatIf
+
+        $deployment.TeardownCalls | Should -Be 0
+    }
+
+    It 'removes a deployment through its teardown operation' {
+        $deployment = [pscustomobject] @{ TeardownCalls = 0 }
+        $deployment | Add-Member -MemberType ScriptMethod -Name TeardownAsync -Value {
+            $this.TeardownCalls++
+            [Threading.Tasks.Task]::CompletedTask
+        }
+
+        $deployment | Remove-BicepTestDeployment
+
+        $deployment.TeardownCalls | Should -Be 1
+    }
+}

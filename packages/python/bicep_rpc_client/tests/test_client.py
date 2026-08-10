@@ -1,5 +1,8 @@
+from io import BytesIO
 from pathlib import Path
+import subprocess
 from typing import Any
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -83,3 +86,58 @@ def test_version_gate_rejects_old_cli() -> None:
 
     with pytest.raises(RuntimeError, match="0.36.1 or later"):
         client.get_snapshot(GetSnapshotRequest("main.bicepparam"))
+
+
+@pytest.mark.parametrize("already_exited", [False, True])
+def test_close_closes_process_streams(already_exited: bool) -> None:
+    process = Mock()
+    process.stdin = BytesIO()
+    process.stdout = BytesIO()
+    process.poll.return_value = 0 if already_exited else None
+    process.wait.return_value = 0
+    with patch(
+        "anthonycmartin.bicep_rpc_client.client.subprocess.Popen",
+        return_value=process,
+    ):
+        client = BicepClient("bicep")
+
+    client.close()
+
+    assert process.stdin.closed
+    assert process.stdout.closed
+    assert process.terminate.call_count == (0 if already_exited else 1)
+
+
+def test_close_kills_process_that_does_not_terminate() -> None:
+    process = Mock()
+    process.stdin = BytesIO()
+    process.stdout = BytesIO()
+    process.poll.return_value = None
+    process.wait.side_effect = [subprocess.TimeoutExpired("bicep", 5), 0]
+    with patch(
+        "anthonycmartin.bicep_rpc_client.client.subprocess.Popen",
+        return_value=process,
+    ):
+        client = BicepClient("bicep")
+
+    client.close()
+
+    process.kill.assert_called_once_with()
+    assert process.stdin.closed
+    assert process.stdout.closed
+
+
+def test_initialization_failure_closes_available_process_stream() -> None:
+    process = Mock()
+    process.stdin = None
+    process.stdout = BytesIO()
+    process.poll.return_value = None
+    process.wait.return_value = 0
+    with patch(
+        "anthonycmartin.bicep_rpc_client.client.subprocess.Popen",
+        return_value=process,
+    ):
+        with pytest.raises(RuntimeError, match="did not expose stdin and stdout"):
+            BicepClient("bicep")
+
+    assert process.stdout.closed

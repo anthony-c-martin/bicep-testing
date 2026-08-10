@@ -84,7 +84,7 @@ def test_deployment_reconciles_removed_audit_storage_and_cleans_up(session: Bice
     primary_storage_id = ""
     audit_storage_id = ""
 
-    initial = session.deploy(
+    deployment = session.deploy(
         credential,
         parameters,
         subscription_id,
@@ -92,22 +92,22 @@ def test_deployment_reconciles_removed_audit_storage_and_cleans_up(session: Bice
         stack_name,
         {"resourcePrefix": resource_prefix, "includeAuditStorage": True},
     )
-    primary_storage_id = initial.outputs["primaryStorageId"]
-    audit_storage_id = initial.outputs["auditStorageId"]
-    assert len(initial.resources) == 2
-
-    reconciled = session.deploy(
-        credential,
-        parameters,
-        subscription_id,
-        resource_group,
-        stack_name,
-        {"resourcePrefix": resource_prefix, "includeAuditStorage": False},
-    )
     try:
-        assert [resource.id for resource in reconciled.resources] == [primary_storage_id]
+        primary_storage_id = deployment.outputs["primaryStorageId"]
+        audit_storage_id = deployment.outputs["auditStorageId"]
+        assert len(deployment.resources) == 2
+
+        deployment = session.deploy(
+            credential,
+            parameters,
+            subscription_id,
+            resource_group,
+            stack_name,
+            {"resourcePrefix": resource_prefix, "includeAuditStorage": False},
+        )
+        assert [resource.id for resource in deployment.resources] == [primary_storage_id]
         assert get_azure_resource(credential, audit_storage_id)[0] == 404
     finally:
-        reconciled.close()
+        deployment.close()
 
     assert get_azure_resource(credential, primary_storage_id)[0] == 404

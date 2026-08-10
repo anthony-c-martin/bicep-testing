@@ -23,8 +23,9 @@ type DeployResult struct {
     DeployResult contains deployed outputs and resources and owns their cleanup.
 
 func (result *DeployResult) Teardown(ctx context.Context) error
-    Teardown deletes the Deployment Stack and all resources it manages. Repeated
-    calls return the first result.
+    Teardown deletes the Deployment Stack and all resources it manages.
+    Concurrent calls share an active deletion, and a failed deletion can be
+    retried.
 
 type DeploymentResource struct {
 	ID   string

@@ -58,7 +58,7 @@ function Test-AllVersions {
     $nodeLock = Get-Content (Join-Path $repositoryRoot 'packages/node/package-lock.json') -Raw | ConvertFrom-Json -AsHashtable
     [xml] $dotnet = Get-Content (Join-Path $repositoryRoot 'packages/dotnet/src/BicepTest/BicepTest.csproj') -Raw
     $powerShellManifest = Import-PowerShellDataFile (Join-Path $repositoryRoot 'packages/powershell/AnthonyCMartin.BicepTesting/AnthonyCMartin.BicepTesting.psd1')
-    $pythonContent = Get-Content (Join-Path $repositoryRoot 'packages/python/pyproject.toml') -Raw
+    $pythonContent = Get-Content (Join-Path $repositoryRoot 'packages/python/bicep_testing/pyproject.toml') -Raw
     $pythonRpcContent = Get-Content (Join-Path $repositoryRoot 'packages/python/bicep_rpc_client/pyproject.toml') -Raw
     $goMod = Get-Content (Join-Path $repositoryRoot 'packages/go/go.mod') -Raw
 
@@ -119,12 +119,12 @@ function Publish-PowerShellPackage {
 }
 
 function Publish-PythonPackages {
-    Invoke-NativeCommand python @('-m', 'pip', 'install', 'build', '-e', "$(Join-Path $repositoryRoot 'packages/python/bicep_rpc_client')[test]", '-e', "$(Join-Path $repositoryRoot 'packages/python')[test]")
-    Invoke-NativeCommand python @('-m', 'pytest', (Join-Path $repositoryRoot 'packages/python/tests'), (Join-Path $repositoryRoot 'packages/python/bicep_rpc_client/tests'))
+    Invoke-NativeCommand python @('-m', 'pip', 'install', 'build', '-e', "$(Join-Path $repositoryRoot 'packages/python/bicep_rpc_client')[test]", '-e', "$(Join-Path $repositoryRoot 'packages/python/bicep_testing')[test]")
+    Invoke-NativeCommand python @('-m', 'pytest', (Join-Path $repositoryRoot 'packages/python/bicep_testing/tests'), (Join-Path $repositoryRoot 'packages/python/bicep_rpc_client/tests'))
     Invoke-NativeCommand python @((Join-Path $repositoryRoot 'packages/python/scripts/public_api.py'), '--check')
 
-    $projectDirectory = Join-Path $repositoryRoot 'packages/python'
-    $rpcProjectDirectory = Join-Path $projectDirectory 'bicep_rpc_client'
+    $projectDirectory = Join-Path $repositoryRoot 'packages/python/bicep_testing'
+    $rpcProjectDirectory = Join-Path $repositoryRoot 'packages/python/bicep_rpc_client'
     $distributionDirectory = Join-Path $repositoryRoot 'artifacts/python'
     $pyproject = Get-Content (Join-Path $projectDirectory 'pyproject.toml') -Raw
     $rpcPyproject = Get-Content (Join-Path $rpcProjectDirectory 'pyproject.toml') -Raw

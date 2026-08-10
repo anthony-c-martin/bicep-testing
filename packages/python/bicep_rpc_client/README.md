@@ -7,7 +7,7 @@ An independent Python client for programmatically interacting with the [Bicep CL
 ### Install the package
 
 ```sh
-python -m pip install anthonycmartin-bicep-rpc-client==0.1.2
+python -m pip install anthonycmartin-bicep-rpc-client==0.1.3
 ```
 
 The distribution is named `anthonycmartin-bicep-rpc-client`; import its public API from `anthonycmartin.bicep_rpc_client`.

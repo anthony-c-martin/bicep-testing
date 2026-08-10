@@ -148,8 +148,8 @@ Prerequisite: Python 3.11 or later.
 Install, test, and check the public API from the repository root:
 
 ```sh
-python -m pip install -e "./packages/python/bicep_rpc_client[test]" -e "./packages/python[test]"
-python -m pytest packages/python/tests packages/python/bicep_rpc_client/tests
+python -m pip install -e "./packages/python/bicep_rpc_client[test]" -e "./packages/python/bicep_testing[test]"
+python -m pytest packages/python/bicep_testing/tests packages/python/bicep_rpc_client/tests
 python packages/python/scripts/public_api.py --check
 ```
 
@@ -160,7 +160,7 @@ Project conventions:
 - Keep runtime dependencies in the Python standard library where practical.
 - Use type annotations, immutable dataclasses for result data, and context managers for owned processes.
 - Add transport code under `packages/python/bicep_rpc_client/src/anthonycmartin/bicep_rpc_client`.
-- Add package code under `packages/python/src/anthonycmartin/bicep_testing` and pytest tests under `packages/python/tests`.
+- Add framework code under `packages/python/bicep_testing/src/anthonycmartin/bicep_testing` and pytest tests under `packages/python/bicep_testing/tests`.
 
 ## Pull requests
 

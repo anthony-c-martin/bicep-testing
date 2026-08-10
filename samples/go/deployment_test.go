@@ -38,7 +38,9 @@ func testSecureStorageIsVerifiedInAzureAndRemoved(t *testing.T, session *bicepte
 	deployment := deployStorage(t, ctx, session, credential, settings, settings.stackName+"-secure", false)
 	primaryStorageID := deployment.Outputs["primaryStorageId"].(string)
 	defer func() {
-		if err := deployment.Teardown(context.Background()); err != nil {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cleanupCancel()
+		if err := deployment.Teardown(cleanupCtx); err != nil {
 			t.Errorf("tear down deployment: %v", err)
 		}
 	}()
@@ -70,26 +72,28 @@ func testDeploymentReconcilesRemovedAuditStorageAndCleansUp(t *testing.T, sessio
 	if err != nil {
 		t.Fatal(err)
 	}
-	initial := deployStorage(t, ctx, session, credential, settings, settings.stackName, true)
-	primaryStorageID := initial.Outputs["primaryStorageId"].(string)
-	auditStorageID := initial.Outputs["auditStorageId"].(string)
-	if len(initial.Resources) != 2 {
-		t.Fatalf("initial resources = %d, want 2", len(initial.Resources))
-	}
-
-	reconciled := deployStorage(t, ctx, session, credential, settings, settings.stackName, false)
+	deployment := deployStorage(t, ctx, session, credential, settings, settings.stackName, true)
 	defer func() {
-		if err := reconciled.Teardown(context.Background()); err != nil {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cleanupCancel()
+		if err := deployment.Teardown(cleanupCtx); err != nil {
 			t.Errorf("tear down deployment: %v", err)
 		}
 	}()
-	if len(reconciled.Resources) != 1 || reconciled.Resources[0].ID != primaryStorageID {
-		t.Errorf("unexpected reconciled resources: %#v", reconciled.Resources)
+	primaryStorageID := deployment.Outputs["primaryStorageId"].(string)
+	auditStorageID := deployment.Outputs["auditStorageId"].(string)
+	if len(deployment.Resources) != 2 {
+		t.Fatalf("initial resources = %d, want 2", len(deployment.Resources))
+	}
+
+	deployment = deployStorage(t, ctx, session, credential, settings, settings.stackName, false)
+	if len(deployment.Resources) != 1 || deployment.Resources[0].ID != primaryStorageID {
+		t.Errorf("unexpected reconciled resources: %#v", deployment.Resources)
 	}
 	if status, _ := getAzureResource(t, ctx, credential, auditStorageID); status != http.StatusNotFound {
 		t.Errorf("audit storage status after reconciliation = %d, want 404", status)
 	}
-	if err := reconciled.Teardown(ctx); err != nil {
+	if err := deployment.Teardown(ctx); err != nil {
 		t.Fatal(err)
 	}
 	if status, _ := getAzureResource(t, ctx, credential, primaryStorageID); status != http.StatusNotFound {

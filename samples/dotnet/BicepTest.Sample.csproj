@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AnthonyCMartin.BicepTesting" Version="0.1.0" />
+    <PackageReference Include="AnthonyCMartin.BicepTesting" Version="0.1.3" />
     <PackageReference Include="MSTest" Version="4.3.3" />
   </ItemGroup>
 

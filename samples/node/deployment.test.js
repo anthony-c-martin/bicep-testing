@@ -58,32 +58,32 @@ liveDescribe('real-world Bicep deployments', () => {
 
   test('reconciles a removed audit account and tears down remaining resources', async () => {
     const credential = new DefaultAzureCredential();
-    let reconciled;
+    let deployment;
     let primaryStorageId;
     let auditStorageId;
     try {
-      const initial = await session.deploy(credential, {
+      deployment = await session.deploy(credential, {
         filePath: parametersPath,
         subscriptionId,
         resourceGroup,
         stackName,
         parameterOverrides: { resourcePrefix, includeAuditStorage: true },
       });
-      primaryStorageId = initial.outputs.primaryStorageId;
-      auditStorageId = initial.outputs.auditStorageId;
-      expect(initial.resources).toHaveLength(2);
+      primaryStorageId = deployment.outputs.primaryStorageId;
+      auditStorageId = deployment.outputs.auditStorageId;
+      expect(deployment.resources).toHaveLength(2);
 
-      reconciled = await session.deploy(credential, {
+      deployment = await session.deploy(credential, {
         filePath: parametersPath,
         subscriptionId,
         resourceGroup,
         stackName,
         parameterOverrides: { resourcePrefix, includeAuditStorage: false },
       });
-      expect(reconciled.resources.map(resource => resource.id)).toEqual([primaryStorageId]);
+      expect(deployment.resources.map(resource => resource.id)).toEqual([primaryStorageId]);
       expect((await getAzureResource(credential, auditStorageId)).status).toBe(404);
     } finally {
-      await reconciled?.teardown();
+      await deployment?.teardown();
     }
     expect((await getAzureResource(credential, primaryStorageId)).status).toBe(404);
   }, 20 * 60_000);

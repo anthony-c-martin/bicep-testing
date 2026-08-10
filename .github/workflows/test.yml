@@ -118,13 +118,15 @@ jobs:
       with:
         python-version: '3.14'
         cache: pip
-        cache-dependency-path: packages/python/pyproject.toml
+        cache-dependency-path: |
+          packages/python/bicep_testing/pyproject.toml
+          packages/python/bicep_rpc_client/pyproject.toml
 
     - name: Install
-      run: python -m pip install -e './packages/python/bicep_rpc_client[test]' -e './packages/python[test]'
+      run: python -m pip install -e './packages/python/bicep_rpc_client[test]' -e './packages/python/bicep_testing[test]'
 
     - name: Test
-      run: python -m pytest packages/python/tests packages/python/bicep_rpc_client/tests
+      run: python -m pytest packages/python/bicep_testing/tests packages/python/bicep_rpc_client/tests
 
     - name: Check public API
       run: python packages/python/scripts/public_api.py --check

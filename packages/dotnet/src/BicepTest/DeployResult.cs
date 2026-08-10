@@ -7,17 +7,26 @@ namespace AnthonyCMartin.BicepTesting;
 
 public sealed class DeployResult : IAsyncDisposable
 {
-    private readonly DeploymentStackResource stack;
+    private readonly Func<Task> deleteAsync;
+    private readonly object teardownLock = new();
     private Task? teardownTask;
 
     private DeployResult(
-        DeploymentStackResource stack,
         IReadOnlyDictionary<string, JsonElement> outputs,
-        IReadOnlyList<DeploymentResource> resources)
+        IReadOnlyList<DeploymentResource> resources,
+        Func<Task> deleteAsync)
     {
-        this.stack = stack;
+        this.deleteAsync = deleteAsync;
         Outputs = outputs;
         Resources = resources;
+    }
+
+    internal DeployResult(Func<Task> deleteAsync)
+        : this(
+            new Dictionary<string, JsonElement>(),
+            Array.Empty<DeploymentResource>(),
+            deleteAsync)
+    {
     }
 
     public IReadOnlyDictionary<string, JsonElement> Outputs { get; }
@@ -42,18 +51,26 @@ public sealed class DeployResult : IAsyncDisposable
             .Where(resource => resource.Id is not null)
             .Select(resource => new DeploymentResource(resource.Id!.ToString(), resource.Type?.ToString()))
             .ToArray();
-        return new DeployResult(stack, outputs, resources);
+        return new DeployResult(outputs, resources, () => DeleteAsync(stack));
     }
 
     public Task TeardownAsync(CancellationToken cancellationToken = default)
     {
-        teardownTask ??= DeleteAsync(cancellationToken);
-        return teardownTask;
+        Task task;
+        lock (teardownLock)
+        {
+            teardownTask ??= deleteAsync();
+            task = teardownTask;
+        }
+
+        return cancellationToken.CanBeCanceled
+            ? task.WaitAsync(cancellationToken)
+            : task;
     }
 
     public async ValueTask DisposeAsync() => await TeardownAsync();
 
-    private async Task DeleteAsync(CancellationToken cancellationToken)
+    private static async Task DeleteAsync(DeploymentStackResource stack)
     {
         await stack.DeleteAsync(
             WaitUntil.Completed,
@@ -62,7 +79,7 @@ public sealed class DeployResult : IAsyncDisposable
             UnmanageActionManagementGroupMode.Delete,
             ResourcesWithoutDeleteSupportAction.Fail,
             bypassStackOutOfSyncError: false,
-            cancellationToken);
+            CancellationToken.None);
     }
 }
 
