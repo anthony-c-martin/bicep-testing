@@ -30,7 +30,7 @@ public sealed class BicepTestSession : IDisposable, IAsyncDisposable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(bicepVersion);
 
-        var factory = new BicepClientFactory();
+        var factory = new PooledBicepClientFactory();
         var client = await factory.Initialize(
             BicepClientConfiguration.Default with { BicepVersion = bicepVersion },
             cancellationToken);
@@ -124,6 +124,10 @@ public sealed class BicepTestSession : IDisposable, IAsyncDisposable
                 if (parameter.Value.TryGetProperty("value", out var parameterValue))
                 {
                     item.Value = BinaryData.FromString(parameterValue.GetRawText());
+                }
+                else if (parameter.Value.TryGetProperty("expression", out var expressionValue))
+                {
+                    item.Expression = expressionValue.GetRawText();
                 }
                 else if (parameter.Value.TryGetProperty("reference", out var reference))
                 {
