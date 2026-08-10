@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from "react";
+import { useEffect, useState, type KeyboardEvent } from "react";
 import {
   ArrowDown,
   ArrowUpRight,
@@ -34,6 +34,13 @@ interface CopyButtonProps {
   label: string;
 }
 
+type SectionId = "top" | "install" | "getting-started" | "samples";
+
+interface HashState {
+  language?: LanguageId;
+  section?: SectionId;
+}
+
 hljs.registerLanguage("csharp", csharp);
 hljs.registerLanguage("go", go);
 hljs.registerLanguage("javascript", javascript);
@@ -42,6 +49,21 @@ hljs.registerLanguage("python", python);
 
 function highlight(code: string, language: string): string {
   return hljs.highlight(code, { language }).value;
+}
+
+function getHashState(): HashState {
+  const [first, second] = window.location.hash.slice(1).split("/");
+  const language = languages.find((item) => item.id === first)?.id;
+  const sectionNames: readonly SectionId[] = [
+    "top",
+    "install",
+    "getting-started",
+    "samples",
+  ];
+  const section = sectionNames.find(
+    (item) => item === (language ? second : first),
+  );
+  return { language, section };
 }
 
 function LanguageTabs({ selected, onSelect, label }: LanguageTabsProps) {
@@ -104,7 +126,9 @@ function CopyButton({ value, label }: CopyButtonProps) {
 }
 
 export default function App() {
-  const [selectedLanguage, setSelectedLanguage] = useState<LanguageId>("node");
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageId>(
+    () => getHashState().language ?? "node",
+  );
   const [starterKind, setStarterKind] = useState<StarterKind>("offline");
   const language = getLanguage(selectedLanguage);
   const starterCode = {
@@ -114,10 +138,42 @@ export default function App() {
   }[starterKind];
   const highlightedStarter = highlight(starterCode, language.highlightLanguage);
 
+  useEffect(() => {
+    function applyHashState() {
+      const hashState = getHashState();
+      if (hashState.language) setSelectedLanguage(hashState.language);
+      if (hashState.section) {
+        window.requestAnimationFrame(() => {
+          document.getElementById(hashState.section!)?.scrollIntoView();
+        });
+      }
+    }
+
+    applyHashState();
+    window.addEventListener("hashchange", applyHashState);
+    window.addEventListener("popstate", applyHashState);
+    return () => {
+      window.removeEventListener("hashchange", applyHashState);
+      window.removeEventListener("popstate", applyHashState);
+    };
+  }, []);
+
+  function selectLanguage(language: LanguageId) {
+    setSelectedLanguage(language);
+    const section = getHashState().section;
+    window.history.pushState(
+      null,
+      "",
+      `#${language}${section ? `/${section}` : ""}`,
+    );
+  }
+
+  const sectionHash = (section: SectionId) => `#${selectedLanguage}/${section}`;
+
   return (
     <>
       <header className="site-header">
-        <a className="brand" href="#top">
+        <a className="brand" href={sectionHash("top")}>
           <img
             src="/bicep-testing/bicep-logo.svg"
             alt=""
@@ -127,9 +183,9 @@ export default function App() {
           <span>Bicep Testing Framework</span>
         </a>
         <nav aria-label="Primary navigation">
-          <a href="#install">Install</a>
-          <a href="#getting-started">Getting started</a>
-          <a href="#samples">Samples</a>
+          <a href={sectionHash("install")}>Install</a>
+          <a href={sectionHash("getting-started")}>Getting started</a>
+          <a href={sectionHash("samples")}>Samples</a>
           <a className="github-link" href={repositoryUrl}>
             <GitFork />
             <span>GitHub</span>
@@ -151,11 +207,17 @@ export default function App() {
                 Azure.
               </p>
               <div className="hero-actions">
-                <a className="button button-primary" href="#install">
+                <a
+                  className="button button-primary"
+                  href={sectionHash("install")}
+                >
                   Install the library <ArrowDown />
                 </a>
-                <a className="button button-secondary" href="#samples">
-                  View test samples <ArrowDown />
+                <a
+                  className="button button-secondary"
+                  href={sectionHash("getting-started")}
+                >
+                  Getting started <ArrowDown />
                 </a>
               </div>
             </div>
@@ -195,7 +257,7 @@ export default function App() {
             <span>Language</span>
             <LanguageTabs
               selected={selectedLanguage}
-              onSelect={setSelectedLanguage}
+              onSelect={selectLanguage}
               label="Site language"
             />
           </div>
@@ -350,7 +412,7 @@ export default function App() {
         </section>
       </main>
       <footer>
-        <a className="brand" href="#top">
+        <a className="brand" href={sectionHash("top")}>
           <img
             src="/bicep-testing/bicep-logo.svg"
             alt=""
