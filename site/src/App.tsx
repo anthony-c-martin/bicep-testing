@@ -215,7 +215,7 @@ export default function App() {
             width="34"
             height="34"
           />
-          <span>Bicep Testing</span>
+          <span>Bicep Testing Framework</span>
         </a>
         <nav aria-label="Primary navigation">
           <a href="#install">Install</a>
@@ -362,9 +362,8 @@ export default function App() {
             width="28"
             height="28"
           />
-          <span>Bicep Testing</span>
+          <span>Bicep Testing Framework</span>
         </a>
-        <p>Independent, non-official testing libraries for Bicep.</p>
         <div>
           <a href={`${repositoryUrl}/blob/main/LICENSE`}>MIT License</a>
           <a href={`${repositoryUrl}/issues`}>Issues</a>
