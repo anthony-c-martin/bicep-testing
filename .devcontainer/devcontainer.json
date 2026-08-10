@@ -16,7 +16,10 @@
     },
     "ghcr.io/devcontainers/features/powershell:2": {
       "version": "7.6",
-      "modules": "Pester==5.7.1"
+      "modules": "Pester==5.7.1,Az"
+    },
+    "ghcr.io/devcontainers/features/azure-cli:1": {
+      "version": "latest"
     },
     "ghcr.io/devcontainers/features/github-cli:1": {
       "version": "latest"

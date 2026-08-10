@@ -14,7 +14,7 @@ export const python: LanguageSample = {
   testCommand: "python -m pytest",
   offlineStarter: `from anthonycmartin.bicep_testing import BicepTestSession, SnapshotMetadata
 
-def test_template_compiles_without_diagnostics():
+def test_all_storage_accounts_disable_anonymous_access():
     metadata = SnapshotMetadata(
         tenant_id="${fakeTenantId}",
         subscription_id="${fakeSubscriptionId}",
@@ -24,7 +24,11 @@ def test_template_compiles_without_diagnostics():
     with BicepTestSession.create("0.46.1") as session:
         snapshot = session.snapshot("infra/main.bicepparam", metadata)
 
-    assert snapshot.diagnostics == ()`,
+    assert all(
+        resource.properties["allowBlobPublicAccess"] is False
+        for resource in snapshot.predicted_resources
+        if resource.type.casefold() == "microsoft.storage/storageaccounts"
+    )`,
   liveValidateStarter: `from azure.identity import DefaultAzureCredential
 from anthonycmartin.bicep_testing import (
     LiveBicepTestSession,

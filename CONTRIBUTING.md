@@ -2,7 +2,7 @@
 
 ## Development container
 
-With Docker and the VS Code Dev Containers extension installed, run **Dev Containers: Reopen in Container** from the command palette. The configuration under `.devcontainer/` installs Node 24, .NET 10, Go 1.24, PowerShell 7.6 with Pester, and Python 3.12. Package-manager caches persist in named Docker volumes, while dependency restore remains explicit for each language.
+With Docker and the VS Code Dev Containers extension installed, run **Dev Containers: Reopen in Container** from the command palette. The configuration under `.devcontainer/` installs Node 24, .NET 10, Go 1.24, PowerShell 7.6 with Pester and Az, Azure CLI, and Python 3.12. Package-manager caches persist in named Docker volumes, while dependency restore remains explicit for each language.
 
 ## Repository layout
 

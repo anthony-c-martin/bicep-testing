@@ -22,14 +22,19 @@ export const powershell: LanguageSample = {
 
     AfterAll { $session | Remove-BicepTestSession }
 
-    It 'compiles without diagnostics' {
+    It 'all storage accounts have anonymous access disabled' {
         $snapshot = $session | Get-BicepSnapshot ${powershellContinuation}
             -Path 'infra/main.bicepparam' ${powershellContinuation}
             -TenantId '${fakeTenantId}' ${powershellContinuation}
             -SubscriptionId '${fakeSubscriptionId}' ${powershellContinuation}
             -ResourceGroup 'example-rg' ${powershellContinuation}
             -Location 'eastus'
-        $snapshot.Diagnostics | Should -BeNullOrEmpty
+        $snapshot.PredictedResources |
+            Where-Object Type -ieq 'Microsoft.Storage/storageAccounts' |
+            ForEach-Object {
+            $_.Properties.GetProperty('allowBlobPublicAccess').GetBoolean() |
+                Should -BeFalse
+        }
     }
 }`,
   liveValidateStarter: `$session = New-BicepLiveTestSession ${powershellContinuation}

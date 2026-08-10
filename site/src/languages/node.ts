@@ -14,7 +14,7 @@ export const node: LanguageSample = {
   testCommand: "npm test",
   offlineStarter: `const { BicepTestSession } = require('@anthony-c-martin/bicep-testing');
 
-test('template compiles without diagnostics', async () => {
+test('all storage accounts disable anonymous access', async () => {
   const session = await BicepTestSession.create('0.46.1');
   try {
     const snapshot = await session.snapshot(
@@ -24,7 +24,10 @@ test('template compiles without diagnostics', async () => {
       'example-rg',
       'eastus',
     );
-    expect(snapshot.diagnostics).toHaveLength(0);
+    expect(snapshot.predictedResources
+      .filter(resource => resource.type.toLowerCase() === 'microsoft.storage/storageaccounts')
+      .every(resource => resource.properties.allowBlobPublicAccess === false)
+    ).toBe(true);
   } finally {
     session.dispose();
   }

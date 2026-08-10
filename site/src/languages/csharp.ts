@@ -15,7 +15,7 @@ export const csharp: LanguageSample = {
   offlineStarter: `using AnthonyCMartin.BicepTesting;
 
 [TestMethod]
-public async Task Template_compiles_without_diagnostics()
+public async Task All_storage_accounts_disable_anonymous_access()
 {
     await using var session = await BicepTestSession.CreateAsync("0.46.1");
     var snapshot = await session.SnapshotAsync(new SnapshotOptions
@@ -27,7 +27,12 @@ public async Task Template_compiles_without_diagnostics()
         Location = "eastus",
     });
 
-    Assert.IsEmpty(snapshot.Diagnostics);
+    Assert.IsTrue(snapshot.PredictedResources
+    .Where(resource => resource.Type.Equals(
+      "Microsoft.Storage/storageAccounts",
+      StringComparison.OrdinalIgnoreCase))
+      .All(resource =>
+        !resource.Properties.GetProperty("allowBlobPublicAccess").GetBoolean()));
 }`,
   liveValidateStarter: `using AnthonyCMartin.BicepTesting;
   using Azure.Identity;

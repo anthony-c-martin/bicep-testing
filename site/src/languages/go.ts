@@ -14,7 +14,7 @@ export const go: LanguageSample = {
     "https://pkg.go.dev/github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing",
   guideUrl: `${repositoryUrl}/blob/main/packages/go/bicep-testing/README.md`,
   testCommand: "go test ./...",
-  offlineStarter: `func TestTemplateCompilesWithoutDiagnostics(t *testing.T) {
+  offlineStarter: `func TestAllStorageAccountsDisableAnonymousAccess(t *testing.T) {
   ctx := context.Background()
   session, err := biceptesting.NewSession(ctx, "0.46.1")
   if err != nil { t.Fatal(err) }
@@ -28,8 +28,13 @@ export const go: LanguageSample = {
       Location:       "eastus",
     })
   if err != nil { t.Fatal(err) }
-  if len(snapshot.Diagnostics) != 0 {
-    t.Fatalf("got diagnostics: %v", snapshot.Diagnostics)
+
+  for _, resource := range snapshot.PredictedResources {
+    if strings.EqualFold(resource.Type, "Microsoft.Storage/storageAccounts") {
+      if resource.Properties["allowBlobPublicAccess"] != false {
+        t.Errorf("%s allows anonymous access", resource.Name)
+      }
+    }
   }
 }`,
   liveValidateStarter: `credential, err := azidentity.NewDefaultAzureCredential(nil)
