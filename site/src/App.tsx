@@ -1,41 +1,27 @@
 import { useState, type KeyboardEvent } from "react";
-import { ArrowDown, ArrowUpRight, Check, Copy, GitFork } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUpRight,
+  Check,
+  Cloud,
+  Copy,
+  FileCode2,
+  GitFork,
+  Terminal,
+} from "lucide-react";
 import hljs from "highlight.js/lib/core";
 import csharp from "highlight.js/lib/languages/csharp";
 import go from "highlight.js/lib/languages/go";
 import javascript from "highlight.js/lib/languages/javascript";
 import powershell from "highlight.js/lib/languages/powershell";
 import python from "highlight.js/lib/languages/python";
-import nodeOffline from "../../samples/node/snapshot.test.js?raw";
-import nodeLive from "../../samples/node/deployment.test.js?raw";
-import csharpOffline from "../../samples/dotnet/OfflineTests.cs?raw";
-import csharpLive from "../../samples/dotnet/LiveTests.cs?raw";
-import goOffline from "../../samples/go/snapshot_test.go?raw";
-import goLive from "../../samples/go/deployment_test.go?raw";
-import powershellOffline from "../../samples/powershell/BicepTest.Sample.Tests.ps1?raw";
-import powershellLive from "../../samples/powershell/BicepTest.Deployment.Sample.Tests.ps1?raw";
-import pythonOffline from "../../samples/python/test_snapshot.py?raw";
-import pythonLive from "../../samples/python/test_deployment.py?raw";
-
-const repositoryUrl = "https://github.com/anthony-c-martin/bicep-testing";
-
-type LanguageId = "node" | "csharp" | "go" | "powershell" | "python";
-type SampleKind = "offline" | "live";
-
-interface LanguageSample {
-  id: LanguageId;
-  label: string;
-  highlightLanguage: string;
-  packageManager: string;
-  runtime: string;
-  install: string;
-  registry: string;
-  packageUrl: string;
-  offlineName: string;
-  liveName: string;
-  offline: string;
-  live: string;
-}
+import {
+  getLanguage,
+  languages,
+  repositoryUrl,
+  type LanguageId,
+  type StarterKind,
+} from "./languages";
 
 interface LanguageTabsProps {
   selected: LanguageId;
@@ -53,86 +39,6 @@ hljs.registerLanguage("go", go);
 hljs.registerLanguage("javascript", javascript);
 hljs.registerLanguage("powershell", powershell);
 hljs.registerLanguage("python", python);
-
-const languages: readonly LanguageSample[] = [
-  {
-    id: "node",
-    label: "Node",
-    highlightLanguage: "javascript",
-    packageManager: "npm",
-    runtime: "Node.js 22+",
-    install: "npm install --save-dev @anthony-c-martin/bicep-testing",
-    registry: "npm",
-    packageUrl: "https://www.npmjs.com/package/@anthony-c-martin/bicep-testing",
-    offlineName: "snapshot.test.js",
-    liveName: "deployment.test.js",
-    offline: nodeOffline,
-    live: nodeLive,
-  },
-  {
-    id: "csharp",
-    label: "C#",
-    highlightLanguage: "csharp",
-    packageManager: "NuGet",
-    runtime: ".NET 10+",
-    install: "dotnet add package AnthonyCMartin.BicepTesting",
-    registry: "NuGet",
-    packageUrl: "https://www.nuget.org/packages/AnthonyCMartin.BicepTesting",
-    offlineName: "OfflineTests.cs",
-    liveName: "LiveTests.cs",
-    offline: csharpOffline,
-    live: csharpLive,
-  },
-  {
-    id: "go",
-    label: "Go",
-    highlightLanguage: "go",
-    packageManager: "Go modules",
-    runtime: "Go 1.25+",
-    install:
-      "go get github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing",
-    registry: "pkg.go.dev",
-    packageUrl:
-      "https://pkg.go.dev/github.com/anthony-c-martin/bicep-testing/packages/go/bicep-testing",
-    offlineName: "snapshot_test.go",
-    liveName: "deployment_test.go",
-    offline: goOffline,
-    live: goLive,
-  },
-  {
-    id: "powershell",
-    label: "PowerShell",
-    highlightLanguage: "powershell",
-    packageManager: "PSGallery",
-    runtime: "PowerShell 7.6+",
-    install: "Install-PSResource AnthonyCMartin.BicepTesting",
-    registry: "PowerShell Gallery",
-    packageUrl:
-      "https://www.powershellgallery.com/packages/AnthonyCMartin.BicepTesting",
-    offlineName: "BicepTest.Sample.Tests.ps1",
-    liveName: "BicepTest.Deployment.Sample.Tests.ps1",
-    offline: powershellOffline,
-    live: powershellLive,
-  },
-  {
-    id: "python",
-    label: "Python",
-    highlightLanguage: "python",
-    packageManager: "PyPI",
-    runtime: "Python 3.11+",
-    install: "python -m pip install anthonycmartin-bicep-testing",
-    registry: "PyPI",
-    packageUrl: "https://pypi.org/project/anthonycmartin-bicep-testing/",
-    offlineName: "test_snapshot.py",
-    liveName: "test_deployment.py",
-    offline: pythonOffline,
-    live: pythonLive,
-  },
-];
-
-function getLanguage(id: LanguageId): LanguageSample {
-  return languages.find((language) => language.id === id)!;
-}
 
 function highlight(code: string, language: string): string {
   return hljs.highlight(code, { language }).value;
@@ -199,12 +105,14 @@ function CopyButton({ value, label }: CopyButtonProps) {
 
 export default function App() {
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageId>("node");
-  const [sampleKind, setSampleKind] = useState<SampleKind>("offline");
+  const [starterKind, setStarterKind] = useState<StarterKind>("offline");
   const language = getLanguage(selectedLanguage);
-  const sampleCode = language[sampleKind];
-  const sampleName =
-    sampleKind === "offline" ? language.offlineName : language.liveName;
-  const highlightedSample = highlight(sampleCode, language.highlightLanguage);
+  const starterCode = {
+    offline: language.offlineStarter,
+    liveValidate: language.liveValidateStarter,
+    liveDeploy: language.liveDeployStarter,
+  }[starterKind];
+  const highlightedStarter = highlight(starterCode, language.highlightLanguage);
 
   return (
     <>
@@ -220,6 +128,7 @@ export default function App() {
         </a>
         <nav aria-label="Primary navigation">
           <a href="#install">Install</a>
+          <a href="#getting-started">Getting started</a>
           <a href="#samples">Samples</a>
           <a className="github-link" href={repositoryUrl}>
             <GitFork />
@@ -238,7 +147,8 @@ export default function App() {
               <p className="hero-lede">
                 Language-native libraries for testing Bicep files from Jest,
                 MSTest, Go testing, Pester, or pytest. Tests can inspect planned
-                infrastructure locally or validate and deploy resources in Azure.
+                infrastructure locally or validate and deploy resources in
+                Azure.
               </p>
               <div className="hero-actions">
                 <a className="button button-primary" href="#install">
@@ -274,9 +184,7 @@ export default function App() {
                 <strong>Viewing examples</strong>
                 <p>
                   Choose a language in the selector below. The install command,
-                  guide link, and inline source all update together. Open the
-                  Samples section and switch between Offline and Live to
-                  compare both test styles.
+                  quickstarts, guide link, and sample links all update together.
                 </p>
               </div>
             </div>
@@ -322,36 +230,122 @@ export default function App() {
             </div>
           </div>
         </section>
+        <section className="getting-started-section" id="getting-started">
+          <div className="section-heading">
+            <p className="section-kicker">Getting started</p>
+            <h2>From package to first assertion</h2>
+            <p>
+              Start offline with no Azure credentials, then switch to a live
+              validation when the template needs an Azure preflight check.
+            </p>
+          </div>
+          <div className="getting-started-layout">
+            <ol className="getting-started-steps">
+              <li>
+                <Terminal aria-hidden="true" />
+                <div>
+                  <span>01</span>
+                  <strong>Install for {language.label}</strong>
+                  <code>{language.install}</code>
+                </div>
+              </li>
+              <li>
+                <FileCode2 aria-hidden="true" />
+                <div>
+                  <span>02</span>
+                  <strong>Create a test</strong>
+                  <p>
+                    Point the session at a checked-in <code>.bicepparam</code>{" "}
+                    file.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <Cloud aria-hidden="true" />
+                <div>
+                  <span>03</span>
+                  <strong>Run it natively</strong>
+                  <code>{language.testCommand}</code>
+                </div>
+              </li>
+            </ol>
+            <div className="starter-workbench">
+              <div className="starter-toolbar">
+                <div
+                  className="kind-switch"
+                  aria-label="Getting started test type"
+                >
+                  <button
+                    type="button"
+                    className={starterKind === "offline" ? "active" : ""}
+                    onClick={() => setStarterKind("offline")}
+                  >
+                    Offline
+                  </button>
+                  <button
+                    type="button"
+                    className={starterKind === "liveValidate" ? "active" : ""}
+                    onClick={() => setStarterKind("liveValidate")}
+                  >
+                    Live (Validate)
+                  </button>
+                  <button
+                    type="button"
+                    className={starterKind === "liveDeploy" ? "active" : ""}
+                    onClick={() => setStarterKind("liveDeploy")}
+                  >
+                    Live (Deploy)
+                  </button>
+                </div>
+                <span>{language.label} quickstart</span>
+                <CopyButton
+                  value={starterCode}
+                  label={`Copy ${language.label} ${starterKind} quickstart`}
+                />
+              </div>
+              <pre className="starter-code">
+                <code
+                  dangerouslySetInnerHTML={{ __html: highlightedStarter }}
+                />
+              </pre>
+              <a className="starter-guide-link" href={language.guideUrl}>
+                Read the complete {language.label} guide <ArrowUpRight />
+              </a>
+            </div>
+          </div>
+        </section>
         <section className="samples-section" id="samples">
           <div className="section-heading">
             <p className="section-kicker">Runnable samples</p>
-            <h2>The tests, in full</h2>
-            <p>These are real, working test samples you can run yourself.</p>
+            <h2>Explore the complete tests</h2>
+            <p>
+              Open the real {language.label} test files in GitHub to see the
+              complete setup, assertions, and cleanup flow.
+            </p>
           </div>
-          <div className="sample-workbench">
-            <div className="sample-toolbar">
-              <div className="kind-switch" aria-label="Sample type">
-                <button
-                  type="button"
-                  className={sampleKind === "offline" ? "active" : ""}
-                  onClick={() => setSampleKind("offline")}
-                >
-                  Offline
-                </button>
-                <button
-                  type="button"
-                  className={sampleKind === "live" ? "active" : ""}
-                  onClick={() => setSampleKind("live")}
-                >
-                  Live
-                </button>
-              </div>
-              <span className="file-name">{sampleName}</span>
-              <CopyButton value={sampleCode} label={`Copy ${sampleName}`} />
-            </div>
-            <pre className="sample-code">
-              <code dangerouslySetInnerHTML={{ __html: highlightedSample }} />
-            </pre>
+          <div className="sample-links">
+            <a href={language.offlineSampleUrl}>
+              <span>01 / Offline</span>
+              <strong>Local snapshot tests</strong>
+              <p>
+                Inspect predicted resources, outputs, and diagnostics without
+                Azure credentials.
+              </p>
+              <span className="sample-link-action">
+                View on GitHub <ArrowUpRight />
+              </span>
+            </a>
+            <a href={language.liveSampleUrl}>
+              <span>02 / Live</span>
+              <strong>Azure validation and deployment tests</strong>
+              <p>
+                Validate against Azure, deploy real resources, assert behavior,
+                and tear everything down.
+              </p>
+              <span className="sample-link-action">
+                View on GitHub <ArrowUpRight />
+              </span>
+            </a>
           </div>
         </section>
       </main>
