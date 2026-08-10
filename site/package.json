@@ -12,16 +12,16 @@
   },
   "dependencies": {
     "highlight.js": "^11.11.1",
-    "lucide-react": "^0.539.0",
+    "lucide-react": "^1.28.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^5.0.0",
+    "@vitejs/plugin-react": "^6.0.5",
     "prettier": "^3.9.6",
     "typescript": "^7.0.2",
-    "vite": "^7.1.1"
+    "vite": "^8.2.0"
   }
 }
