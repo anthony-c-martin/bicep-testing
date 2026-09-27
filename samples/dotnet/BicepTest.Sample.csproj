@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="AnthonyCMartin.BicepTesting" Version="0.1.6" />
-    <PackageReference Include="MSTest" Version="4.3.3" />
+    <PackageReference Include="MSTest" Version="4.4.1" />
   </ItemGroup>
 
 </Project>
