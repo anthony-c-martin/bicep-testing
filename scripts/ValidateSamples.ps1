@@ -54,6 +54,11 @@ try {
     $pythonDist = New-Directory (Join-Path $tempRoot 'python-dist')
     $pythonVenv = Join-Path $tempRoot 'python-venv'
 
+    Write-Host 'Restoring local Node build dependencies...'
+    Invoke-NativeCommand {
+        npm ci --prefix ./packages/node --legacy-peer-deps
+    } 'Node package dependency restore'
+
     Write-Host 'Packing local Node package from this checkout...'
     Invoke-NativeCommand {
         npm pack --pack-destination "$nodeDist" ./packages/node

@@ -49,6 +49,9 @@ test('storage accounts disable public blob access', () => {
 
 `BicepTestSession.create()` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs. The session owns a Bicep process, so always call `dispose()` after the tests finish.
 
+Installation publishes a completed executable atomically and never overwrites
+an existing cached CLI. Parallel sessions can safely use the same pinned version.
+
 Snapshot tests run locally. The subscription, tenant, resource group, location, and deployment values provide evaluation context only; they do not need to exist, and no Azure credentials are required.
 
 All snapshot context is optional. Supply it when assertions depend on those

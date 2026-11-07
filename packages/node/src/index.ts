@@ -1,5 +1,6 @@
 import { Bicep } from '@azure/bicep-rpc-client';
-import { mkdir } from 'fs/promises';
+import { constants } from 'fs';
+import { access, link, mkdir, mkdtemp, rm } from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import { TokenCredential } from '@azure/core-auth';
@@ -82,7 +83,28 @@ export class BicepTestSession {
 
     const basePath = path.join(os.homedir(), '.bicep', 'bin', `v${bicepVersion}`);
     await mkdir(basePath, { recursive: true });
-    const bicepPath = await Bicep.install(basePath, bicepVersion);
+    const bicepPath = path.join(basePath, process.platform === 'win32' ? 'bicep.exe' : 'bicep');
+    try {
+      await access(bicepPath, constants.X_OK);
+    } catch (error) {
+      if (getRecordValue(error, 'code') !== 'ENOENT') {
+        throw error;
+      }
+      const installPath = await mkdtemp(path.join(basePath, 'install-'));
+      try {
+        const installedPath = await Bicep.install(installPath, bicepVersion);
+        try {
+          // Publish once, without overwriting a CLI another session may be running.
+          await link(installedPath, bicepPath);
+        } catch (error) {
+          if (getRecordValue(error, 'code') !== 'EEXIST') {
+            throw error;
+          }
+        }
+      } finally {
+        await rm(installPath, { recursive: true, force: true });
+      }
+    }
     const bicep = await Bicep.initialize(bicepPath);
 
     return new BicepTestSession(bicep);
