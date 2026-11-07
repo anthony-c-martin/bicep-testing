@@ -12,6 +12,8 @@ For .NET and Python, the script builds release artifacts and the workflow perfor
 
 To exercise the complete release pipeline without publishing, run the **Publish** workflow manually, enter the package version, and leave **dry_run** enabled. Dry-run jobs perform version checks, tests, API checks, and package builds, but skip registry authentication, uploads, and Go tag creation. Tag-triggered runs publish normally.
 
+Before tagging, run `scripts/ValidateSamples.ps1 -RunSnapshots` to verify the consumer examples against locally built packages. This validation does not require the new package version to exist on any registry.
+
 ## One-time registry setup
 
 Create the `npm`, `nuget`, `pypi`, and `psgallery` environments in the GitHub repository. Add required reviewers to each environment so that a tag cannot publish without approval.
