@@ -1,6 +1,6 @@
 BeforeAll {
     $parametersPath = Join-Path $PSScriptRoot '../infra/live-storage/main.bicepparam'
-    Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.6 -Force
+    Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.7 -Force
 
     function Get-AzureResourceResponse([string] $ResourceId) {
         Invoke-AzRestMethod -Path "${ResourceId}?api-version=2023-05-01" -Method GET

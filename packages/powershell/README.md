@@ -12,8 +12,8 @@ This is an independent, non-official project.
 ## Installation
 
 ```powershell
-Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.6 -Repository PSGallery
-Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.6
+Install-PSResource AnthonyCMartin.BicepTesting -Version 0.1.7 -Repository PSGallery
+Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.7
 ```
 
 ## Snapshot testing
