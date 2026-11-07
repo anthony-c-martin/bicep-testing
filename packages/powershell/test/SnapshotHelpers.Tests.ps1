@@ -10,9 +10,9 @@ Describe 'Snapshot helpers' {
     It 'matches shared resource-scope cases and rejects invalid IDs' {
         foreach ($case in $cases.scopes) {
             $scope = Get-BicepResourceScope -Id $case.id
-            $scope.SubscriptionId | Should -Be $case.subscriptionId
-            $scope.ResourceGroup | Should -Be $case.resourceGroup
-            $scope.ManagementGroupId | Should -Be $case.managementGroupId
+            $scope.SubscriptionId | Should -Be $case['subscriptionId']
+            $scope.ResourceGroup | Should -Be $case['resourceGroup']
+            $scope.ManagementGroupId | Should -Be $case['managementGroupId']
         }
         foreach ($id in $cases.invalidIds) {
             { Get-BicepResourceScope -Id $id } | Should -Throw

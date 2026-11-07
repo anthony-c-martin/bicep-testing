@@ -1,16 +1,18 @@
 # Publishing packages
 
-All packages are released together from one repository tag. Pushing a semantic-version tag such as `v0.1.6` starts `.github/workflows/publish.yml`, which verifies the tag against every package manifest, runs the package tests and public API checks, builds the artifacts, and publishes through protected GitHub environments.
+All packages are released together from one repository tag. Pushing a semantic-version tag such as `v0.1.7` starts `.github/workflows/publish.yml`, which verifies the tag against every package manifest, runs the package tests and public API checks, builds the artifacts, and publishes through protected GitHub environments.
 
 The workflow delegates package behavior to `scripts/Publish.ps1`. Select a release unit with `-Package Validate`, `Node`, `DotNet`, `PowerShell`, `Python`, or `Go`, and pass the shared version with `-Version`. The `Python` selector builds both Python distributions together. Use `-SkipPublish` to run validation, tests, and packaging without uploading or creating tags:
 
 ```powershell
-./scripts/Publish.ps1 -Package Node -Version 0.1.6 -SkipPublish
+./scripts/Publish.ps1 -Package Node -Version 0.1.7 -SkipPublish
 ```
 
 For .NET and Python, the script builds release artifacts and the workflow performs the final upload using each registry's trusted-publishing identity. NuGet.org exchanges the GitHub OIDC token for a temporary API key immediately before `dotnet nuget push`; no long-lived NuGet key is stored in GitHub.
 
 To exercise the complete release pipeline without publishing, run the **Publish** workflow manually, enter the package version, and leave **dry_run** enabled. Dry-run jobs perform version checks, tests, API checks, and package builds, but skip registry authentication, uploads, and Go tag creation. Tag-triggered runs publish normally.
+
+Before tagging, run `scripts/ValidateSamples.ps1 -RunSnapshots` to verify the consumer examples against locally built packages. This validation does not require the new package version to exist on any registry.
 
 ## One-time registry setup
 
@@ -48,8 +50,8 @@ For example:
 ```sh
 git switch main
 git pull --ff-only
-git tag -a v0.1.6 -m "Release v0.1.6"
-git push origin v0.1.6
+git tag -a v0.1.7 -m "Release v0.1.7"
+git push origin v0.1.7
 ```
 
 Registry versions are immutable. If publishing succeeds but a later verification step fails, fix the issue and release a new patch version rather than reusing the tag.

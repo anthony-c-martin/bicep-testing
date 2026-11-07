@@ -87,10 +87,9 @@ try {
     } 'Python package wheel build'
 
     Write-Host 'Restoring and compiling the Node sample against the local package...'
-    Invoke-NativeCommand { npm install --prefix samples/node --ignore-scripts --no-package-lock } 'Node sample dependency restore'
     Invoke-NativeCommand {
-        npm install --prefix samples/node --no-package-lock --no-save "$($nodePackageTarball.FullName)"
-    } 'Node sample local package install'
+        npm install --prefix samples/node --ignore-scripts --no-package-lock --no-save "$($nodePackageTarball.FullName)"
+    } 'Node sample dependency restore and local package install'
     $originalValidateOnly = $env:BICEP_TEST_VALIDATE_ONLY
     try {
         if ($RunSnapshots) {
@@ -144,12 +143,12 @@ try {
     }
 
     Write-Host 'Importing local PowerShell module and parsing sample tests...'
-    $psModuleVersionPath = New-Directory (Join-Path $psModules 'AnthonyCMartin.BicepTesting/0.1.6')
+    $psModuleVersionPath = New-Directory (Join-Path $psModules 'AnthonyCMartin.BicepTesting/0.1.7')
     Copy-Item -Path (Join-Path $repositoryRoot 'packages/powershell/AnthonyCMartin.BicepTesting/*') -Destination $psModuleVersionPath -Recurse -Force
     $originalPSModulePath = $env:PSModulePath
     try {
         $env:PSModulePath = "$psModules$([IO.Path]::PathSeparator)$originalPSModulePath"
-        Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.6 -Force
+        Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.7 -Force
         foreach ($command in @(
             'Get-BicepSnapshot',
             'Get-BicepSnapshotResource',

@@ -1,6 +1,6 @@
 BeforeAll {
     $infraPath = Join-Path $PSScriptRoot '../infra'
-    Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.6 -Force
+    Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.7 -Force
     $session = New-BicepTestSession -BicepVersion '0.47.16'
 
     function Get-ResourceGroupSnapshot([string] $RelativePath) {
