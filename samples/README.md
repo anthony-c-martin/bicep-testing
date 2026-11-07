@@ -45,6 +45,8 @@ Validate every sample from the repository root:
 
 The validator restores the local Node build dependencies before packing the checkout's libraries, installs them with sample dependencies, then compiles, parses, or collects every sample test. NuGet restore respects configured package sources and adds the local package feed. The new helpers and management-group snapshot context are unreleased; use this local validation workflow until they are published. It does not execute snapshot or live deployment tests, so standard CI remains credential-free and cannot create Azure resources.
 
+The Node sample uses Node 24.9+ and enables VM modules for Jest so it can load both CommonJS and ESM dependencies from the Azure SDK.
+
 To run a language's tests, use its native test command after setting the live deployment environment variables. Without those variables, the four credential-free snapshot tests run and the live validation and deployment tests are skipped. Snapshot usability uses Bicep CLI 0.47.16; its first installation may require network access.
 
 ## AI-authored consumer tests
