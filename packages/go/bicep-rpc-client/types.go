@@ -75,11 +75,12 @@ type GetDeploymentGraphResponse struct {
 
 // SnapshotMetadata describes the Azure deployment context used to evaluate a snapshot.
 type SnapshotMetadata struct {
-	TenantID       string `json:"tenantId,omitempty"`
-	SubscriptionID string `json:"subscriptionId,omitempty"`
-	ResourceGroup  string `json:"resourceGroup,omitempty"`
-	Location       string `json:"location,omitempty"`
-	DeploymentName string `json:"deploymentName,omitempty"`
+	ManagementGroupID string `json:"managementGroupId,omitempty"`
+	TenantID          string `json:"tenantId,omitempty"`
+	SubscriptionID    string `json:"subscriptionId,omitempty"`
+	ResourceGroup     string `json:"resourceGroup,omitempty"`
+	Location          string `json:"location,omitempty"`
+	DeploymentName    string `json:"deploymentName,omitempty"`
 }
 
 // GetSnapshotRequest contains the path and deployment context for a Bicep snapshot.

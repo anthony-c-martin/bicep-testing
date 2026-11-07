@@ -207,6 +207,31 @@ with BicepClientFactory().initialize(
 
 `SnapshotMetadata` accepts optional `tenant_id`, `subscription_id`, `resource_group`, `location`, and `deployment_name` values. `SnapshotExternalInput` contains `kind`, `value`, and optional `config`. `GetSnapshotRequest` contains `path`, `metadata`, and the `external_inputs` tuple. `GetSnapshotResponse` contains the JSON snapshot in `snapshot`.
 
+The development checkout adds optional `management_group_id` (unreleased),
+requiring Bicep CLI 0.47.16+. Older CLIs raise `RuntimeError` rather than silently
+ignoring it; whitespace-only values raise `ValueError`. Context is offline
+evaluation data, and `deployment_name` can influence offline results.
+
+```python
+with BicepClientFactory().initialize(
+    BicepClientConfiguration(bicep_version="0.47.16")
+) as client:
+    result = client.get_snapshot(GetSnapshotRequest(
+        "./management-group.bicepparam",
+        metadata=SnapshotMetadata(
+            management_group_id="example-platform",
+            location="eastus",
+            deployment_name="offline-test",
+        ),
+    ))
+    print(result.snapshot)
+```
+
+Use the shared [management-group fixture](../../../samples/infra/snapshot-scopes/).
+The response remains serialized JSON; generic resource and JSON traversal
+helpers belong to the [testing framework](../bicep_testing/README.md). Context
+management still deterministically closes the stdio process.
+
 ### get_version
 
 `get_version()` returns the connected Bicep CLI version. The first result is cached for the lifetime of the client.

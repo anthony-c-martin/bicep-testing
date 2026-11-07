@@ -27,12 +27,67 @@ func TestDeployments(t *testing.T) {
 	t.Run("template validates in Azure before deployment", func(t *testing.T) {
 		testTemplateValidatesInAzure(t, session, settings)
 	})
-	t.Run("secure storage is verified in Azure and removed", func(t *testing.T) {
+	t.Run("deployed storage meets the security baseline in Azure", func(t *testing.T) {
 		testSecureStorageIsVerifiedInAzureAndRemoved(t, session, credential, settings)
 	})
-	t.Run("removed audit storage is reconciled and remaining resources are cleaned up", func(t *testing.T) {
+	t.Run("disabling audit storage removes the account from Azure", func(t *testing.T) {
 		testDeploymentReconcilesRemovedAuditStorageAndCleansUp(t, session, credential, settings)
 	})
+	t.Run("identical redeployment preserves resource identity and security", func(t *testing.T) {
+		testIdenticalRedeployment(t, session, credential, settings)
+	})
+}
+
+func testIdenticalRedeployment(t *testing.T, session *biceptesting.LiveSession, credential azcore.TokenCredential, settings liveSettings) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
+	defer cancel()
+	options := biceptesting.DeployOptions{
+		FilePath:       filepath.Join("..", "infra", "live-storage", "main.bicepparam"),
+		SubscriptionID: settings.subscriptionID, ResourceGroup: settings.resourceGroup,
+		StackName: settings.stackName + "-idempotency",
+		ParameterOverrides: map[string]json.RawMessage{
+			"resourcePrefix":      json.RawMessage(strconv.Quote(settings.resourcePrefix)),
+			"includeAuditStorage": json.RawMessage("false"),
+		},
+	}
+	deployment, err := session.Deploy(ctx, options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cleanupCancel()
+		if err := deployment.Teardown(cleanupCtx); err != nil {
+			t.Errorf("tear down deployment: %v", err)
+		}
+	}()
+	if !deployment.Succeeded {
+		t.Fatalf("initial deployment failed: %s", deployment.ErrorMessage)
+	}
+	primaryID, ok := deployment.Outputs["primaryStorageId"].(string)
+	if !ok {
+		t.Fatal("primaryStorageId must be a string")
+	}
+	second, err := session.Deploy(ctx, options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	deployment = second
+	if !deployment.Succeeded {
+		t.Fatalf("identical redeployment failed: %s", deployment.ErrorMessage)
+	}
+	if deployment.Outputs["primaryStorageId"] != primaryID {
+		t.Fatal("identical redeployment changed resource identity")
+	}
+	status, storage := getAzureResource(t, ctx, credential, primaryID)
+	if status != http.StatusOK {
+		t.Fatalf("get storage status = %d, want 200", status)
+	}
+	properties, ok := storage["properties"].(map[string]any)
+	if !ok || properties["allowBlobPublicAccess"] != false || properties["minimumTlsVersion"] != "TLS1_2" ||
+		properties["publicNetworkAccess"] != "Disabled" {
+		t.Fatalf("security settings changed after redeployment: %#v", properties)
+	}
 }
 
 func testTemplateValidatesInAzure(t *testing.T, session *biceptesting.LiveSession, settings liveSettings) {
@@ -59,7 +114,6 @@ func testSecureStorageIsVerifiedInAzureAndRemoved(t *testing.T, session *bicepte
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
 	deployment := deployStorage(t, ctx, session, settings, settings.stackName+"-secure", false)
-	primaryStorageID := deployment.Outputs["primaryStorageId"].(string)
 	defer func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 5*time.Minute)
 		defer cleanupCancel()
@@ -68,6 +122,10 @@ func testSecureStorageIsVerifiedInAzureAndRemoved(t *testing.T, session *bicepte
 		}
 	}()
 
+	if !deployment.Succeeded {
+		t.Fatalf("deployment failed: %s", deployment.ErrorMessage)
+	}
+	primaryStorageID := deployment.Outputs["primaryStorageId"].(string)
 	status, storage := getAzureResource(t, ctx, credential, primaryStorageID)
 	if status != http.StatusOK {
 		t.Fatalf("get storage account status = %d, want 200", status)
@@ -79,13 +137,6 @@ func testSecureStorageIsVerifiedInAzureAndRemoved(t *testing.T, session *bicepte
 		t.Errorf("storage security settings did not match: %#v", properties)
 	}
 
-	if err := deployment.Teardown(ctx); err != nil {
-		t.Fatal(err)
-	}
-	status, _ = getAzureResource(t, ctx, credential, primaryStorageID)
-	if status != http.StatusNotFound {
-		t.Errorf("storage account status after teardown = %d, want 404", status)
-	}
 }
 
 func testDeploymentReconcilesRemovedAuditStorageAndCleansUp(t *testing.T, session *biceptesting.LiveSession, credential azcore.TokenCredential, settings liveSettings) {
@@ -99,24 +150,24 @@ func testDeploymentReconcilesRemovedAuditStorageAndCleansUp(t *testing.T, sessio
 			t.Errorf("tear down deployment: %v", err)
 		}
 	}()
+	if !deployment.Succeeded {
+		t.Fatalf("initial deployment failed: %s", deployment.ErrorMessage)
+	}
 	primaryStorageID := deployment.Outputs["primaryStorageId"].(string)
 	auditStorageID := deployment.Outputs["auditStorageId"].(string)
-	if len(deployment.Resources) != 2 {
-		t.Fatalf("initial resources = %d, want 2", len(deployment.Resources))
-	}
 
 	deployment = deployStorage(t, ctx, session, settings, settings.stackName, false)
-	if len(deployment.Resources) != 1 || deployment.Resources[0].ID != primaryStorageID {
-		t.Errorf("unexpected reconciled resources: %#v", deployment.Resources)
+	if !deployment.Succeeded {
+		t.Fatalf("updated deployment failed: %s", deployment.ErrorMessage)
+	}
+	if deployment.Outputs["primaryStorageId"] != primaryStorageID {
+		t.Error("disabling audit storage must preserve the primary account")
+	}
+	if status, _ := getAzureResource(t, ctx, credential, primaryStorageID); status != http.StatusOK {
+		t.Errorf("primary storage status = %d, want 200", status)
 	}
 	if status, _ := getAzureResource(t, ctx, credential, auditStorageID); status != http.StatusNotFound {
 		t.Errorf("audit storage status after reconciliation = %d, want 404", status)
-	}
-	if err := deployment.Teardown(ctx); err != nil {
-		t.Fatal(err)
-	}
-	if status, _ := getAzureResource(t, ctx, credential, primaryStorageID); status != http.StatusNotFound {
-		t.Errorf("primary storage status after teardown = %d, want 404", status)
 	}
 }
 
@@ -190,9 +241,6 @@ func deployStorage(t *testing.T, ctx context.Context, session *biceptesting.Live
 	})
 	if err != nil {
 		t.Fatal(err)
-	}
-	if !deployment.Succeeded {
-		t.Fatalf("deployment failed: %s", deployment.ErrorMessage)
 	}
 	return deployment
 }

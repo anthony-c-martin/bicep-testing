@@ -20,18 +20,10 @@ python -m pip install anthonycmartin-bicep-testing==0.1.6
 Use `BicepTestSession` as a context manager so its Bicep process is always closed:
 
 ```python
-from anthonycmartin.bicep_testing import BicepTestSession, SnapshotMetadata
-
-metadata = SnapshotMetadata(
-	tenant_id="ddbe463a-0554-485d-b589-0b17d60cd38b",
-	subscription_id="28c9069e-23e8-47d2-b640-00d2e0f09616",
-	resource_group="example-rg",
-	location="eastus",
-	deployment_name="example-deployment",
-)
+from anthonycmartin.bicep_testing import BicepTestSession
 
 with BicepTestSession.create("0.46.1") as session:
-	snapshot = session.snapshot("infra/main.bicepparam", metadata)
+	snapshot = session.snapshot("infra/main.bicepparam")
 
 storage_accounts = [
 	resource
@@ -49,6 +41,48 @@ assert all(
 `BicepTestSession.create()` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs. The session owns a Bicep process, so use it as a context manager or call `close()` after the tests finish.
 
 Snapshot tests run locally. The subscription, tenant, resource group, location, and deployment values provide evaluation context only; they do not need to exist, and no Azure credentials are required.
+
+Metadata is optional. Supply it when assertions depend on those values.
+`deployment_name` also affects offline `deployment().name` evaluation.
+
+### Management-group context and helpers (unreleased)
+
+The development checkout adds `SnapshotMetadata.management_group_id`, requiring
+Bicep CLI 0.47.16+. Older CLIs raise `RuntimeError`.
+
+```python
+from anthonycmartin.bicep_testing import (
+    BicepTestSession, SnapshotMetadata, resources_of_type, require_resource,
+    get_resource_scope, get_snapshot_value,
+)
+
+with BicepTestSession.create("0.47.16") as session:
+    snapshot = session.snapshot("infra/management-group.bicepparam", SnapshotMetadata(
+        management_group_id="example-platform", location="eastus", deployment_name="offline-test",
+    ))
+assert snapshot.diagnostics == ()
+assert len(resources_of_type(snapshot, "Microsoft.Authorization/policyDefinitions")) == 1
+policy = require_resource(snapshot, type="Microsoft.Authorization/policyDefinitions", name="require-cost-center")
+assert get_resource_scope(policy.id).management_group_id == "example-platform"
+assert get_snapshot_value(policy.properties, "/policyRule/then/effect") == "audit"
+```
+
+Use the shared [management-group fixture](../../../samples/infra/snapshot-scopes/).
+`require_resource(snapshot, id=resource_id)` is the alternative selector.
+Types and IDs match case-insensitively; names match exactly. Type selection
+returns an empty tuple when absent; required selection raises `ValueError` for
+zero or multiple matches, mixed selectors, or empty arguments.
+
+`get_resource_scope()` returns a frozen `ResourceScope` with `None` for absent
+subscription/resource-group/management-group components. It supports tenant,
+child, and extension IDs, raises `ValueError` for malformed IDs, and requires GUID
+subscription IDs. Tenant IDs cannot be inferred from resource IDs.
+
+`get_snapshot_value()` accepts decoded JSON mappings/lists and an RFC 6901 JSON
+Pointer: `""` returns the input, `/items/0` indexes an array, and `~0`/`~1` escape
+`~`/`/`. It preserves explicit `None`, raises `KeyError` for missing paths and
+noncanonical indices, and raises `ValueError` for invalid syntax. Raw mappings
+and resource models remain available.
 
 `BicepTestSession` is intentionally offline-only. Use `LiveBicepTestSession` for Azure validation and deployment.
 
@@ -127,6 +161,13 @@ Deployment options are immutable dataclasses:
 Lower-level Bicep integrations can use the separately distributed [`anthonycmartin-bicep-rpc-client`](https://github.com/anthony-c-martin/bicep-testing/tree/main/packages/python/bicep_rpc_client).
 
 ## More information
+
+The [live samples](../../../samples/python/test_deployment.py) include opt-in
+identical redeployment with cleanup after both operations. Reuse the options
+instance or explicitly supply the same `stack_name`.
+Copy the [consumer authoring skill](../../../.github/skills/author-bicep-tests/)
+into your repository for AI-generated tests. Automated scenario coverage is not
+yet available.
 
 - [Runnable pytest snapshot and deployment samples](https://github.com/anthony-c-martin/bicep-testing/tree/main/samples/python)
 - [Exported API](https://github.com/anthony-c-martin/bicep-testing/blob/main/api/python/bicep-testing.txt)

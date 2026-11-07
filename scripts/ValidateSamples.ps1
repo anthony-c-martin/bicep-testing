@@ -1,5 +1,7 @@
 #!/usr/bin/env pwsh
 
+param([switch] $RunSnapshots)
+
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
 $tempRoot = Join-Path ([IO.Path]::GetTempPath()) ("bicep-testing-samples-" + [Guid]::NewGuid().ToString('N'))
@@ -54,6 +56,11 @@ try {
     $pythonDist = New-Directory (Join-Path $tempRoot 'python-dist')
     $pythonVenv = Join-Path $tempRoot 'python-venv'
 
+    Write-Host 'Restoring local Node build dependencies...'
+    Invoke-NativeCommand {
+        npm ci --prefix ./packages/node --legacy-peer-deps
+    } 'Node package dependency restore'
+
     Write-Host 'Packing local Node package from this checkout...'
     Invoke-NativeCommand {
         npm pack --pack-destination "$nodeDist" ./packages/node
@@ -84,17 +91,34 @@ try {
     Invoke-NativeCommand {
         npm install --prefix samples/node --no-package-lock --no-save "$($nodePackageTarball.FullName)"
     } 'Node sample local package install'
+    $originalValidateOnly = $env:BICEP_TEST_VALIDATE_ONLY
     try {
-        $env:BICEP_TEST_VALIDATE_ONLY = '1'
-        Invoke-NativeCommand { npm test --prefix samples/node } 'Node sample compilation'
+        if ($RunSnapshots) {
+            $env:BICEP_TEST_VALIDATE_ONLY = '0'
+            Invoke-NativeCommand { npm test --prefix samples/node -- snapshot.test.js } 'Node snapshot samples'
+        }
+        else {
+            $env:BICEP_TEST_VALIDATE_ONLY = '1'
+            Invoke-NativeCommand { npm test --prefix samples/node } 'Node sample compilation'
+        }
     }
     finally {
-        Remove-Item Env:BICEP_TEST_VALIDATE_ONLY -ErrorAction SilentlyContinue
+        if ($null -eq $originalValidateOnly) {
+            Remove-Item Env:BICEP_TEST_VALIDATE_ONLY -ErrorAction SilentlyContinue
+        }
+        else {
+            $env:BICEP_TEST_VALIDATE_ONLY = $originalValidateOnly
+        }
     }
 
     Write-Host 'Building the C# sample tests against the local NuGet package...'
     Invoke-NativeCommand {
-        dotnet build ./samples/dotnet/BicepTest.Sample.csproj --configuration Release --source "$nugetFeed" --source 'https://api.nuget.org/v3/index.json' -p:RestorePackagesPath="$dotnetPackages" --nologo
+        if ($RunSnapshots) {
+            dotnet test ./samples/dotnet/BicepTest.Sample.csproj --configuration Release --filter 'FullyQualifiedName~Samples.OfflineTests' -p:RestoreAdditionalProjectSources="$nugetFeed" -p:RestorePackagesPath="$dotnetPackages" --nologo
+        }
+        else {
+            dotnet build ./samples/dotnet/BicepTest.Sample.csproj --configuration Release -p:RestoreAdditionalProjectSources="$nugetFeed" -p:RestorePackagesPath="$dotnetPackages" --nologo
+        }
     } 'C# sample build'
 
     Write-Host 'Building the Go sample tests against local modules with a temporary modfile...'
@@ -106,10 +130,11 @@ try {
 
     Push-Location samples/go
     try {
+        $goTestFilter = if ($RunSnapshots) { '^TestSnapshots$' } else { '^$' }
         Invoke-NativeCommand {
             $env:GOMODCACHE = "$goModCache"
             $env:GOSUMDB = 'off'
-            go test -run '^$' -mod=mod -modfile "$goModFile" .
+            go test -run "$goTestFilter" -mod=mod -modfile "$goModFile" .
         } 'Go sample build'
     }
     finally {
@@ -127,6 +152,9 @@ try {
         Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.6 -Force
         foreach ($command in @(
             'Get-BicepSnapshot',
+            'Get-BicepSnapshotResource',
+            'Get-BicepResourceScope',
+            'Get-BicepSnapshotValue',
             'New-BicepTestSession',
             'Start-BicepTestDeployment',
             'Test-BicepTestDeployment',
@@ -143,6 +171,12 @@ try {
         }
         if ($parseErrors) {
             throw "PowerShell sample parsing failed:`n$($parseErrors | Out-String)"
+        }
+        if ($RunSnapshots) {
+            $result = Invoke-Pester -Path ./samples/powershell/BicepTest.Sample.Tests.ps1 -PassThru
+            if ($result.Result -ne 'Passed') {
+                throw 'PowerShell snapshot samples failed.'
+            }
         }
     }
     finally {
@@ -172,7 +206,14 @@ try {
 
     Push-Location samples/python
     try {
-        Invoke-NativeCommand { & $python -m pytest --collect-only -q } 'Python sample collection'
+        Invoke-NativeCommand {
+            if ($RunSnapshots) {
+                & $python -m pytest test_snapshot.py -q
+            }
+            else {
+                & $python -m pytest --collect-only -q
+            }
+        } 'Python sample validation'
     }
     finally {
         Pop-Location
@@ -183,4 +224,9 @@ finally {
     Remove-Item -LiteralPath $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-Write-Host 'All language samples compiled or collected successfully.'
+if ($RunSnapshots) {
+    Write-Host 'All offline snapshot samples passed. No live deployments were run.'
+}
+else {
+    Write-Host 'All language samples compiled or collected successfully.'
+}

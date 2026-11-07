@@ -8,6 +8,9 @@
     CompatiblePSEditions = @('Core')
     FunctionsToExport = @(
         'Get-BicepSnapshot'
+        'Get-BicepSnapshotResource'
+        'Get-BicepResourceScope'
+        'Get-BicepSnapshotValue'
         'New-BicepTestSession'
         'Remove-BicepTestDeployment'
         'Remove-BicepTestSession'

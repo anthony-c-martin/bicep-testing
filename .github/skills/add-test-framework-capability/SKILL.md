@@ -16,7 +16,7 @@ A capability is complete only when all of the following are true:
 
 - Node, C#, Go, PowerShell, and Python expose equivalent behavior through idiomatic public APIs.
 - Each language has focused tests for success, relevant edge cases, and errors introduced by the capability.
-- A shared Bicep sample demonstrates the capability and is exercised by all applicable conformance tests.
+- A teaching-oriented Bicep sample demonstrates a consumer use case and can be reused by applicable conformance tests.
 - Public API artifacts under `api/` are regenerated and verified.
 - Each language-specific document explains its API and includes a realistic usage example.
 - `README.md` explains the capability in language-neutral terms.
@@ -51,12 +51,12 @@ If the requested behavior is ambiguous, inspect the nearest existing implementat
 
 ### 2. Add Or Update The Shared Sample
 
-- Keep reusable example Bicep fixtures under `samples/infra`; this is the canonical consumer-sample location.
+- Keep reusable example Bicep templates under `samples/infra`; this is the canonical consumer-sample location. Put shared conformance-only fixtures and helper edge-case data under `packages/testdata`.
 - Prefer extending an existing fixture when it remains understandable. Create a focused fixture when extension would mix unrelated behavior.
 - Make the sample deterministic, offline, and independent of Azure credentials or deployment.
 - Include only the Bicep constructs needed to demonstrate the behavior clearly.
-- Update the runnable Jest, MSTest, Go `testing`, Pester, and pytest examples under `samples/` to demonstrate the capability idiomatically.
-- Point every applicable sample and conformance test at the same fixture. Do not duplicate equivalent fixtures per language.
+- Update the runnable Jest, MSTest, Go `testing`, Pester, and pytest examples under `samples/` to teach consumers how the capability helps test their infrastructure. Name scenarios after infrastructure requirements and keep inputs and assertions readable. Do not turn samples into library correctness tests or an API feature checklist.
+- Reuse the teaching template from applicable library tests when useful, but keep API-contract assertions and malformed-input cases in package test suites. Do not duplicate equivalent fixtures per language or require identical helper usage in every sample.
 
 ### 3. Implement Idiomatically In Every Library
 
@@ -90,6 +90,9 @@ Preserve equivalent semantics while following each ecosystem's conventions.
 #### PowerShell
 
 - Use approved `Verb-Noun` command names, `[CmdletBinding()]`, pipeline input where natural, and PowerShell parameter validation.
+- Preserve native JSON helper values, including arrays and explicit null. Missing
+  paths and ambiguous required resource selection must fail explicitly. Snapshot
+  resources without a `properties` object must remain serializable.
 - Keep explicit exports synchronized between `AnthonyCMartin.BicepTesting.psm1` and `AnthonyCMartin.BicepTesting.psd1`; never use wildcard exports.
 - Keep commands as a thin, idiomatic wrapper over the C# implementation when the capability exists there.
 - Ensure errors are terminating when the command cannot produce a valid result.
@@ -99,6 +102,8 @@ Preserve equivalent semantics while following each ecosystem's conventions.
 #### Python
 
 - Use type annotations, standard naming conventions, immutable dataclasses for result data, and context managers for owned resources.
+- Exported helper functions participate in the public API generator alongside
+  classes and dataclasses; keep their signatures covered by the baseline.
 - Keep the implementation under `packages/python/bicep_testing/src/anthonycmartin/bicep_testing` and pytest tests under `packages/python/bicep_testing/tests`.
 - Put Bicep process and JSON-RPC behavior in the standalone public `anthonycmartin.bicep_rpc_client` package while keeping it behind the high-level `BicepTestSession` abstraction.
 
@@ -225,6 +230,7 @@ python packages/python/scripts/public_api.py --check
 
 # Runnable consumer samples
 ./scripts/ValidateSamples.ps1
+./scripts/ValidateSamples.ps1 -RunSnapshots
 ```
 
 Also check editor diagnostics for every changed implementation, test, manifest, script, and workflow file.

@@ -26,6 +26,31 @@ Lower-level Bicep CLI integrations are published as the Go `bicep-rpc-client` mo
 
 ## Samples
 
-Runnable test suites under [`samples/`](samples/) demonstrate three credential-free snapshot scenarios and three opt-in live scenarios (validation, deployment, and reconciliation) with Jest, MSTest, Go's `testing` package, Pester, and pytest. Every language uses the same shared Bicep fixtures and equivalent assertions. Standard CI compiles or collects the samples without requiring Azure credentials or creating resources. See the [sample instructions](samples/README.md) for the scenario catalog and the environment variables required to run the live tests.
+Runnable test suites under [`samples/`](samples/) teach you how to test your own infrastructure with Jest, MSTest, Go's `testing` package, Pester, and pytest. Start with a credential-free security baseline, then explore development/production topology, private networking, and a management-group policy. Separate opt-in examples show Azure validation, deployment, reconciliation, and identical redeployment with safe cleanup. The languages share Bicep templates but use idiomatic assertions, not a library conformance checklist. See the [sample walkthrough](samples/README.md) for running and adapting the examples. Standard CI compiles or collects them without deploying resources; `scripts/ValidateSamples.ps1 -RunSnapshots` runs the offline examples.
+
+## Snapshot usability (unreleased)
+
+The development checkout supports optional evaluation context at resource-group,
+subscription, management-group, and tenant scopes. Context values do not have to
+exist in Azure. Supply them when assertions depend on them; deployment names can
+also affect offline results. Management-group context requires Bicep CLI 0.47.16+
+and fails explicitly on older versions.
+
+Generic helpers select resources by type, require a single resource by ID or
+type/name, extract resource scope, and traverse JSON with JSON Pointers. Required
+selection and missing paths fail explicitly rather than letting assertions pass
+on absent data. Raw result data remains available, with idiomatic access in each
+language.
+
+The opt-in identical-redeployment sample tests the same inputs and resource
+identities twice before cleanup, separately from changed-input reconciliation.
+It can catch provider idempotency failures but cannot establish that every Azure
+resource or SKU is safe to redeploy.
+
+For consistent AI-authored consumer tests, copy the
+[`author-bicep-tests` skill](.github/skills/author-bicep-tests/) into your test
+repository. It guides naming, literal parameter inputs, scenario matrices,
+meaningful assertions, cleanup, and iteration. Automated scenario/source coverage
+reporting is not yet implemented; the skill does not promise exhaustive coverage.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for repository setup, build commands, tests, and project conventions.

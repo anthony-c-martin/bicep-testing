@@ -41,13 +41,7 @@ func TestStorageAccountsDisablePublicAccess(t *testing.T) {
 		}
 	})
 
-	snapshot, err := session.Snapshot(ctx, "infra/main.bicepparam", biceptesting.SnapshotMetadata{
-		TenantID:       "ddbe463a-0554-485d-b589-0b17d60cd38b",
-		SubscriptionID: "28c9069e-23e8-47d2-b640-00d2e0f09616",
-		ResourceGroup:  "example-rg",
-		Location:       "eastus",
-		DeploymentName: "example-deployment",
-	})
+	snapshot, err := session.Snapshot(ctx, "infra/main.bicepparam", biceptesting.SnapshotMetadata{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,11 +49,17 @@ func TestStorageAccountsDisablePublicAccess(t *testing.T) {
 	if len(snapshot.Diagnostics) != 0 {
 		t.Fatalf("got %d diagnostics, want none", len(snapshot.Diagnostics))
 	}
+	storageCount := 0
 	for _, resource := range snapshot.PredictedResources {
-		if resource.Type == "Microsoft.Storage/storageAccounts" &&
-			resource.Properties["allowBlobPublicAccess"] != false {
+		if resource.Type == "Microsoft.Storage/storageAccounts" {
+			storageCount++
+			if resource.Properties["allowBlobPublicAccess"] != false {
 			t.Errorf("storage account %q allows public blob access", resource.Name)
+			}
 		}
+	}
+	if storageCount == 0 {
+		t.Fatal("expected storage accounts")
 	}
 }
 ```
@@ -67,6 +67,52 @@ func TestStorageAccountsDisablePublicAccess(t *testing.T) {
 `NewSession()` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs. The session owns a Bicep process, so always call `Close()`. Every operation accepts a `context.Context` for cancellation and deadlines.
 
 Snapshot tests run locally. The subscription, tenant, resource group, location, and deployment values provide evaluation context only; they do not need to exist, and no Azure credentials are required.
+
+All metadata fields are optional. Supply them when assertions depend on their
+values. `DeploymentName` also affects offline `deployment().name` evaluation.
+
+### Management-group context and helpers (unreleased)
+
+The development checkout adds `SnapshotMetadata.ManagementGroupID` and generic
+helpers. Management-group context requires Bicep CLI 0.47.16+; an older CLI
+returns an explicit error.
+
+```go
+session, err := biceptesting.NewSession(ctx, "0.47.16")
+if err != nil { t.Fatal(err) }
+t.Cleanup(func() { if err := session.Close(); err != nil { t.Error(err) } })
+snapshot, err := session.Snapshot(ctx, "infra/management-group.bicepparam", biceptesting.SnapshotMetadata{
+	ManagementGroupID: "example-platform", Location: "eastus", DeploymentName: "offline-test",
+})
+if err != nil { t.Fatal(err) }
+if len(snapshot.Diagnostics) != 0 { t.Fatal(snapshot.Diagnostics) }
+policies, err := snapshot.ResourcesOfType("Microsoft.Authorization/policyDefinitions")
+if err != nil || len(policies) != 1 { t.Fatalf("policies = %v, %v", policies, err) }
+policy, err := snapshot.RequireResource(biceptesting.ResourceSelector{
+	Type: "Microsoft.Authorization/policyDefinitions", Name: "require-cost-center",
+})
+if err != nil { t.Fatal(err) }
+scope, err := biceptesting.GetResourceScope(policy.ID)
+if err != nil || scope.ManagementGroupID != "example-platform" { t.Fatalf("scope = %+v, %v", scope, err) }
+effect, err := biceptesting.GetSnapshotValue(policy.Properties, "/policyRule/then/effect")
+if err != nil || effect != "audit" { t.Fatalf("effect = %v, %v", effect, err) }
+```
+
+Use the shared [management-group fixture](../../../samples/infra/snapshot-scopes/).
+`ResourceSelector{ID: id}` selects by ID instead. Types and IDs match
+case-insensitively; names match exactly. Type selection returns an empty slice
+when absent; required selection returns an error for zero or multiple matches,
+empty inputs, or mixed selectors.
+
+`GetResourceScope()` supports subscription, resource-group, management-group,
+tenant, child, and extension IDs. Absent components are empty strings; malformed
+IDs return errors, and subscription IDs must be GUIDs. Tenant IDs cannot be
+inferred from resource IDs.
+
+`GetSnapshotValue()` accepts JSON decoded into `map[string]any`/`[]any` and an
+RFC 6901 JSON Pointer. `""` returns the input, `/items/0` indexes an array, and
+`~0`/`~1` escape `~`/`/`. Explicit null returns `(nil, nil)`; missing paths,
+invalid syntax, and noncanonical indices return errors. Raw maps remain available.
 
 ## Snapshot results
 
@@ -146,6 +192,13 @@ Live tests require Azure credentials and permission to validate, create, and del
 Lower-level Bicep integrations can use the separately versioned [bicep-rpc-client module](https://github.com/anthony-c-martin/bicep-testing/tree/main/packages/go/bicep-rpc-client).
 
 ## More information
+
+The [live samples](../../../samples/go/deployment_test.go) include opt-in
+identical redeployment before cleanup. Specify the same `StackName` for both
+deployments; omitted names are generated per operation.
+Copy the [consumer authoring skill](../../../.github/skills/author-bicep-tests/)
+into your repository for AI-generated tests. Automated scenario coverage is not
+yet available.
 
 - [Runnable Go snapshot and deployment samples](https://github.com/anthony-c-martin/bicep-testing/tree/main/samples/go)
 - [Exported API](https://github.com/anthony-c-martin/bicep-testing/blob/main/api/go/biceptesting.txt)

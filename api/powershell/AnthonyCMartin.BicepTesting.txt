@@ -1,3 +1,8 @@
+FUNCTION Get-BicepResourceScope
+
+PARAMETER SET __AllParameterSets
+  -Id <System.String> [Mandatory, Position=0, ValueFromPipeline, ValueFromPipelineByPropertyName]
+
 FUNCTION Get-BicepSnapshot
 
 PARAMETER SET __AllParameterSets
@@ -5,9 +10,31 @@ PARAMETER SET __AllParameterSets
   -Path <System.String> [Mandatory, Position=1]
   -DeploymentName <System.String>
   -Location <System.String>
+  -ManagementGroupId <System.String>
   -ResourceGroup <System.String>
   -SubscriptionId <System.String>
   -TenantId <System.String>
+
+FUNCTION Get-BicepSnapshotResource
+
+PARAMETER SET Id
+  -Id <System.String> [Mandatory]
+  -Snapshot <System.Object> [Mandatory, ValueFromPipeline]
+
+PARAMETER SET Name
+  -Name <System.String> [Mandatory]
+  -Snapshot <System.Object> [Mandatory, ValueFromPipeline]
+  -Type <System.String> [Mandatory]
+
+PARAMETER SET Type
+  -Snapshot <System.Object> [Mandatory, ValueFromPipeline]
+  -Type <System.String> [Mandatory]
+
+FUNCTION Get-BicepSnapshotValue
+
+PARAMETER SET __AllParameterSets
+  -InputObject <System.Object> [Mandatory, Position=0, ValueFromPipeline]
+  -Pointer <System.String> [Mandatory, Position=1]
 
 FUNCTION New-BicepTestSession
 

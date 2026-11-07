@@ -156,6 +156,10 @@ jobs:
       uses: actions/setup-go@v7
       with:
         go-version-file: samples/go/go.mod
+        cache-dependency-path: |
+          samples/go/go.mod
+          packages/go/bicep-testing/go.sum
+          packages/go/bicep-rpc-client/go.sum
 
     - name: Set up Python
       uses: actions/setup-python@v7

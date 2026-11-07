@@ -39,11 +39,23 @@ public sealed class BicepTestSession : IDisposable, IAsyncDisposable
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.FilePath);
 
+        if (options.ManagementGroupId is not null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(options.ManagementGroupId);
+            var version = await client.GetVersion(cancellationToken);
+            if (!Version.TryParse(version.Split('+')[0], out var parsed) || parsed < new Version(0, 47, 16))
+            {
+                throw new NotSupportedException(
+                    $"Bicep CLI 0.47.16 or later is required for management-group snapshots; detected {version}.");
+            }
+        }
+
         var response = await client.GetSnapshot(
             new GetSnapshotRequest(
                 Path.GetFullPath(options.FilePath),
                 new GetSnapshotRequest.MetadataDefinition(
                     options.TenantId,
+                    options.ManagementGroupId,
                     options.SubscriptionId,
                     options.ResourceGroup,
                     options.Location,

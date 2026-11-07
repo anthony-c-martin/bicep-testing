@@ -2,7 +2,7 @@
   "name": "bicep-test-node-sample",
   "private": true,
   "scripts": {
-    "test": "jest --runInBand"
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand"
   },
   "dependencies": {
     "@azure/identity": "^4.13.0",

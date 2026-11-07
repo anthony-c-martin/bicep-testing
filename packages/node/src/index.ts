@@ -1,5 +1,6 @@
 import { Bicep } from '@azure/bicep-rpc-client';
-import { mkdir } from 'fs/promises';
+import { constants } from 'fs';
+import { access, link, mkdir, mkdtemp, rm } from 'fs/promises';
 import os from 'os';
 import path from 'path';
 import { TokenCredential } from '@azure/core-auth';
@@ -11,6 +12,15 @@ import {
   ErrorDetail,
 } from '@azure/arm-resourcesdeploymentstacks';
 import { randomUUID } from 'crypto';
+
+export type SnapshotMetadata = {
+  tenantId?: string;
+  subscriptionId?: string;
+  resourceGroup?: string;
+  location?: string;
+  deploymentName?: string;
+  managementGroupId?: string;
+};
 
 type DeployOptionsBase = {
   filePath: string;
@@ -73,22 +83,52 @@ export class BicepTestSession {
 
     const basePath = path.join(os.homedir(), '.bicep', 'bin', `v${bicepVersion}`);
     await mkdir(basePath, { recursive: true });
-    const bicepPath = await Bicep.install(basePath, bicepVersion);
+    const bicepPath = path.join(basePath, process.platform === 'win32' ? 'bicep.exe' : 'bicep');
+    try {
+      await access(bicepPath, constants.X_OK);
+    } catch (error) {
+      if (getRecordValue(error, 'code') !== 'ENOENT') {
+        throw error;
+      }
+      const installPath = await mkdtemp(path.join(basePath, 'install-'));
+      try {
+        const installedPath = await Bicep.install(installPath, bicepVersion);
+        try {
+          // Publish once, without overwriting a CLI another session may be running.
+          await link(installedPath, bicepPath);
+        } catch (error) {
+          if (getRecordValue(error, 'code') !== 'EEXIST') {
+            throw error;
+          }
+        }
+      } finally {
+        await rm(installPath, { recursive: true, force: true });
+      }
+    }
     const bicep = await Bicep.initialize(bicepPath);
 
     return new BicepTestSession(bicep);
   }
 
-  async snapshot(filePath: string, tenantId?: string, subscriptionId?: string, resourceGroup?: string, location?: string, deploymentName?: string): Promise<SnapshotResult> {
+  async snapshot(filePath: string, metadata?: SnapshotMetadata): Promise<SnapshotResult>;
+  async snapshot(filePath: string, tenantId?: string, subscriptionId?: string, resourceGroup?: string, location?: string, deploymentName?: string): Promise<SnapshotResult>;
+  async snapshot(filePath: string, metadataOrTenantId?: SnapshotMetadata | string, subscriptionId?: string, resourceGroup?: string, location?: string, deploymentName?: string): Promise<SnapshotResult> {
+    const metadata: SnapshotMetadata = typeof metadataOrTenantId === 'object'
+      ? metadataOrTenantId
+      : { tenantId: metadataOrTenantId, subscriptionId, resourceGroup, location, deploymentName };
+    if (metadata.managementGroupId !== undefined) {
+      if (!metadata.managementGroupId.trim()) {
+        throw new TypeError('managementGroupId must not be empty.');
+      }
+      const version = await this.bicep.version();
+      const [major, minor, patch] = version.split('+')[0].split('.').map(Number);
+      if (!(major > 0 || (major === 0 && (minor > 47 || (minor === 47 && patch >= 16))))) {
+        throw new Error(`Bicep CLI 0.47.16 or later is required for management-group snapshots; detected ${version}.`);
+      }
+    }
     const response = await this.bicep.getSnapshot({
       path: filePath,
-      metadata: {
-        tenantId,
-        location,
-        subscriptionId,
-        resourceGroup,
-        deploymentName,
-      },
+      metadata,
     });
 
     return JSON.parse(response.snapshot);
@@ -152,10 +192,15 @@ export class LiveBicepTestSession {
     );
   }
 
-  snapshot(filePath: string, tenantId?: string, subscriptionId?: string, resourceGroup?: string, location?: string, deploymentName?: string): Promise<SnapshotResult> {
+  snapshot(filePath: string, metadata?: SnapshotMetadata): Promise<SnapshotResult>;
+  snapshot(filePath: string, tenantId?: string, subscriptionId?: string, resourceGroup?: string, location?: string, deploymentName?: string): Promise<SnapshotResult>;
+  snapshot(filePath: string, metadataOrTenantId?: SnapshotMetadata | string, subscriptionId?: string, resourceGroup?: string, location?: string, deploymentName?: string): Promise<SnapshotResult> {
+    if (typeof metadataOrTenantId === 'object') {
+      return this.session.snapshot(filePath, metadataOrTenantId);
+    }
     return this.session.snapshot(
       filePath,
-      tenantId,
+      metadataOrTenantId,
       subscriptionId,
       resourceGroup,
       location,
@@ -486,3 +531,114 @@ export type SnapshotResult = {
   diagnostics: string[];
   outputs: Record<string, unknown>;
 };
+
+export type ResourceSelector = { id: string; type?: never; name?: never }
+  | { id?: never; type: string; name: string };
+
+export type ResourceScope = {
+  readonly subscriptionId?: string;
+  readonly resourceGroup?: string;
+  readonly managementGroupId?: string;
+};
+
+function requiredSnapshotField(value: string, name: string): void {
+  if (!value?.trim()) {
+    throw new TypeError(`${name} must not be empty.`);
+  }
+}
+
+export function resourcesOfType(snapshot: SnapshotResult, type: string): SnapshotResource[] {
+  requiredSnapshotField(type, 'type');
+  return snapshot.predictedResources.filter(resource => resource.type.toLowerCase() === type.toLowerCase());
+}
+
+export function requireResource(snapshot: SnapshotResult, selector: ResourceSelector): SnapshotResource {
+  let matches: SnapshotResource[];
+  if (selector.id !== undefined) {
+    requiredSnapshotField(selector.id, 'id');
+    if (selector.type !== undefined || selector.name !== undefined) {
+      throw new TypeError('Specify either id or type and name.');
+    }
+    matches = snapshot.predictedResources.filter(resource => resource.id.toLowerCase() === selector.id.toLowerCase());
+  } else {
+    requiredSnapshotField(selector.type, 'type');
+    requiredSnapshotField(selector.name, 'name');
+    matches = resourcesOfType(snapshot, selector.type).filter(resource => resource.name === selector.name);
+  }
+  if (matches.length !== 1) {
+    throw new Error(`Expected exactly one resource matching ${JSON.stringify(selector)}; found ${matches.length}.`);
+  }
+  return matches[0];
+}
+
+export function getResourceScope(id: string): ResourceScope {
+  requiredSnapshotField(id, 'id');
+  const parts = id.split('/').slice(1);
+  const invalid = () => new TypeError(`Invalid Azure resource ID: ${id}`);
+  if (!id.startsWith('/') || /[?#]/.test(id) || parts.some(part => !part.trim())) {
+    throw invalid();
+  }
+  const scope: { subscriptionId?: string; resourceGroup?: string; managementGroupId?: string } = {};
+  let index = 0;
+  if (parts[0]?.toLowerCase() === 'subscriptions') {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(parts[1] ?? '')) {
+      throw invalid();
+    }
+    scope.subscriptionId = parts[1];
+    index = 2;
+    if (parts[index]?.toLowerCase() === 'resourcegroups') {
+      if (!parts[index + 1]) {
+        throw invalid();
+      }
+      scope.resourceGroup = parts[index + 1];
+      index += 2;
+    }
+  } else if (parts[0]?.toLowerCase() !== 'providers') {
+    throw invalid();
+  }
+  if (parts[0]?.toLowerCase() === 'providers'
+    && parts[1]?.toLowerCase() === 'microsoft.management'
+    && parts[2]?.toLowerCase() === 'managementgroups') {
+    scope.managementGroupId = parts[3];
+  }
+  while (index < parts.length) {
+    if (parts[index]?.toLowerCase() !== 'providers' || !parts[index + 1]) {
+      throw invalid();
+    }
+    index += 2;
+    const start = index;
+    while (index < parts.length && parts[index].toLowerCase() !== 'providers') {
+      index += 2;
+    }
+    if (index === start || index > parts.length) {
+      throw invalid();
+    }
+  }
+  return scope;
+}
+
+export function getSnapshotValue(value: unknown, pointer: string): unknown {
+  if (pointer === '') {
+    return value;
+  }
+  if (!pointer.startsWith('/')) {
+    throw new TypeError('A JSON Pointer must be empty or start with /.');
+  }
+  for (const encoded of pointer.slice(1).split('/')) {
+    if (/~(?:[^01]|$)/.test(encoded)) {
+      throw new TypeError(`Invalid JSON Pointer escape: ${pointer}`);
+    }
+    const key = encoded.replace(/~1/g, '/').replace(/~0/g, '~');
+    if (Array.isArray(value)) {
+      if (!/^(0|[1-9][0-9]*)$/.test(key) || Number(key) >= value.length) {
+        throw new Error(`JSON Pointer not found: ${pointer}`);
+      }
+      value = value[Number(key)];
+    } else if (typeof value === 'object' && value !== null && Object.prototype.hasOwnProperty.call(value, key)) {
+      value = Reflect.get(value, key);
+    } else {
+      throw new Error(`JSON Pointer not found: ${pointer}`);
+    }
+  }
+  return value;
+}

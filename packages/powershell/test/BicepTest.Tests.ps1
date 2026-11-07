@@ -15,7 +15,10 @@ BeforeAll {
 Describe 'AnthonyCMartin.BicepTesting module' {
     It 'exports only the supported commands' {
         (Get-Command -Module AnthonyCMartin.BicepTesting).Name | Should -Be @(
+            'Get-BicepResourceScope'
             'Get-BicepSnapshot'
+            'Get-BicepSnapshotResource'
+            'Get-BicepSnapshotValue'
             'New-BicepTestSession'
             'Remove-BicepTestDeployment'
             'Remove-BicepTestSession'

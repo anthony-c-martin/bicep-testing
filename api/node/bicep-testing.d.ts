@@ -1,4 +1,12 @@
 import { TokenCredential } from '@azure/core-auth';
+export type SnapshotMetadata = {
+    tenantId?: string;
+    subscriptionId?: string;
+    resourceGroup?: string;
+    location?: string;
+    deploymentName?: string;
+    managementGroupId?: string;
+};
 type DeployOptionsBase = {
     filePath: string;
     stackName?: string;
@@ -27,6 +35,7 @@ export declare class BicepTestSession {
     private bicep;
     private constructor();
     static create(bicepVersion: string): Promise<BicepTestSession>;
+    snapshot(filePath: string, metadata?: SnapshotMetadata): Promise<SnapshotResult>;
     snapshot(filePath: string, tenantId?: string, subscriptionId?: string, resourceGroup?: string, location?: string, deploymentName?: string): Promise<SnapshotResult>;
     dispose(): void;
 }
@@ -35,6 +44,7 @@ export declare class LiveBicepTestSession {
     private readonly credential;
     private constructor();
     static create(bicepVersion: string, credential: TokenCredential): Promise<LiveBicepTestSession>;
+    snapshot(filePath: string, metadata?: SnapshotMetadata): Promise<SnapshotResult>;
     snapshot(filePath: string, tenantId?: string, subscriptionId?: string, resourceGroup?: string, location?: string, deploymentName?: string): Promise<SnapshotResult>;
     validate(options: DeployOptions): Promise<ValidateResult>;
     deploy(options: DeployOptions): Promise<DeployResult>;
@@ -77,4 +87,22 @@ export type SnapshotResult = {
     diagnostics: string[];
     outputs: Record<string, unknown>;
 };
+export type ResourceSelector = {
+    id: string;
+    type?: never;
+    name?: never;
+} | {
+    id?: never;
+    type: string;
+    name: string;
+};
+export type ResourceScope = {
+    readonly subscriptionId?: string;
+    readonly resourceGroup?: string;
+    readonly managementGroupId?: string;
+};
+export declare function resourcesOfType(snapshot: SnapshotResult, type: string): SnapshotResource[];
+export declare function requireResource(snapshot: SnapshotResult, selector: ResourceSelector): SnapshotResource;
+export declare function getResourceScope(id: string): ResourceScope;
+export declare function getSnapshotValue(value: unknown, pointer: string): unknown;
 export {};

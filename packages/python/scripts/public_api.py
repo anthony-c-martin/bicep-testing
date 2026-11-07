@@ -13,6 +13,10 @@ def generate(module: object) -> str:
     lines: list[str] = []
     for name in module.__all__:
         value = getattr(module, name)
+        if inspect.isfunction(value):
+            lines.append(f"FUNCTION {name}{inspect.signature(value)}")
+            lines.append("")
+            continue
         lines.append(f"CLASS {name}")
         if dataclasses.is_dataclass(value):
             lines.append(f"  {name}{inspect.signature(value)}")

@@ -53,12 +53,27 @@ namespace AnthonyCMartin.BicepTesting
         public string? Message { get; }
         public System.BinaryData RawData { get; }
     }
+    public sealed class ResourceScope
+    {
+        public string? ManagementGroupId { get; }
+        public string? ResourceGroup { get; }
+        public string? SubscriptionId { get; }
+    }
+    public static class SnapshotHelpers
+    {
+        public static AnthonyCMartin.BicepTesting.ResourceScope GetResourceScope(string id) { }
+        public static System.Text.Json.JsonElement GetSnapshotValue(System.Text.Json.JsonElement value, string pointer) { }
+        public static AnthonyCMartin.BicepTesting.SnapshotResource RequireResource(this AnthonyCMartin.BicepTesting.SnapshotResult snapshot, string id) { }
+        public static AnthonyCMartin.BicepTesting.SnapshotResource RequireResource(this AnthonyCMartin.BicepTesting.SnapshotResult snapshot, string type, string name) { }
+        public static AnthonyCMartin.BicepTesting.SnapshotResource[] ResourcesOfType(this AnthonyCMartin.BicepTesting.SnapshotResult snapshot, string type) { }
+    }
     public sealed class SnapshotOptions
     {
         public SnapshotOptions() { }
         public string DeploymentName { get; init; }
         public required string FilePath { get; init; }
         public string? Location { get; init; }
+        public string? ManagementGroupId { get; init; }
         public string? ResourceGroup { get; init; }
         public string? SubscriptionId { get; init; }
         public string? TenantId { get; init; }
@@ -76,6 +91,7 @@ namespace AnthonyCMartin.BicepTesting
         public string? Location { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("name")]
         public string Name { get; init; }
+        [System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
         [System.Text.Json.Serialization.JsonPropertyName("properties")]
         public System.Text.Json.JsonElement Properties { get; init; }
         [System.Text.Json.Serialization.JsonPropertyName("type")]

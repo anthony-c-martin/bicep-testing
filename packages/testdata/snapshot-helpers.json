@@ -1,0 +1,35 @@
+{
+  "scopes": [
+    { "id": "/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616", "subscriptionId": "28c9069e-23e8-47d2-b640-00d2e0f09616" },
+    { "id": "/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616/resourceGroups/rg", "subscriptionId": "28c9069e-23e8-47d2-b640-00d2e0f09616", "resourceGroup": "rg" },
+    { "id": "/SUBSCRIPTIONS/28c9069e-23e8-47d2-b640-00d2e0f09616/RESOURCEGROUPS/rg/providers/Microsoft.Storage/storageAccounts/store/blobServices/default/containers/logs", "subscriptionId": "28c9069e-23e8-47d2-b640-00d2e0f09616", "resourceGroup": "rg" },
+    { "id": "/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616/resourceGroups/rg/providers/Microsoft.Storage/storageAccounts/store/providers/Microsoft.Authorization/locks/lock", "subscriptionId": "28c9069e-23e8-47d2-b640-00d2e0f09616", "resourceGroup": "rg" },
+    { "id": "/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616/providers/Microsoft.Authorization/policyAssignments/a", "subscriptionId": "28c9069e-23e8-47d2-b640-00d2e0f09616" },
+    { "id": "/providers/Microsoft.Management/managementGroups/platform", "managementGroupId": "platform" },
+    { "id": "/providers/Microsoft.Management/managementGroups/platform/providers/Microsoft.Authorization/policyDefinitions/p", "managementGroupId": "platform" },
+    { "id": "/providers/Microsoft.Authorization/policyDefinitions/p" }
+  ],
+  "invalidIds": [
+    "", "/", "relative", "/subscriptions", "/subscriptions/not-a-guid", "/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616/",
+    "/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616/resourceGroups", "/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616/unknown/name",
+    "/providers/Microsoft.Management/managementGroups",
+    "/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616/providers/Microsoft.Storage/storageAccounts",
+    "/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616/providers/Microsoft.Storage",
+    "/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616/providers/Microsoft.Storage/storageAccounts/store?api-version=1",
+    "/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616//resourceGroups/rg",
+    "/providers/Microsoft.Authorization/policyDefinitions/p/providers/Microsoft.Authorization/locks"
+  ],
+  "document": { "a/b": { "~key": [false, null, { "name": "value" }] }, "": "empty-key", "number": 42 },
+  "pointers": [
+    { "pointer": "/a~1b/~0key/0", "value": false },
+    { "pointer": "/a~1b/~0key/1", "value": null },
+    { "pointer": "/a~1b/~0key/2/name", "value": "value" },
+    { "pointer": "/", "value": "empty-key" },
+    { "pointer": "/number", "value": 42 }
+  ],
+  "invalidPointers": [
+    "number", "/missing", "/a~2b", "/a~", "/a~1b/~0key/01",
+    "/a~1b/~0key/-1", "/a~1b/~0key/-", "/a~1b/~0key/3",
+    "/a~1b/~0key/1/name", "/number/name"
+  ]
+}

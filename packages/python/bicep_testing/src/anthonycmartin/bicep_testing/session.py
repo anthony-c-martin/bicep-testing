@@ -136,6 +136,7 @@ class BicepTestSession:
                     resource_group=snapshot_metadata.resource_group,
                     location=snapshot_metadata.location,
                     deployment_name=snapshot_metadata.deployment_name,
+                    management_group_id=snapshot_metadata.management_group_id,
                 ),
             )
         )

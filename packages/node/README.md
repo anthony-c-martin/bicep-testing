@@ -29,11 +29,6 @@ beforeAll(async () => {
   session = await BicepTestSession.create('0.46.1');
   snapshot = await session.snapshot(
     'infra/main.bicepparam',
-	'ddbe463a-0554-485d-b589-0b17d60cd38b',
-	'28c9069e-23e8-47d2-b640-00d2e0f09616',
-    'example-rg',
-    'eastus',
-    'example-deployment',
   );
 }, 60_000);
 
@@ -54,7 +49,58 @@ test('storage accounts disable public blob access', () => {
 
 `BicepTestSession.create()` downloads the requested Bicep CLI version into `~/.bicep/bin` and reuses it on later runs. The session owns a Bicep process, so always call `dispose()` after the tests finish.
 
+Installation publishes a completed executable atomically and never overwrites
+an existing cached CLI. Parallel sessions can safely use the same pinned version.
+
 Snapshot tests run locally. The subscription, tenant, resource group, location, and deployment values provide evaluation context only; they do not need to exist, and no Azure credentials are required.
+
+All snapshot context is optional. Supply it when assertions depend on those
+values. In particular, `deploymentName` also affects offline `deployment().name`
+evaluation; it is not only for live deployments.
+
+### Explicit context and helpers (unreleased)
+
+The development checkout adds a metadata-object overload; existing positional
+calls remain supported. Management-group snapshots require Bicep CLI 0.47.16+
+and fail explicitly with older versions.
+
+```js
+const { BicepTestSession, resourcesOfType, requireResource, getResourceScope, getSnapshotValue } =
+  require('@anthony-c-martin/bicep-testing');
+
+const session = await BicepTestSession.create('0.47.16');
+try {
+  const snapshot = await session.snapshot('infra/management-group.bicepparam', {
+    managementGroupId: 'example-platform',
+    location: 'eastus',
+    deploymentName: 'offline-test',
+  });
+  expect(snapshot.diagnostics).toHaveLength(0);
+  expect(resourcesOfType(snapshot, 'Microsoft.Authorization/policyDefinitions')).toHaveLength(1);
+  const policy = requireResource(snapshot, {
+    type: 'Microsoft.Authorization/policyDefinitions', name: 'require-cost-center',
+  });
+  expect(getResourceScope(policy.id).managementGroupId).toBe('example-platform');
+  expect(getSnapshotValue(policy, '/properties/policyRule/then/effect')).toBe('audit');
+} finally {
+  session.dispose();
+}
+```
+
+Use the shared [management-group fixture](../../samples/infra/snapshot-scopes/)
+for this example. A selector can instead be `{ id: resourceId }`.
+Resource types and IDs match case-insensitively; names match exactly.
+Selection by type returns an empty array when absent. Required selection throws
+for zero or multiple matches, and empty selectors/types are errors.
+`getResourceScope()` supports subscription, resource-group, management-group,
+tenant, child, and extension IDs; absent scope fields are `undefined`. It rejects
+malformed IDs and requires GUID subscription IDs. Tenant IDs cannot be inferred
+from resource IDs.
+
+`getSnapshotValue()` accepts decoded JSON and an RFC 6901 JSON Pointer: `""`
+returns the input, `/items/0` indexes an array, and `~0`/`~1` escape `~`/`/`.
+It returns the original JSON value, including `null`; missing paths, invalid
+escapes, and noncanonical array indices throw. Raw results remain available.
 
 ## Snapshot results
 
@@ -105,6 +151,15 @@ try {
 Live tests require Azure credentials and permission to validate, create, and delete Deployment Stacks and their managed resources at the selected scope. `teardown()` deletes the stack and all managed resources, treats a missing stack as already removed, and shares one promise across concurrent calls. Keep teardown in a `finally` block; the generated stack name is unique per operation, so specify one when validation and deployment must address the same stack.
 
 ## More information
+
+The [live samples](../../samples/node/deployment.test.js) include an opt-in
+idempotency test that deploys identical inputs twice to the same stack before
+cleanup. Set `stackName` explicitly for repeated Node deployments; an omitted
+name is generated separately for each operation. No live tests run by default.
+
+For consistent AI-authored consumer tests, copy the
+[author-bicep-tests skill](../../.github/skills/author-bicep-tests/) into your
+repository. Scenario coverage reporting is not implemented by this change.
 
 - [Runnable Jest snapshot and deployment samples](https://github.com/anthony-c-martin/bicep-testing/tree/main/samples/node)
 - [Exported API](https://github.com/anthony-c-martin/bicep-testing/blob/main/api/node/bicep-testing.d.ts)
