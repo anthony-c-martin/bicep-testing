@@ -59,13 +59,11 @@ Describe 'Real-world Bicep deployments' -Skip:(
                 -StackName "$env:BICEP_TEST_STACK_NAME-idempotency" -IncludeAuditStorage $false
             $deployment.Succeeded | Should -BeTrue
             $primaryStorageId = $deployment.Outputs['primaryStorageId'].GetString()
-            $originalIds = @($deployment.Resources.Id | Sort-Object)
 
             $deployment = Start-SampleDeployment -Session $session `
                 -StackName "$env:BICEP_TEST_STACK_NAME-idempotency" -IncludeAuditStorage $false
             $deployment.Succeeded | Should -BeTrue
             $deployment.Outputs['primaryStorageId'].GetString() | Should -Be $primaryStorageId
-            @($deployment.Resources.Id | Sort-Object) | Should -Be $originalIds
             $response = Get-AzureResourceResponse $primaryStorageId
             $response.StatusCode | Should -Be 200
             $storage = $response.Content | ConvertFrom-Json
@@ -76,10 +74,9 @@ Describe 'Real-world Bicep deployments' -Skip:(
         finally {
             if ($deployment) { $deployment | Remove-BicepTestDeployment }
         }
-        (Get-AzureResourceResponse $primaryStorageId).StatusCode | Should -Be 404
     }
 
-    It 'verifies secure storage in Azure and removes it afterward' {
+    It 'keeps deployed storage compliant with the security baseline in Azure' {
         $deployment = $null
         try {
             $validation = Get-SampleValidation `
@@ -103,7 +100,6 @@ Describe 'Real-world Bicep deployments' -Skip:(
             $storage.properties.minimumTlsVersion | Should -Be 'TLS1_2'
             $storage.properties.publicNetworkAccess | Should -Be 'Disabled'
             $storage.properties.supportsHttpsTrafficOnly | Should -BeTrue
-            $deployment.Resources.Id | Should -Contain $primaryStorageId
         }
         finally {
             if ($deployment) {
@@ -111,10 +107,9 @@ Describe 'Real-world Bicep deployments' -Skip:(
             }
         }
 
-        (Get-AzureResourceResponse $primaryStorageId).StatusCode | Should -Be 404
     }
 
-    It 'reconciles removed audit storage and cleans up remaining resources' {
+    It 'removes the audit account from Azure when audit storage is disabled' {
         $deployment = $null
         try {
             $validation = Get-SampleValidation `
@@ -130,7 +125,6 @@ Describe 'Real-world Bicep deployments' -Skip:(
             $deployment.Succeeded | Should -BeTrue
             $primaryStorageId = $deployment.Outputs['primaryStorageId'].GetString()
             $auditStorageId = $deployment.Outputs['auditStorageId'].GetString()
-            $deployment.Resources | Should -HaveCount 2
 
             $validation = Get-SampleValidation `
                 -Session $session `
@@ -143,8 +137,8 @@ Describe 'Real-world Bicep deployments' -Skip:(
                 -StackName $env:BICEP_TEST_STACK_NAME `
                 -IncludeAuditStorage $false
             $deployment.Succeeded | Should -BeTrue
-            $deployment.Resources | Should -HaveCount 1
-            $deployment.Resources[0].Id | Should -Be $primaryStorageId
+            $deployment.Outputs['primaryStorageId'].GetString() | Should -Be $primaryStorageId
+            (Get-AzureResourceResponse $primaryStorageId).StatusCode | Should -Be 200
             (Get-AzureResourceResponse $auditStorageId).StatusCode | Should -Be 404
         }
         finally {
@@ -153,6 +147,5 @@ Describe 'Real-world Bicep deployments' -Skip:(
             }
         }
 
-        (Get-AzureResourceResponse $primaryStorageId).StatusCode | Should -Be 404
     }
 }

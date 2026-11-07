@@ -50,27 +50,26 @@ public sealed class LiveTests
 
     [TestMethod]
     [Timeout(15 * 60_000)]
-    public async Task Secure_storage_is_verified_in_Azure_and_removed()
+    public async Task Deployed_storage_meets_the_security_baseline_in_Azure()
     {
         var settings = LiveSettings.Load();
         DeployResult? deployment = null;
-        string? primaryStorageId = null;
         try
         {
-            deployment = await DeployAsync(
-                session,
-                CreateDeployOptions(settings, CreateParameterOverrides(settings, false)));
-            primaryStorageId = deployment.Outputs["primaryStorageId"].GetString()!;
+            deployment = await session.DeployAsync(
+                CreateDeployOptions(settings, CreateParameterOverrides(settings, false)),
+                TestContext.CancellationToken);
+            Assert.IsTrue(deployment.Succeeded, deployment.ErrorMessage);
+            var primaryStorageId = deployment.Outputs["primaryStorageId"].GetString()!;
             using var response = await GetAzureResourceAsync(credential, primaryStorageId);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            var storage = JsonDocument.Parse(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+            using var storage = JsonDocument.Parse(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
             var properties = storage.RootElement.GetProperty("properties");
             Assert.IsFalse(properties.GetProperty("allowBlobPublicAccess").GetBoolean());
             Assert.IsFalse(properties.GetProperty("allowSharedKeyAccess").GetBoolean());
             Assert.AreEqual("TLS1_2", properties.GetProperty("minimumTlsVersion").GetString());
             Assert.AreEqual("Disabled", properties.GetProperty("publicNetworkAccess").GetString());
             Assert.IsTrue(properties.GetProperty("supportsHttpsTrafficOnly").GetBoolean());
-            Assert.IsTrue(deployment.Resources.Any(resource => resource.Id == primaryStorageId));
         }
         finally
         {
@@ -80,32 +79,29 @@ public sealed class LiveTests
                 await deployment.TeardownAsync(cleanup.Token);
             }
         }
-
-        using var deleted = await GetAzureResourceAsync(credential, primaryStorageId!);
-        Assert.AreEqual(HttpStatusCode.NotFound, deleted.StatusCode);
     }
 
     [TestMethod]
     [Timeout(20 * 60_000)]
-    public async Task Deployment_reconciles_removed_audit_storage_and_cleans_up()
+    public async Task Disabling_audit_storage_removes_the_account_from_Azure()
     {
         var settings = LiveSettings.Load();
         DeployResult? deployment = null;
-        string? primaryStorageId = null;
-        string? auditStorageId = null;
         try
         {
             var parameterOverrides = CreateParameterOverrides(settings, true);
             var options = CreateDeployOptions(settings, parameterOverrides);
-            deployment = await DeployAsync(session, options);
-            primaryStorageId = deployment.Outputs["primaryStorageId"].GetString()!;
-            auditStorageId = deployment.Outputs["auditStorageId"].GetString()!;
-            Assert.HasCount(2, deployment.Resources);
+            deployment = await session.DeployAsync(options, TestContext.CancellationToken);
+            Assert.IsTrue(deployment.Succeeded, deployment.ErrorMessage);
+            var primaryStorageId = deployment.Outputs["primaryStorageId"].GetString()!;
+            var auditStorageId = deployment.Outputs["auditStorageId"].GetString()!;
 
             parameterOverrides["includeAuditStorage"] = JsonSerializer.SerializeToElement(false);
-            deployment = await DeployAsync(session, options);
-            Assert.HasCount(1, deployment.Resources);
-            Assert.AreEqual(primaryStorageId, deployment.Resources[0].Id);
+            deployment = await session.DeployAsync(options, TestContext.CancellationToken);
+            Assert.IsTrue(deployment.Succeeded, deployment.ErrorMessage);
+            Assert.AreEqual(primaryStorageId, deployment.Outputs["primaryStorageId"].GetString());
+            using var primary = await GetAzureResourceAsync(credential, primaryStorageId);
+            Assert.AreEqual(HttpStatusCode.OK, primary.StatusCode);
             using var removedAudit = await GetAzureResourceAsync(credential, auditStorageId);
             Assert.AreEqual(HttpStatusCode.NotFound, removedAudit.StatusCode);
         }
@@ -117,9 +113,6 @@ public sealed class LiveTests
                 await deployment.TeardownAsync(cleanup.Token);
             }
         }
-
-        using var removedPrimary = await GetAzureResourceAsync(credential, primaryStorageId!);
-        Assert.AreEqual(HttpStatusCode.NotFound, removedPrimary.StatusCode);
     }
 
     [TestMethod]
@@ -129,18 +122,15 @@ public sealed class LiveTests
         var settings = LiveSettings.Load();
         var options = CreateDeployOptions(settings, CreateParameterOverrides(settings, false));
         DeployResult? deployment = null;
-        string? primaryStorageId = null;
         try
         {
             deployment = await session.DeployAsync(options, TestContext.CancellationToken);
             Assert.IsTrue(deployment.Succeeded, deployment.ErrorMessage);
-            primaryStorageId = deployment.Outputs["primaryStorageId"].GetString()!;
-            var originalIds = deployment.Resources.Select(resource => resource.Id).Order().ToArray();
+            var primaryStorageId = deployment.Outputs["primaryStorageId"].GetString()!;
 
             deployment = await session.DeployAsync(options, TestContext.CancellationToken);
             Assert.IsTrue(deployment.Succeeded, deployment.ErrorMessage);
             Assert.AreEqual(primaryStorageId, deployment.Outputs["primaryStorageId"].GetString());
-            CollectionAssert.AreEqual(originalIds, deployment.Resources.Select(resource => resource.Id).Order().ToArray());
             using var response = await GetAzureResourceAsync(credential, primaryStorageId);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
             using var storage = JsonDocument.Parse(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
@@ -157,17 +147,6 @@ public sealed class LiveTests
                 await deployment.TeardownAsync(cleanup.Token);
             }
         }
-        using var deleted = await GetAzureResourceAsync(credential, primaryStorageId!);
-        Assert.AreEqual(HttpStatusCode.NotFound, deleted.StatusCode);
-    }
-
-    private async Task<DeployResult> DeployAsync(
-        LiveBicepTestSession session,
-        DeployOptions options)
-    {
-        var deployment = await session.DeployAsync(options, TestContext.CancellationToken);
-        Assert.IsTrue(deployment.Succeeded, deployment.ErrorMessage);
-        return deployment;
     }
 
     private static DeployOptions CreateDeployOptions(
@@ -193,7 +172,7 @@ public sealed class LiveTests
         var token = await credential.GetTokenAsync(
             new TokenRequestContext(["https://management.azure.com/.default"]),
             TestContext.CancellationToken);
-        var request = new HttpRequestMessage(
+        using var request = new HttpRequestMessage(
             HttpMethod.Get,
             $"https://management.azure.com{resourceId}?api-version=2023-05-01");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Token);

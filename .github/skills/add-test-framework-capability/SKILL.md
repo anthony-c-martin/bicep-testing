@@ -16,7 +16,7 @@ A capability is complete only when all of the following are true:
 
 - Node, C#, Go, PowerShell, and Python expose equivalent behavior through idiomatic public APIs.
 - Each language has focused tests for success, relevant edge cases, and errors introduced by the capability.
-- A shared Bicep sample demonstrates the capability and is exercised by all applicable conformance tests.
+- A teaching-oriented Bicep sample demonstrates a consumer use case and can be reused by applicable conformance tests.
 - Public API artifacts under `api/` are regenerated and verified.
 - Each language-specific document explains its API and includes a realistic usage example.
 - `README.md` explains the capability in language-neutral terms.
@@ -51,12 +51,12 @@ If the requested behavior is ambiguous, inspect the nearest existing implementat
 
 ### 2. Add Or Update The Shared Sample
 
-- Keep reusable example Bicep fixtures under `samples/infra`; this is the canonical consumer-sample location.
+- Keep reusable example Bicep templates under `samples/infra`; this is the canonical consumer-sample location. Put shared conformance-only fixtures and helper edge-case data under `packages/testdata`.
 - Prefer extending an existing fixture when it remains understandable. Create a focused fixture when extension would mix unrelated behavior.
 - Make the sample deterministic, offline, and independent of Azure credentials or deployment.
 - Include only the Bicep constructs needed to demonstrate the behavior clearly.
-- Update the runnable Jest, MSTest, Go `testing`, Pester, and pytest examples under `samples/` to demonstrate the capability idiomatically.
-- Point every applicable sample and conformance test at the same fixture. Do not duplicate equivalent fixtures per language.
+- Update the runnable Jest, MSTest, Go `testing`, Pester, and pytest examples under `samples/` to teach consumers how the capability helps test their infrastructure. Name scenarios after infrastructure requirements and keep inputs and assertions readable. Do not turn samples into library correctness tests or an API feature checklist.
+- Reuse the teaching template from applicable library tests when useful, but keep API-contract assertions and malformed-input cases in package test suites. Do not duplicate equivalent fixtures per language or require identical helper usage in every sample.
 
 ### 3. Implement Idiomatically In Every Library
 
@@ -230,6 +230,7 @@ python packages/python/scripts/public_api.py --check
 
 # Runnable consumer samples
 ./scripts/ValidateSamples.ps1
+./scripts/ValidateSamples.ps1 -RunSnapshots
 ```
 
 Also check editor diagnostics for every changed implementation, test, manifest, script, and workflow file.

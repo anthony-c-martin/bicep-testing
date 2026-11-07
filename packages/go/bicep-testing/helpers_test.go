@@ -14,8 +14,12 @@ func sharedInfra(relative string) string {
 	return filepath.Join("..", "..", "..", "samples", "infra", relative)
 }
 
+func sharedTestData(relative string) string {
+	return filepath.Join("..", "..", "testdata", relative)
+}
+
 func TestSnapshotHelpersSharedCases(t *testing.T) {
-	data, err := os.ReadFile(sharedInfra("snapshot-scopes/helper-cases.json"))
+	data, err := os.ReadFile(sharedTestData("snapshot-helpers.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -129,10 +133,10 @@ func TestSnapshotsEveryScopeAndOptionalContext(t *testing.T) {
 		Output   string
 		Value    string
 	}{
-		{"snapshot-scopes/subscription.bicepparam", SnapshotMetadata{SubscriptionID: subscriptionID}, "scopeId", "/subscriptions/" + subscriptionID},
-		{"snapshot-scopes/tenant.bicepparam", SnapshotMetadata{TenantID: tenantID}, "tenantId", tenantID},
+		{sharedTestData("snapshot-scopes/subscription.bicepparam"), SnapshotMetadata{SubscriptionID: subscriptionID}, "scopeId", "/subscriptions/" + subscriptionID},
+		{sharedTestData("snapshot-scopes/tenant.bicepparam"), SnapshotMetadata{TenantID: tenantID}, "tenantId", tenantID},
 	} {
-		result, err := session.Snapshot(ctx, sharedInfra(item.Path), item.Metadata)
+		result, err := session.Snapshot(ctx, item.Path, item.Metadata)
 		if err != nil {
 			t.Fatal(err)
 		}

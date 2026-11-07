@@ -1,14 +1,11 @@
 using AnthonyCMartin.BicepTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json;
 
 namespace Samples;
 
 [TestClass]
 public sealed class OfflineTests
 {
-    private const string TenantId = "ddbe463a-0554-485d-b589-0b17d60cd38b";
-    private const string SubscriptionId = "28c9069e-23e8-47d2-b640-00d2e0f09616";
     private static BicepTestSession session = null!;
 
     public TestContext TestContext { get; set; } = null!;
@@ -27,117 +24,124 @@ public sealed class OfflineTests
 
     [TestMethod]
     [Timeout(60_000)]
-    public async Task Environment_parameters_select_topology_skus_and_tags()
+    public async Task Storage_and_Key_Vault_meet_the_security_baseline()
     {
-        var development = await SnapshotAsync(session, "environment-topology/dev.bicepparam");
-        var production = await SnapshotAsync(session, "environment-topology/prod.bicepparam");
-
-        Assert.IsEmpty(development.Diagnostics);
-        Assert.HasCount(1, development.PredictedResources);
-        var developmentStorage = development.PredictedResources[0];
-        Assert.AreEqual("ordersdevprimary", developmentStorage.Name);
-        Assert.AreEqual("Standard_LRS", Extra(developmentStorage, "sku").GetProperty("name").GetString());
-        Assert.AreEqual("dev", Extra(developmentStorage, "tags").GetProperty("environment").GetString());
-        Assert.AreEqual(JsonValueKind.Null, development.Outputs["auditStorageId"].ValueKind);
-
-        CollectionAssert.AreEqual(
-            new[] { "ordersprodprimary", "ordersprodaudit" },
-            production.PredictedResources.Select(resource => resource.Name).ToArray());
-        Assert.AreEqual("Standard_ZRS", Extra(production.PredictedResources[0], "sku").GetProperty("name").GetString());
-        Assert.AreEqual("confidential", Extra(production.PredictedResources[0], "tags").GetProperty("dataClassification").GetString());
-        Assert.AreEqual("Standard_GRS", Extra(production.PredictedResources[1], "sku").GetProperty("name").GetString());
-        StringAssert.Contains(production.Outputs["auditStorageId"].GetString(), "/storageAccounts/ordersprodaudit");
-    }
-
-    [TestMethod]
-    [Timeout(60_000)]
-    public async Task Security_baseline_catches_weakened_parameters()
-    {
-        var secure = await SnapshotAsync(session, "security-baseline/secure.bicepparam");
-        var insecure = await SnapshotAsync(session, "security-baseline/insecure.bicepparam");
-        var secureStorage = Resource(secure, "Microsoft.Storage/storageAccounts");
-        var secureVault = Resource(secure, "Microsoft.KeyVault/vaults");
-        var insecureStorage = Resource(insecure, "Microsoft.Storage/storageAccounts");
-
-        Assert.IsEmpty(secure.Diagnostics);
-        Assert.IsFalse(secureStorage.Properties.GetProperty("allowBlobPublicAccess").GetBoolean());
-        Assert.IsFalse(secureStorage.Properties.GetProperty("allowSharedKeyAccess").GetBoolean());
-        Assert.AreEqual("TLS1_2", secureStorage.Properties.GetProperty("minimumTlsVersion").GetString());
-        Assert.AreEqual("Disabled", secureStorage.Properties.GetProperty("publicNetworkAccess").GetString());
-        Assert.IsTrue(secureVault.Properties.GetProperty("enablePurgeProtection").GetBoolean());
-        Assert.IsTrue(secureVault.Properties.GetProperty("enableRbacAuthorization").GetBoolean());
-        Assert.AreEqual(90, secureVault.Properties.GetProperty("softDeleteRetentionInDays").GetInt32());
-        Assert.AreEqual("TLS1_0", insecureStorage.Properties.GetProperty("minimumTlsVersion").GetString());
-        Assert.IsTrue(insecureStorage.Properties.GetProperty("allowBlobPublicAccess").GetBoolean());
-    }
-
-    [TestMethod]
-    [Timeout(60_000)]
-    public async Task Private_network_references_are_wired_together()
-    {
-        var snapshot = await SnapshotAsync(session, "private-network/main.bicepparam");
-        var resources = snapshot.PredictedResources.ToDictionary(resource => resource.Name);
-        var networkIds = snapshot.Outputs["networkIds"];
-
-        Assert.IsEmpty(snapshot.Diagnostics);
-        Assert.AreEqual("10.42.0.0/16", resources["orders-vnet"].Properties.GetProperty("addressSpace").GetProperty("addressPrefixes")[0].GetString());
-        Assert.AreEqual("10.42.1.0/24", resources["orders-vnet/app"].Properties.GetProperty("addressPrefix").GetString());
-        StringAssert.Contains(resources["orders-vnet/app"].Properties.GetProperty("networkSecurityGroup").GetProperty("id").GetString(), "/orders-app-nsg");
-        Assert.AreEqual("Disabled", resources["orders-vnet/data"].Properties.GetProperty("privateEndpointNetworkPolicies").GetString());
-        Assert.AreEqual(
-            networkIds.GetProperty("dataSubnetId").GetString(),
-            resources["orders-storage-pe"].Properties.GetProperty("subnet").GetProperty("id").GetString());
-        var connection = resources["orders-storage-pe"].Properties.GetProperty("privateLinkServiceConnections")[0].GetProperty("properties");
-        Assert.AreEqual("blob", connection.GetProperty("groupIds")[0].GetString());
-        StringAssert.Contains(connection.GetProperty("privateLinkServiceId").GetString(), "/storageAccounts/ordersprivatestore");
-        Assert.AreEqual(
-            networkIds.GetProperty("virtualNetworkId").GetString(),
-            resources["privatelink.blob.core.windows.net/orders-vnet-link"].Properties.GetProperty("virtualNetwork").GetProperty("id").GetString());
-    }
-
-    [TestMethod]
-    [Timeout(60_000)]
-    public async Task Minimal_context_and_management_group_helpers_work_offline()
-    {
-        var minimal = await session.SnapshotAsync(new SnapshotOptions
+        // Context is unnecessary when the assertions only depend on explicit parameter values.
+        var snapshot = await session.SnapshotAsync(new SnapshotOptions
         {
             FilePath = InfraPath("security-baseline/secure.bicepparam"),
         }, TestContext.CancellationToken);
-        Assert.IsEmpty(minimal.Diagnostics);
+        Assert.IsEmpty(snapshot.Diagnostics);
+        var storage = snapshot.RequireResource("Microsoft.Storage/storageAccounts", "orderssecurestore");
+        var vault = snapshot.RequireResource("Microsoft.KeyVault/vaults", "orders-secure-kv");
+
+        Assert.IsFalse(storage.Properties.GetProperty("allowBlobPublicAccess").GetBoolean());
+        Assert.IsFalse(storage.Properties.GetProperty("allowSharedKeyAccess").GetBoolean());
+        Assert.AreEqual("TLS1_2", storage.Properties.GetProperty("minimumTlsVersion").GetString());
+        Assert.AreEqual("Disabled", storage.Properties.GetProperty("publicNetworkAccess").GetString());
+        Assert.IsTrue(storage.Properties.GetProperty("supportsHttpsTrafficOnly").GetBoolean());
+        Assert.IsTrue(vault.Properties.GetProperty("enablePurgeProtection").GetBoolean());
+        Assert.IsTrue(vault.Properties.GetProperty("enableRbacAuthorization").GetBoolean());
+        Assert.AreEqual("Disabled", vault.Properties.GetProperty("publicNetworkAccess").GetString());
+        Assert.AreEqual(90, vault.Properties.GetProperty("softDeleteRetentionInDays").GetInt32());
+    }
+
+    [TestMethod]
+    [Timeout(60_000)]
+    public async Task Development_uses_inexpensive_storage_without_an_audit_account()
+    {
+        var snapshot = await SnapshotInResourceGroupAsync("environment-topology/dev.bicepparam");
+        Assert.IsEmpty(snapshot.Diagnostics);
+        Assert.HasCount(1, snapshot.ResourcesOfType("Microsoft.Storage/storageAccounts"));
+        var primary = snapshot.RequireResource("Microsoft.Storage/storageAccounts", "ordersdevprimary");
+
+        Assert.AreEqual("Standard_LRS", primary.AdditionalProperties!["sku"].GetProperty("name").GetString());
+        var tags = primary.AdditionalProperties["tags"];
+        Assert.AreEqual("dev", tags.GetProperty("environment").GetString());
+        Assert.AreEqual("internal", tags.GetProperty("dataClassification").GetString());
+        Assert.AreEqual(primary.Id, snapshot.Outputs["primaryStorageId"].GetString());
+        Assert.AreEqual(System.Text.Json.JsonValueKind.Null, snapshot.Outputs["auditStorageId"].ValueKind);
+    }
+
+    [TestMethod]
+    [Timeout(60_000)]
+    public async Task Production_uses_resilient_primary_and_audit_storage()
+    {
+        var snapshot = await SnapshotInResourceGroupAsync("environment-topology/prod.bicepparam");
+        Assert.IsEmpty(snapshot.Diagnostics);
+        Assert.HasCount(2, snapshot.ResourcesOfType("Microsoft.Storage/storageAccounts"));
+        var primary = snapshot.RequireResource("Microsoft.Storage/storageAccounts", "ordersprodprimary");
+        var audit = snapshot.RequireResource("Microsoft.Storage/storageAccounts", "ordersprodaudit");
+
+        Assert.AreEqual("Standard_ZRS", primary.AdditionalProperties!["sku"].GetProperty("name").GetString());
+        Assert.AreEqual("Standard_GRS", audit.AdditionalProperties!["sku"].GetProperty("name").GetString());
+        var tags = primary.AdditionalProperties["tags"];
+        Assert.AreEqual("prod", tags.GetProperty("environment").GetString());
+        Assert.AreEqual("confidential", tags.GetProperty("dataClassification").GetString());
+        Assert.AreEqual(primary.Id, snapshot.Outputs["primaryStorageId"].GetString());
+        Assert.AreEqual(audit.Id, snapshot.Outputs["auditStorageId"].GetString());
+    }
+
+    [TestMethod]
+    [Timeout(60_000)]
+    public async Task Private_storage_connects_to_the_data_subnet_and_private_DNS()
+    {
+        var snapshot = await SnapshotInResourceGroupAsync("private-network/main.bicepparam");
+        Assert.IsEmpty(snapshot.Diagnostics);
+        var networkIds = snapshot.Outputs["networkIds"];
+        var network = snapshot.RequireResource(networkIds.GetProperty("virtualNetworkId").GetString()!);
+        var appSubnet = snapshot.RequireResource(networkIds.GetProperty("appSubnetId").GetString()!);
+        var dataSubnet = snapshot.RequireResource(networkIds.GetProperty("dataSubnetId").GetString()!);
+        var endpoint = snapshot.RequireResource(networkIds.GetProperty("privateEndpointId").GetString()!);
+        var storage = snapshot.RequireResource("Microsoft.Storage/storageAccounts", "ordersprivatestore");
+        var appNsg = snapshot.RequireResource("Microsoft.Network/networkSecurityGroups", "orders-app-nsg");
+        var dataNsg = snapshot.RequireResource("Microsoft.Network/networkSecurityGroups", "orders-data-nsg");
+        var dnsLink = snapshot.RequireResource(
+            "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+            "privatelink.blob.core.windows.net/orders-vnet-link");
+
+        Assert.AreEqual("10.42.0.0/16", SnapshotHelpers.GetSnapshotValue(network.Properties, "/addressSpace/addressPrefixes/0").GetString());
+        Assert.AreEqual("10.42.1.0/24", appSubnet.Properties.GetProperty("addressPrefix").GetString());
+        Assert.AreEqual(appNsg.Id, SnapshotHelpers.GetSnapshotValue(appSubnet.Properties, "/networkSecurityGroup/id").GetString());
+        Assert.AreEqual("10.42.2.0/24", dataSubnet.Properties.GetProperty("addressPrefix").GetString());
+        Assert.AreEqual(dataNsg.Id, SnapshotHelpers.GetSnapshotValue(dataSubnet.Properties, "/networkSecurityGroup/id").GetString());
+        Assert.AreEqual("Disabled", dataSubnet.Properties.GetProperty("privateEndpointNetworkPolicies").GetString());
+        Assert.AreEqual(dataSubnet.Id, SnapshotHelpers.GetSnapshotValue(endpoint.Properties, "/subnet/id").GetString());
+        var connection = SnapshotHelpers.GetSnapshotValue(endpoint.Properties, "/privateLinkServiceConnections/0/properties");
+        Assert.AreEqual("blob", connection.GetProperty("groupIds")[0].GetString());
+        Assert.AreEqual(storage.Id, connection.GetProperty("privateLinkServiceId").GetString());
+        Assert.AreEqual(network.Id, SnapshotHelpers.GetSnapshotValue(dnsLink.Properties, "/virtualNetwork/id").GetString());
+    }
+
+    [TestMethod]
+    [Timeout(60_000)]
+    public async Task Platform_policy_audits_resources_missing_a_cost_center_tag()
+    {
         var snapshot = await session.SnapshotAsync(new SnapshotOptions
         {
             FilePath = InfraPath("snapshot-scopes/management-group.bicepparam"),
-            ManagementGroupId = "sample-platform", Location = "eastus", DeploymentName = "sample-deployment",
+            ManagementGroupId = "sample-platform",
+            Location = "eastus",
         }, TestContext.CancellationToken);
         Assert.IsEmpty(snapshot.Diagnostics);
-        Assert.HasCount(1, snapshot.ResourcesOfType("Microsoft.Authorization/policyDefinitions"));
         var policy = snapshot.RequireResource("Microsoft.Authorization/policyDefinitions", "require-cost-center");
-        Assert.AreSame(policy, snapshot.RequireResource(snapshot.Outputs["policyId"].GetString()!));
+
         Assert.AreEqual("sample-platform", SnapshotHelpers.GetResourceScope(policy.Id).ManagementGroupId);
+        var condition = SnapshotHelpers.GetSnapshotValue(policy.Properties, "/policyRule/if");
+        Assert.AreEqual("tags[costCenter]", condition.GetProperty("field").GetString());
+        Assert.AreEqual("false", condition.GetProperty("exists").GetString());
         Assert.AreEqual("audit", SnapshotHelpers.GetSnapshotValue(policy.Properties, "/policyRule/then/effect").GetString());
-        Assert.AreEqual("/providers/Microsoft.Management/managementGroups/sample-platform", snapshot.Outputs["scopeId"].GetString());
+        Assert.AreEqual(policy.Id, snapshot.Outputs["policyId"].GetString());
     }
 
-    private async Task<SnapshotResult> SnapshotAsync(BicepTestSession session, string relativePath)
-    {
-        return await session.SnapshotAsync(
-            new SnapshotOptions
-            {
-                FilePath = InfraPath(relativePath),
-                TenantId = TenantId,
-                SubscriptionId = SubscriptionId,
-                ResourceGroup = "sample-rg",
-                Location = "eastus",
-                DeploymentName = "sample-deployment",
-            },
-            TestContext.CancellationToken);
-    }
-
-    private static SnapshotResource Resource(SnapshotResult snapshot, string type) =>
-        snapshot.PredictedResources.Single(resource => resource.Type == type);
-
-    private static JsonElement Extra(SnapshotResource resource, string name) =>
-        resource.AdditionalProperties![name];
+    private Task<SnapshotResult> SnapshotInResourceGroupAsync(string relativePath) =>
+        session.SnapshotAsync(new SnapshotOptions
+        {
+            FilePath = InfraPath(relativePath),
+            SubscriptionId = "28c9069e-23e8-47d2-b640-00d2e0f09616",
+            ResourceGroup = "sample-rg",
+            Location = "eastus",
+        }, TestContext.CancellationToken);
 
     private static string InfraPath(string relativePath) => Path.GetFullPath(
         Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "infra", relativePath));

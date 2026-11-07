@@ -2,7 +2,8 @@ BeforeAll {
     $root = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
     Import-Module (Join-Path $root 'packages/powershell/AnthonyCMartin.BicepTesting/AnthonyCMartin.BicepTesting.psd1') -Force
     $infra = Join-Path $root 'samples/infra'
-    $cases = Get-Content (Join-Path $infra 'snapshot-scopes/helper-cases.json') -Raw | ConvertFrom-Json -AsHashtable
+    $testdata = Join-Path $root 'packages/testdata'
+    $cases = Get-Content (Join-Path $testdata 'snapshot-helpers.json') -Raw | ConvertFrom-Json -AsHashtable
 }
 
 Describe 'Snapshot helpers' {
@@ -56,12 +57,12 @@ Describe 'Snapshot helpers' {
             { $duplicate | Get-BicepSnapshotResource -Id $policy.Id } | Should -Throw '*found 2*'
             { $duplicate | Get-BicepSnapshotResource -Type $policy.Type -Name $policy.Name } | Should -Throw '*found 2*'
             { $duplicate | Get-BicepSnapshotResource -Type $policy.Type -Name $policy.Name.ToUpperInvariant() } | Should -Throw '*found 0*'
-            $subscription = $session | Get-BicepSnapshot -Path (Join-Path $infra 'snapshot-scopes/subscription.bicepparam') `
+            $subscription = $session | Get-BicepSnapshot -Path (Join-Path $testdata 'snapshot-scopes/subscription.bicepparam') `
                 -SubscriptionId '28c9069e-23e8-47d2-b640-00d2e0f09616'
             $subscription.Diagnostics | Should -BeNullOrEmpty
             $subscription | Get-BicepSnapshotValue -Pointer '/outputs/scopeId' |
                 Should -Be '/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616'
-            $tenant = $session | Get-BicepSnapshot -Path (Join-Path $infra 'snapshot-scopes/tenant.bicepparam') `
+            $tenant = $session | Get-BicepSnapshot -Path (Join-Path $testdata 'snapshot-scopes/tenant.bicepparam') `
                 -TenantId 'ddbe463a-0554-485d-b589-0b17d60cd38b'
             $tenant.Diagnostics | Should -BeNullOrEmpty
             $tenant | Get-BicepSnapshotValue -Pointer '/outputs/tenantId' | Should -Be 'ddbe463a-0554-485d-b589-0b17d60cd38b'

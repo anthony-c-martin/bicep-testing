@@ -9,7 +9,8 @@ from anthonycmartin.bicep_testing import (
 )
 
 INFRA = Path(__file__).parents[4] / "samples" / "infra"
-CASES = json.loads((INFRA / "snapshot-scopes/helper-cases.json").read_text())
+TESTDATA = Path(__file__).parents[3] / "testdata"
+CASES = json.loads((TESTDATA / "snapshot-helpers.json").read_text())
 
 
 @pytest.mark.parametrize("case", CASES["scopes"])
@@ -72,13 +73,13 @@ def test_every_snapshot_scope_and_optional_context() -> None:
         assert get_resource_scope(policy.id).management_group_id == "platform"
         assert get_snapshot_value(policy.properties, "/policyRule/then/effect") == "audit"
         subscription = session.snapshot(
-            INFRA / "snapshot-scopes/subscription.bicepparam",
+            TESTDATA / "snapshot-scopes/subscription.bicepparam",
             SnapshotMetadata(subscription_id="28c9069e-23e8-47d2-b640-00d2e0f09616"),
         )
         assert subscription.diagnostics == ()
         assert subscription.outputs["scopeId"] == "/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616"
         tenant = session.snapshot(
-            INFRA / "snapshot-scopes/tenant.bicepparam",
+            TESTDATA / "snapshot-scopes/tenant.bicepparam",
             SnapshotMetadata(tenant_id="ddbe463a-0554-485d-b589-0b17d60cd38b"),
         )
         assert tenant.diagnostics == ()

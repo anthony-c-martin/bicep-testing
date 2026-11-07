@@ -5,7 +5,8 @@ import {
 } from '../src';
 
 const infra = path.resolve(__dirname, '../../../samples/infra');
-const cases = JSON.parse(fs.readFileSync(path.join(infra, 'snapshot-scopes/helper-cases.json'), 'utf8')) as {
+const testdata = path.resolve(__dirname, '../../testdata');
+const cases = JSON.parse(fs.readFileSync(path.join(testdata, 'snapshot-helpers.json'), 'utf8')) as {
   scopes: { id: string; subscriptionId?: string; resourceGroup?: string; managementGroupId?: string }[];
   invalidIds: string[];
   document: unknown;
@@ -59,12 +60,12 @@ test('evaluates all scopes and uses helpers against real snapshots', async () =>
     expect(requireResource(management, { id: policy.id.toUpperCase() })).toBe(policy);
     expect(getResourceScope(policy.id).managementGroupId).toBe('platform');
     expect(getSnapshotValue(policy, '/properties/policyRule/then/effect')).toBe('audit');
-    const subscription = await session.snapshot(path.join(infra, 'snapshot-scopes/subscription.bicepparam'), {
+    const subscription = await session.snapshot(path.join(testdata, 'snapshot-scopes/subscription.bicepparam'), {
       subscriptionId: '28c9069e-23e8-47d2-b640-00d2e0f09616',
     });
     expect(subscription.diagnostics).toEqual([]);
     expect(subscription.outputs.scopeId).toBe('/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616');
-    const tenant = await session.snapshot(path.join(infra, 'snapshot-scopes/tenant.bicepparam'), {
+    const tenant = await session.snapshot(path.join(testdata, 'snapshot-scopes/tenant.bicepparam'), {
       tenantId: 'ddbe463a-0554-485d-b589-0b17d60cd38b',
     });
     expect(tenant.diagnostics).toEqual([]);

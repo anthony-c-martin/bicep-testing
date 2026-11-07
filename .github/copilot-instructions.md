@@ -17,11 +17,12 @@
 
 ## Tests And Samples
 
-- Reuse deterministic Bicep fixtures under `samples/infra`; do not duplicate equivalent fixtures per language.
+- Reuse teaching-oriented Bicep templates under `samples/infra`; do not duplicate equivalent templates per language. Shared conformance-only fixtures belong under `packages/testdata`.
 - In samples, use `ddbe463a-0554-485d-b589-0b17d60cd38b` as the fake tenant ID and `28c9069e-23e8-47d2-b640-00d2e0f09616` as the fake subscription ID instead of all-zero GUIDs.
 - Use the native test framework for each ecosystem: Jest, MSTest, Go `testing`, Pester, and pytest.
-- Consumer samples under `samples/<language>` are packaging tests as well as usage examples. Keep `scripts/ValidateSamples.ps1` able to compile and run all five.
-- Keep equivalent behavioral assertions aligned across languages while expressing them idiomatically.
+- Tests under `samples/<language>` teach consumers how to test their Bicep, not whether this library works. Use focused infrastructure scenarios, readable inputs, and meaningful requirement-based assertions; keep library correctness and edge-case tests under `packages/`.
+- Keep `scripts/ValidateSamples.ps1` able to compile all five samples and execute only offline examples with `-RunSnapshots`. Packaging checks maintain runnable examples; they are not the samples' purpose.
+- Demonstrate comparable infrastructure requirements across languages while expressing them idiomatically; do not force identical assertions or helper usage.
 
 ## Public API Governance
 

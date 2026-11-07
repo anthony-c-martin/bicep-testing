@@ -9,10 +9,13 @@ public sealed class SnapshotHelperTests
     private static string Infra(string relative) => Path.GetFullPath(Path.Combine(
         AppContext.BaseDirectory, "../../../../../../../samples/infra", relative));
 
+    private static string TestData(string relative) => Path.GetFullPath(Path.Combine(
+        AppContext.BaseDirectory, "../../../../../../testdata", relative));
+
     [TestMethod]
     public void Helpers_match_shared_edge_cases()
     {
-        using var cases = JsonDocument.Parse(File.ReadAllText(Infra("snapshot-scopes/helper-cases.json")));
+        using var cases = JsonDocument.Parse(File.ReadAllText(TestData("snapshot-helpers.json")));
         foreach (var item in cases.RootElement.GetProperty("scopes").EnumerateArray())
         {
             var scope = SnapshotHelpers.GetResourceScope(item.GetProperty("id").GetString()!);
@@ -66,14 +69,14 @@ public sealed class SnapshotHelperTests
         Assert.AreEqual("audit", SnapshotHelpers.GetSnapshotValue(policy.Properties, "/policyRule/then/effect").GetString());
         var subscription = await session.SnapshotAsync(new SnapshotOptions
         {
-            FilePath = Infra("snapshot-scopes/subscription.bicepparam"),
+            FilePath = TestData("snapshot-scopes/subscription.bicepparam"),
             SubscriptionId = "28c9069e-23e8-47d2-b640-00d2e0f09616",
         });
         Assert.HasCount(0, subscription.Diagnostics);
         Assert.AreEqual("/subscriptions/28c9069e-23e8-47d2-b640-00d2e0f09616", subscription.Outputs["scopeId"].GetString());
         var tenant = await session.SnapshotAsync(new SnapshotOptions
         {
-            FilePath = Infra("snapshot-scopes/tenant.bicepparam"),
+            FilePath = TestData("snapshot-scopes/tenant.bicepparam"),
             TenantId = "ddbe463a-0554-485d-b589-0b17d60cd38b",
         });
         Assert.HasCount(0, tenant.Diagnostics);

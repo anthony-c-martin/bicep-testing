@@ -93,7 +93,7 @@ def deploy_storage(
         resource_prefix=resource_prefix,
         include_audit_storage=include_audit_storage,
     )
-    deployment = session.deploy(
+    return session.deploy(
         ResourceGroupDeployOptions(
             file_path=parameters,
             subscription_id=subscription_id,
@@ -105,15 +105,12 @@ def deploy_storage(
             },
         )
     )
-    assert deployment.succeeded, deployment.error_message
-    return deployment
 
 
-def test_secure_storage_is_verified_in_azure_and_removed(session: LiveBicepTestSession) -> None:
+def test_deployed_storage_meets_the_security_baseline_in_azure(session: LiveBicepTestSession) -> None:
     subscription_id, resource_group, stack_name, resource_prefix = live_settings()
     parameters = Path(__file__).parents[1] / "infra" / "live-storage" / "main.bicepparam"
     credential = DefaultAzureCredential()
-    primary_storage_id = ""
 
     deployment = deploy_storage(
         session=session,
@@ -125,6 +122,7 @@ def test_secure_storage_is_verified_in_azure_and_removed(session: LiveBicepTestS
         include_audit_storage=False,
     )
     try:
+        assert deployment.succeeded, deployment.error_message
         primary_storage_id = deployment.outputs["primaryStorageId"]
         status, storage = get_azure_resource(credential, primary_storage_id)
         assert status == 200
@@ -134,19 +132,14 @@ def test_secure_storage_is_verified_in_azure_and_removed(session: LiveBicepTestS
         assert storage["properties"]["minimumTlsVersion"] == "TLS1_2"
         assert storage["properties"]["publicNetworkAccess"] == "Disabled"
         assert storage["properties"]["supportsHttpsTrafficOnly"] is True
-        assert primary_storage_id in {resource.id for resource in deployment.resources}
     finally:
         deployment.close()
 
-    assert get_azure_resource(credential, primary_storage_id)[0] == 404
 
-
-def test_deployment_reconciles_removed_audit_storage_and_cleans_up(session: LiveBicepTestSession) -> None:
+def test_disabling_audit_storage_removes_the_account_from_azure(session: LiveBicepTestSession) -> None:
     subscription_id, resource_group, stack_name, resource_prefix = live_settings()
     parameters = Path(__file__).parents[1] / "infra" / "live-storage" / "main.bicepparam"
     credential = DefaultAzureCredential()
-    primary_storage_id = ""
-    audit_storage_id = ""
 
     deployment = deploy_storage(
         session=session,
@@ -158,9 +151,9 @@ def test_deployment_reconciles_removed_audit_storage_and_cleans_up(session: Live
         include_audit_storage=True,
     )
     try:
+        assert deployment.succeeded, deployment.error_message
         primary_storage_id = deployment.outputs["primaryStorageId"]
         audit_storage_id = deployment.outputs["auditStorageId"]
-        assert len(deployment.resources) == 2
 
         deployment = deploy_storage(
             session=session,
@@ -171,12 +164,12 @@ def test_deployment_reconciles_removed_audit_storage_and_cleans_up(session: Live
             resource_prefix=resource_prefix,
             include_audit_storage=False,
         )
-        assert [resource.id for resource in deployment.resources] == [primary_storage_id]
+        assert deployment.succeeded, deployment.error_message
+        assert deployment.outputs["primaryStorageId"] == primary_storage_id
+        assert get_azure_resource(credential, primary_storage_id)[0] == 200
         assert get_azure_resource(credential, audit_storage_id)[0] == 404
     finally:
         deployment.close()
-
-    assert get_azure_resource(credential, primary_storage_id)[0] == 404
 
 
 def test_identical_redeployment_preserves_resource_identity_and_security(session: LiveBicepTestSession) -> None:
@@ -193,12 +186,10 @@ def test_identical_redeployment_preserves_resource_identity_and_security(session
         deployment = session.deploy(options)
         assert deployment.succeeded, deployment.error_message
         primary_storage_id = deployment.outputs["primaryStorageId"]
-        original_ids = sorted(resource.id for resource in deployment.resources)
 
         deployment = session.deploy(options)
         assert deployment.succeeded, deployment.error_message
         assert deployment.outputs["primaryStorageId"] == primary_storage_id
-        assert sorted(resource.id for resource in deployment.resources) == original_ids
         status, storage = get_azure_resource(credential, primary_storage_id)
         assert status == 200
         assert storage is not None
@@ -208,4 +199,3 @@ def test_identical_redeployment_preserves_resource_identity_and_security(session
     finally:
         if deployment is not None:
             deployment.close()
-    assert get_azure_resource(credential, primary_storage_id)[0] == 404
