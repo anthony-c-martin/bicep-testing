@@ -33,6 +33,7 @@ public sealed class SnapshotResource
     public string? Location { get; init; }
 
     [JsonPropertyName("properties")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public JsonElement Properties { get; init; }
 
     [JsonExtensionData]

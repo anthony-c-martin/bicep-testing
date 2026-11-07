@@ -1,0 +1,1 @@
+using './management-group.bicep'

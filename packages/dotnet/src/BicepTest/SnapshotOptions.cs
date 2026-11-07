@@ -8,6 +8,8 @@ public sealed class SnapshotOptions
 
     public string? SubscriptionId { get; init; }
 
+    public string? ManagementGroupId { get; init; }
+
     public string? ResourceGroup { get; init; }
 
     public string? Location { get; init; }

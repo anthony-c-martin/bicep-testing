@@ -1,27 +1,42 @@
 const path = require('node:path');
-const { BicepTestSession } = require('@anthony-c-martin/bicep-testing');
+const { BicepTestSession, resourcesOfType, requireResource, getResourceScope, getSnapshotValue } = require('@anthony-c-martin/bicep-testing');
 
 const sampleDescribe = process.env.BICEP_TEST_VALIDATE_ONLY === '1' ? describe.skip : describe;
-const metadata = [
-  'ddbe463a-0554-485d-b589-0b17d60cd38b',
-  '28c9069e-23e8-47d2-b640-00d2e0f09616',
-  'sample-rg',
-  'eastus',
-  'sample-deployment',
-];
+const metadata = {
+  tenantId: 'ddbe463a-0554-485d-b589-0b17d60cd38b',
+  subscriptionId: '28c9069e-23e8-47d2-b640-00d2e0f09616',
+  resourceGroup: 'sample-rg',
+  location: 'eastus',
+  deploymentName: 'sample-deployment',
+};
 
 sampleDescribe('real-world Bicep snapshots', () => {
   let session;
 
   beforeAll(async () => {
-    session = await BicepTestSession.create('0.46.1');
+    session = await BicepTestSession.create('0.47.16');
   }, 60_000);
 
   afterAll(() => session.dispose());
 
   async function snapshot(relativePath) {
-    return session.snapshot(path.resolve(__dirname, '../infra', relativePath), ...metadata);
+    return session.snapshot(path.resolve(__dirname, '../infra', relativePath), metadata);
   }
+
+  test('minimal context and management-group resource helpers work offline', async () => {
+    const minimal = await session.snapshot(path.resolve(__dirname, '../infra/security-baseline/secure.bicepparam'));
+    expect(minimal.diagnostics).toHaveLength(0);
+    const result = await session.snapshot(path.resolve(__dirname, '../infra/snapshot-scopes/management-group.bicepparam'), {
+      managementGroupId: 'sample-platform', location: 'eastus', deploymentName: 'sample-deployment',
+    });
+    expect(result.diagnostics).toHaveLength(0);
+    expect(resourcesOfType(result, 'Microsoft.Authorization/policyDefinitions')).toHaveLength(1);
+    const policy = requireResource(result, { type: 'Microsoft.Authorization/policyDefinitions', name: 'require-cost-center' });
+    expect(requireResource(result, { id: result.outputs.policyId })).toBe(policy);
+    expect(getResourceScope(policy.id).managementGroupId).toBe('sample-platform');
+    expect(getSnapshotValue(policy, '/properties/policyRule/then/effect')).toBe('audit');
+    expect(result.outputs.scopeId).toBe('/providers/Microsoft.Management/managementGroups/sample-platform');
+  });
 
   test('environment parameters select the expected topology, SKUs, and tags', async () => {
     const development = await snapshot('environment-topology/dev.bicepparam');

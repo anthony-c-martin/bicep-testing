@@ -105,4 +105,37 @@ liveDescribe('real-world Bicep deployments', () => {
     }
     expect((await getAzureResource(credential, primaryStorageId)).status).toBe(404);
   }, 20 * 60_000);
+
+  test('redeploys identical inputs without changing resource identity or security', async () => {
+    const options = {
+      filePath: parametersPath,
+      subscriptionId,
+      resourceGroup,
+      stackName: `${stackName}-idempotency`,
+      parameterOverrides: { resourcePrefix, includeAuditStorage: false },
+    };
+    let deployment;
+    let primaryStorageId;
+    try {
+      deployment = await session.deploy(options);
+      expect(deployment.succeeded).toBe(true);
+      primaryStorageId = deployment.outputs.primaryStorageId;
+      const originalIds = deployment.resources.map(resource => resource.id).sort();
+
+      deployment = await session.deploy(options);
+      expect(deployment.succeeded).toBe(true);
+      expect(deployment.outputs.primaryStorageId).toBe(primaryStorageId);
+      expect(deployment.resources.map(resource => resource.id).sort()).toEqual(originalIds);
+      const response = await getAzureResource(credential, primaryStorageId);
+      expect(response.ok).toBe(true);
+      expect((await response.json()).properties).toEqual(expect.objectContaining({
+        allowBlobPublicAccess: false,
+        minimumTlsVersion: 'TLS1_2',
+        publicNetworkAccess: 'Disabled',
+      }));
+    } finally {
+      await deployment?.teardown();
+    }
+    expect((await getAzureResource(credential, primaryStorageId)).status).toBe(404);
+  }, 20 * 60_000);
 });

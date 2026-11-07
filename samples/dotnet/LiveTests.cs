@@ -122,6 +122,45 @@ public sealed class LiveTests
         Assert.AreEqual(HttpStatusCode.NotFound, removedPrimary.StatusCode);
     }
 
+    [TestMethod]
+    [Timeout(20 * 60_000)]
+    public async Task Identical_redeployment_preserves_resource_identity_and_security()
+    {
+        var settings = LiveSettings.Load();
+        var options = CreateDeployOptions(settings, CreateParameterOverrides(settings, false));
+        DeployResult? deployment = null;
+        string? primaryStorageId = null;
+        try
+        {
+            deployment = await session.DeployAsync(options, TestContext.CancellationToken);
+            Assert.IsTrue(deployment.Succeeded, deployment.ErrorMessage);
+            primaryStorageId = deployment.Outputs["primaryStorageId"].GetString()!;
+            var originalIds = deployment.Resources.Select(resource => resource.Id).Order().ToArray();
+
+            deployment = await session.DeployAsync(options, TestContext.CancellationToken);
+            Assert.IsTrue(deployment.Succeeded, deployment.ErrorMessage);
+            Assert.AreEqual(primaryStorageId, deployment.Outputs["primaryStorageId"].GetString());
+            CollectionAssert.AreEqual(originalIds, deployment.Resources.Select(resource => resource.Id).Order().ToArray());
+            using var response = await GetAzureResourceAsync(credential, primaryStorageId);
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            using var storage = JsonDocument.Parse(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+            var properties = storage.RootElement.GetProperty("properties");
+            Assert.IsFalse(properties.GetProperty("allowBlobPublicAccess").GetBoolean());
+            Assert.AreEqual("TLS1_2", properties.GetProperty("minimumTlsVersion").GetString());
+            Assert.AreEqual("Disabled", properties.GetProperty("publicNetworkAccess").GetString());
+        }
+        finally
+        {
+            if (deployment is not null)
+            {
+                using var cleanup = new CancellationTokenSource(CleanupTimeout);
+                await deployment.TeardownAsync(cleanup.Token);
+            }
+        }
+        using var deleted = await GetAzureResourceAsync(credential, primaryStorageId!);
+        Assert.AreEqual(HttpStatusCode.NotFound, deleted.StatusCode);
+    }
+
     private async Task<DeployResult> DeployAsync(
         LiveBicepTestSession session,
         DeployOptions options)

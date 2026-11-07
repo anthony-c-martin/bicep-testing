@@ -52,6 +52,33 @@ Describe 'Real-world Bicep deployments' -Skip:(
         $session | Remove-BicepTestSession
     }
 
+    It 'redeploys identical inputs without changing resource identity or security' {
+        $deployment = $null
+        try {
+            $deployment = Start-SampleDeployment -Session $session `
+                -StackName "$env:BICEP_TEST_STACK_NAME-idempotency" -IncludeAuditStorage $false
+            $deployment.Succeeded | Should -BeTrue
+            $primaryStorageId = $deployment.Outputs['primaryStorageId'].GetString()
+            $originalIds = @($deployment.Resources.Id | Sort-Object)
+
+            $deployment = Start-SampleDeployment -Session $session `
+                -StackName "$env:BICEP_TEST_STACK_NAME-idempotency" -IncludeAuditStorage $false
+            $deployment.Succeeded | Should -BeTrue
+            $deployment.Outputs['primaryStorageId'].GetString() | Should -Be $primaryStorageId
+            @($deployment.Resources.Id | Sort-Object) | Should -Be $originalIds
+            $response = Get-AzureResourceResponse $primaryStorageId
+            $response.StatusCode | Should -Be 200
+            $storage = $response.Content | ConvertFrom-Json
+            $storage.properties.allowBlobPublicAccess | Should -BeFalse
+            $storage.properties.minimumTlsVersion | Should -Be 'TLS1_2'
+            $storage.properties.publicNetworkAccess | Should -Be 'Disabled'
+        }
+        finally {
+            if ($deployment) { $deployment | Remove-BicepTestDeployment }
+        }
+        (Get-AzureResourceResponse $primaryStorageId).StatusCode | Should -Be 404
+    }
+
     It 'verifies secure storage in Azure and removes it afterward' {
         $deployment = $null
         try {

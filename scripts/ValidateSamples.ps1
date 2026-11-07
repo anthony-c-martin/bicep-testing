@@ -94,7 +94,7 @@ try {
 
     Write-Host 'Building the C# sample tests against the local NuGet package...'
     Invoke-NativeCommand {
-        dotnet build ./samples/dotnet/BicepTest.Sample.csproj --configuration Release --source "$nugetFeed" --source 'https://api.nuget.org/v3/index.json' -p:RestorePackagesPath="$dotnetPackages" --nologo
+        dotnet build ./samples/dotnet/BicepTest.Sample.csproj --configuration Release -p:RestoreAdditionalProjectSources="$nugetFeed" -p:RestorePackagesPath="$dotnetPackages" --nologo
     } 'C# sample build'
 
     Write-Host 'Building the Go sample tests against local modules with a temporary modfile...'
@@ -127,6 +127,9 @@ try {
         Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.6 -Force
         foreach ($command in @(
             'Get-BicepSnapshot',
+            'Get-BicepSnapshotResource',
+            'Get-BicepResourceScope',
+            'Get-BicepSnapshotValue',
             'New-BicepTestSession',
             'Start-BicepTestDeployment',
             'Test-BicepTestDeployment',

@@ -131,6 +131,10 @@ class BicepClient:
         )
 
     def get_snapshot(self, request: GetSnapshotRequest) -> GetSnapshotResponse:
+        if request.metadata.management_group_id is not None:
+            if not request.metadata.management_group_id.strip():
+                raise ValueError("management_group_id must not be empty")
+            self._require_version("0.47.16", "management-group snapshots")
         self._require_version("0.36.1", "get_snapshot")
         metadata = {
             _snake_to_camel(name): value

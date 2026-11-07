@@ -16,7 +16,7 @@ public sealed class OfflineTests
     [ClassInitialize]
     public static async Task ClassInitialize(TestContext testContext)
     {
-        session = await BicepTestSession.CreateAsync("0.46.1", testContext.CancellationToken);
+        session = await BicepTestSession.CreateAsync("0.47.16", testContext.CancellationToken);
     }
 
     [ClassCleanup]
@@ -93,6 +93,29 @@ public sealed class OfflineTests
         Assert.AreEqual(
             networkIds.GetProperty("virtualNetworkId").GetString(),
             resources["privatelink.blob.core.windows.net/orders-vnet-link"].Properties.GetProperty("virtualNetwork").GetProperty("id").GetString());
+    }
+
+    [TestMethod]
+    [Timeout(60_000)]
+    public async Task Minimal_context_and_management_group_helpers_work_offline()
+    {
+        var minimal = await session.SnapshotAsync(new SnapshotOptions
+        {
+            FilePath = InfraPath("security-baseline/secure.bicepparam"),
+        }, TestContext.CancellationToken);
+        Assert.IsEmpty(minimal.Diagnostics);
+        var snapshot = await session.SnapshotAsync(new SnapshotOptions
+        {
+            FilePath = InfraPath("snapshot-scopes/management-group.bicepparam"),
+            ManagementGroupId = "sample-platform", Location = "eastus", DeploymentName = "sample-deployment",
+        }, TestContext.CancellationToken);
+        Assert.IsEmpty(snapshot.Diagnostics);
+        Assert.HasCount(1, snapshot.ResourcesOfType("Microsoft.Authorization/policyDefinitions"));
+        var policy = snapshot.RequireResource("Microsoft.Authorization/policyDefinitions", "require-cost-center");
+        Assert.AreSame(policy, snapshot.RequireResource(snapshot.Outputs["policyId"].GetString()!));
+        Assert.AreEqual("sample-platform", SnapshotHelpers.GetResourceScope(policy.Id).ManagementGroupId);
+        Assert.AreEqual("audit", SnapshotHelpers.GetSnapshotValue(policy.Properties, "/policyRule/then/effect").GetString());
+        Assert.AreEqual("/providers/Microsoft.Management/managementGroups/sample-platform", snapshot.Outputs["scopeId"].GetString());
     }
 
     private async Task<SnapshotResult> SnapshotAsync(BicepTestSession session, string relativePath)

@@ -1,7 +1,7 @@
 BeforeAll {
     $infraPath = Join-Path $PSScriptRoot '../infra'
     Import-Module AnthonyCMartin.BicepTesting -RequiredVersion 0.1.6 -Force
-    $session = New-BicepTestSession -BicepVersion '0.46.1'
+    $session = New-BicepTestSession -BicepVersion '0.47.16'
 
     function Get-SampleSnapshot([string] $RelativePath) {
         $session | Get-BicepSnapshot `
@@ -19,6 +19,20 @@ AfterAll {
 }
 
 Describe 'Real-world Bicep snapshots' {
+    It 'uses minimal context and management-group resource helpers offline' {
+        ($session | Get-BicepSnapshot -Path (Join-Path $infraPath 'security-baseline/secure.bicepparam')).Diagnostics | Should -BeNullOrEmpty
+        $snapshot = $session | Get-BicepSnapshot -Path (Join-Path $infraPath 'snapshot-scopes/management-group.bicepparam') `
+            -ManagementGroupId 'sample-platform' -Location 'eastus' -DeploymentName 'sample-deployment'
+        $snapshot.Diagnostics | Should -BeNullOrEmpty
+        @($snapshot | Get-BicepSnapshotResource -Type 'Microsoft.Authorization/policyDefinitions') | Should -HaveCount 1
+        $policy = $snapshot | Get-BicepSnapshotResource -Type 'Microsoft.Authorization/policyDefinitions' -Name 'require-cost-center'
+        $id = $snapshot | Get-BicepSnapshotValue -Pointer '/outputs/policyId'
+        $snapshot | Get-BicepSnapshotResource -Id $id | Should -Be $policy
+        ($policy | Get-BicepResourceScope).ManagementGroupId | Should -Be 'sample-platform'
+        $policy | Get-BicepSnapshotValue -Pointer '/properties/policyRule/then/effect' | Should -Be 'audit'
+        $snapshot | Get-BicepSnapshotValue -Pointer '/outputs/scopeId' | Should -Be '/providers/Microsoft.Management/managementGroups/sample-platform'
+    }
+
     It 'selects environment topology, SKUs, and tags' {
         $development = Get-SampleSnapshot 'environment-topology/dev.bicepparam'
         $production = Get-SampleSnapshot 'environment-topology/prod.bicepparam'

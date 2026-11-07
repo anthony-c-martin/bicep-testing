@@ -168,6 +168,7 @@ class SnapshotMetadata:
     resource_group: str | None = None
     location: str | None = None
     deployment_name: str | None = None
+    management_group_id: str | None = None
 
     def _as_rpc_dict(self) -> dict[str, str]:
         values = {
@@ -176,6 +177,7 @@ class SnapshotMetadata:
             "resourceGroup": self.resource_group,
             "location": self.location,
             "deploymentName": self.deployment_name,
+            "managementGroupId": self.management_group_id,
         }
         return {name: value for name, value in values.items() if value is not None}
 

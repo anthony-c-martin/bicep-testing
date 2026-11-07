@@ -14,6 +14,7 @@ from .models import (
     ValidateResult,
 )
 from .session import BicepTestSession, LiveBicepTestSession
+from .helpers import ResourceScope, resources_of_type, require_resource, get_resource_scope, get_snapshot_value
 
 __all__ = [
     "BicepTestSession",
@@ -29,4 +30,9 @@ __all__ = [
     "SnapshotMetadata",
     "SnapshotResource",
     "SnapshotResult",
+    "ResourceScope",
+    "resources_of_type",
+    "require_resource",
+    "get_resource_scope",
+    "get_snapshot_value",
 ]

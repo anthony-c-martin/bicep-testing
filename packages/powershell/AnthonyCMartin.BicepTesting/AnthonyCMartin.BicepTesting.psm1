@@ -156,6 +156,9 @@ function Get-BicepSnapshot {
 
         [string] $Location,
 
+        [ValidateNotNullOrEmpty()]
+        [string] $ManagementGroupId,
+
         [string] $DeploymentName
     )
 
@@ -179,6 +182,9 @@ function Get-BicepSnapshot {
         }
         if ($PSBoundParameters.ContainsKey('DeploymentName')) {
             $properties.DeploymentName = $DeploymentName
+        }
+        if ($PSBoundParameters.ContainsKey('ManagementGroupId')) {
+            $properties.ManagementGroupId = $ManagementGroupId
         }
         $options = [AnthonyCMartin.BicepTesting.SnapshotOptions] $properties
 
@@ -350,4 +356,82 @@ function Remove-BicepTestDeployment {
     }
 }
 
-Export-ModuleMember -Function Get-BicepSnapshot, New-BicepTestSession, Remove-BicepTestDeployment, Remove-BicepTestSession, Start-BicepTestDeployment, Test-BicepTestDeployment
+function Get-BicepSnapshotResource {
+    [CmdletBinding(DefaultParameterSetName = 'Type')]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [ValidateNotNull()]
+        [object] $Snapshot,
+
+        [Parameter(Mandatory, ParameterSetName = 'Type')]
+        [Parameter(Mandatory, ParameterSetName = 'Name')]
+        [ValidateNotNullOrEmpty()]
+        [string] $Type,
+
+        [Parameter(Mandatory, ParameterSetName = 'Name')]
+        [ValidateNotNullOrEmpty()]
+        [string] $Name,
+
+        [Parameter(Mandatory, ParameterSetName = 'Id')]
+        [ValidateNotNullOrEmpty()]
+        [string] $Id
+    )
+
+    process {
+        Import-BicepTestAssembly
+        switch ($PSCmdlet.ParameterSetName) {
+            'Type' { [AnthonyCMartin.BicepTesting.SnapshotHelpers]::ResourcesOfType($Snapshot, $Type) }
+            'Name' { [AnthonyCMartin.BicepTesting.SnapshotHelpers]::RequireResource($Snapshot, $Type, $Name) }
+            'Id' { [AnthonyCMartin.BicepTesting.SnapshotHelpers]::RequireResource($Snapshot, $Id) }
+        }
+    }
+}
+
+function Get-BicepResourceScope {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Id
+    )
+
+    process {
+        Import-BicepTestAssembly
+        [AnthonyCMartin.BicepTesting.SnapshotHelpers]::GetResourceScope($Id)
+    }
+}
+
+function Get-BicepSnapshotValue {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [AllowNull()]
+        [object] $InputObject,
+
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string] $Pointer
+    )
+
+    process {
+        Import-BicepTestAssembly
+        if ($InputObject -is [Text.Json.JsonElement]) {
+            $element = $InputObject
+        }
+        elseif ($InputObject -is [AnthonyCMartin.BicepTesting.SnapshotResource] -or
+                $InputObject -is [AnthonyCMartin.BicepTesting.SnapshotResult]) {
+            $element = [Text.Json.JsonSerializer]::SerializeToElement(
+                $InputObject, $InputObject.GetType(), [Text.Json.JsonSerializerOptions] $null)
+        }
+        else {
+            $document = [Text.Json.JsonDocument]::Parse(
+                [string] (ConvertTo-Json -InputObject $InputObject -Depth 100 -Compress))
+            try { $element = $document.RootElement.Clone() }
+            finally { $document.Dispose() }
+        }
+        $value = [AnthonyCMartin.BicepTesting.SnapshotHelpers]::GetSnapshotValue($element, $Pointer)
+        ConvertFrom-Json -InputObject $value.GetRawText() -AsHashtable -NoEnumerate
+    }
+}
+
+Export-ModuleMember -Function Get-BicepSnapshot, Get-BicepSnapshotResource, Get-BicepResourceScope, Get-BicepSnapshotValue, New-BicepTestSession, Remove-BicepTestDeployment, Remove-BicepTestSession, Start-BicepTestDeployment, Test-BicepTestDeployment

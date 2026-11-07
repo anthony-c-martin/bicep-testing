@@ -1,0 +1,1 @@
+using './tenant.bicep'

@@ -81,6 +81,26 @@ def test_get_snapshot_maps_metadata_to_rpc_casing() -> None:
     }
 
 
+def test_management_group_metadata_and_version_gate() -> None:
+    captured: dict[str, Any] = {}
+    client = object.__new__(BicepClient)
+    client._version = "0.47.16"
+
+    def call(method: str, params: dict[str, Any]) -> dict[str, str]:
+        captured.update(params)
+        return {"snapshot": "{}"}
+
+    client._call = call
+    request = GetSnapshotRequest("unused", SnapshotMetadata(management_group_id="platform"))
+    client.get_snapshot(request)
+    assert captured["metadata"] == {"managementGroupId": "platform"}
+    client._version = "0.46.1"
+    with pytest.raises(RuntimeError, match="0.47.16"):
+        client.get_snapshot(request)
+    with pytest.raises(ValueError, match="must not be empty"):
+        client.get_snapshot(GetSnapshotRequest("unused", SnapshotMetadata(management_group_id=" ")))
+
+
 def test_version_gate_rejects_old_cli() -> None:
     client = _client({"bicep/version": {"version": "0.35.0"}})
 

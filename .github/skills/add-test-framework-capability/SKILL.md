@@ -90,6 +90,9 @@ Preserve equivalent semantics while following each ecosystem's conventions.
 #### PowerShell
 
 - Use approved `Verb-Noun` command names, `[CmdletBinding()]`, pipeline input where natural, and PowerShell parameter validation.
+- Preserve native JSON helper values, including arrays and explicit null. Missing
+  paths and ambiguous required resource selection must fail explicitly. Snapshot
+  resources without a `properties` object must remain serializable.
 - Keep explicit exports synchronized between `AnthonyCMartin.BicepTesting.psm1` and `AnthonyCMartin.BicepTesting.psd1`; never use wildcard exports.
 - Keep commands as a thin, idiomatic wrapper over the C# implementation when the capability exists there.
 - Ensure errors are terminating when the command cannot produce a valid result.
@@ -99,6 +102,8 @@ Preserve equivalent semantics while following each ecosystem's conventions.
 #### Python
 
 - Use type annotations, standard naming conventions, immutable dataclasses for result data, and context managers for owned resources.
+- Exported helper functions participate in the public API generator alongside
+  classes and dataclasses; keep their signatures covered by the baseline.
 - Keep the implementation under `packages/python/bicep_testing/src/anthonycmartin/bicep_testing` and pytest tests under `packages/python/bicep_testing/tests`.
 - Put Bicep process and JSON-RPC behavior in the standalone public `anthonycmartin.bicep_rpc_client` package while keeping it behind the high-level `BicepTestSession` abstraction.
 

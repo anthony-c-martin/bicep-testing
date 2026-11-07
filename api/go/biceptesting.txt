@@ -2,6 +2,13 @@ package biceptesting // import "github.com/anthony-c-martin/bicep-testing/packag
 
 Package biceptesting provides helpers for testing Bicep infrastructure code.
 
+FUNCTIONS
+
+func GetSnapshotValue(value any, pointer string) (any, error)
+    GetSnapshotValue resolves an RFC 6901 JSON Pointer in decoded JSON,
+    preserving explicit nulls.
+
+
 TYPES
 
 type DeployOptions struct {
@@ -71,6 +78,24 @@ type OperationError struct {
 }
     OperationError captures an Azure operation failure.
 
+type ResourceScope struct {
+	SubscriptionID    string
+	ResourceGroup     string
+	ManagementGroupID string
+}
+    ResourceScope contains the scope components present in an Azure resource ID.
+
+func GetResourceScope(id string) (ResourceScope, error)
+    GetResourceScope parses subscription, resource-group, management-group,
+    and tenant-scoped IDs.
+
+type ResourceSelector struct {
+	ID   string
+	Type string
+	Name string
+}
+    ResourceSelector identifies a resource by ID, or by type and exact name.
+
 type Session struct {
 	// Has unexported fields.
 }
@@ -116,6 +141,13 @@ type SnapshotResult struct {
 }
     SnapshotResult is the predicted result of evaluating a Bicep parameters
     file.
+
+func (snapshot *SnapshotResult) RequireResource(selector ResourceSelector) (SnapshotResource, error)
+    RequireResource returns exactly one matching resource, or an error for
+    missing or ambiguous matches.
+
+func (snapshot *SnapshotResult) ResourcesOfType(resourceType string) ([]SnapshotResource, error)
+    ResourcesOfType selects resources using a case-insensitive type comparison.
 
 type ValidateResult struct {
 	IsValid       bool

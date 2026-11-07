@@ -189,6 +189,14 @@ func (client *Client) GetDeploymentGraph(ctx context.Context, request GetDeploym
 
 // GetSnapshot returns a deployment snapshot for a Bicep parameters file.
 func (client *Client) GetSnapshot(ctx context.Context, request GetSnapshotRequest) (GetSnapshotResponse, error) {
+	if request.Metadata.ManagementGroupID != "" {
+		if strings.TrimSpace(request.Metadata.ManagementGroupID) == "" {
+			return GetSnapshotResponse{}, errors.New("managementGroupId must not be empty")
+		}
+		if err := client.requireVersion(ctx, "0.47.16", "management-group snapshots"); err != nil {
+			return GetSnapshotResponse{}, err
+		}
+	}
 	if err := client.requireVersion(ctx, "0.36.1", "GetSnapshot"); err != nil {
 		return GetSnapshotResponse{}, err
 	}

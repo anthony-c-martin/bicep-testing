@@ -19,6 +19,46 @@ func TestSnapshots(t *testing.T) {
 	t.Run("private network references are wired together", func(t *testing.T) {
 		testPrivateNetworkReferencesAreWiredTogether(t, session)
 	})
+	t.Run("minimal context and management-group helpers work offline", func(t *testing.T) {
+		minimal, err := session.Snapshot(context.Background(), filepath.Join("..", "infra", "security-baseline", "secure.bicepparam"), biceptesting.SnapshotMetadata{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(minimal.Diagnostics) != 0 {
+			t.Fatalf("unexpected diagnostics: %v", minimal.Diagnostics)
+		}
+		snapshot, err := session.Snapshot(context.Background(), filepath.Join("..", "infra", "snapshot-scopes", "management-group.bicepparam"),
+			biceptesting.SnapshotMetadata{ManagementGroupID: "sample-platform", Location: "eastus", DeploymentName: "sample-deployment"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(snapshot.Diagnostics) != 0 {
+			t.Fatalf("unexpected diagnostics: %v", snapshot.Diagnostics)
+		}
+		policies, err := snapshot.ResourcesOfType("Microsoft.Authorization/policyDefinitions")
+		if err != nil || len(policies) != 1 {
+			t.Fatalf("policies = %v, %v", policies, err)
+		}
+		policy, err := snapshot.RequireResource(biceptesting.ResourceSelector{Type: "Microsoft.Authorization/policyDefinitions", Name: "require-cost-center"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		byID, err := snapshot.RequireResource(biceptesting.ResourceSelector{ID: policy.ID})
+		if err != nil || byID.ID != policy.ID {
+			t.Fatalf("ID selection = %+v, %v", byID, err)
+		}
+		scope, err := biceptesting.GetResourceScope(policy.ID)
+		if err != nil || scope.ManagementGroupID != "sample-platform" {
+			t.Fatalf("scope = %+v, %v", scope, err)
+		}
+		effect, err := biceptesting.GetSnapshotValue(policy.Properties, "/policyRule/then/effect")
+		if err != nil || effect != "audit" {
+			t.Fatalf("effect = %v, %v", effect, err)
+		}
+		if snapshot.Outputs["scopeId"] != "/providers/Microsoft.Management/managementGroups/sample-platform" {
+			t.Fatal("unexpected scope ID")
+		}
+	})
 }
 
 func testEnvironmentParametersSelectTopologySKUsAndTags(t *testing.T, session *biceptesting.Session) {
@@ -97,7 +137,7 @@ func testPrivateNetworkReferencesAreWiredTogether(t *testing.T, session *bicepte
 
 func newTestSession(t *testing.T) *biceptesting.Session {
 	t.Helper()
-	session, err := biceptesting.NewSession(context.Background(), "0.46.1")
+	session, err := biceptesting.NewSession(context.Background(), "0.47.16")
 	if err != nil {
 		t.Fatal(err)
 	}

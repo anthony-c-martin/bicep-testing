@@ -230,6 +230,32 @@ fmt.Println(result.Snapshot)
 
 `SnapshotMetadata` contains `TenantID`, `SubscriptionID`, `ResourceGroup`, `Location`, and `DeploymentName`; each field is optional. `SnapshotExternalInput` contains `Kind`, `Config`, and `Value`. `GetSnapshotResponse` contains the JSON snapshot in `Snapshot`.
 
+The development checkout also adds optional `ManagementGroupID` (unreleased).
+Supplying it requires Bicep CLI 0.47.16+; older CLIs return an explicit error
+instead of ignoring the field. Empty whitespace-only values also fail.
+All context is offline evaluation data; a deployment name can influence
+`deployment().name` without a live deployment.
+
+Using a 0.47.16+ client initialized as above:
+
+```go
+result, err := client.GetSnapshot(ctx, biceprpcclient.GetSnapshotRequest{
+	Path: "./management-group.bicepparam",
+	Metadata: biceprpcclient.SnapshotMetadata{
+		ManagementGroupID: "example-platform",
+		Location: "eastus",
+		DeploymentName: "offline-test",
+	},
+})
+if err != nil { log.Fatal(err) }
+fmt.Println(result.Snapshot)
+```
+
+Use the shared [management-group fixture](../../../samples/infra/snapshot-scopes/).
+The response remains serialized JSON; generic resource and JSON traversal
+helpers belong to the [testing framework](../bicep-testing/README.md), not this
+transport client. Always close the client.
+
 ### Version
 
 `Version` returns the connected Bicep CLI version. The first result is cached for the lifetime of the client.

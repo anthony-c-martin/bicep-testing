@@ -63,4 +63,4 @@ CLASS SnapshotExternalInput
   SnapshotExternalInput(kind: 'str', value: 'Any', config: 'Any' = None) -> None
 
 CLASS SnapshotMetadata
-  SnapshotMetadata(tenant_id: 'str | None' = None, subscription_id: 'str | None' = None, resource_group: 'str | None' = None, location: 'str | None' = None, deployment_name: 'str | None' = None) -> None
+  SnapshotMetadata(tenant_id: 'str | None' = None, subscription_id: 'str | None' = None, resource_group: 'str | None' = None, location: 'str | None' = None, deployment_name: 'str | None' = None, management_group_id: 'str | None' = None) -> None

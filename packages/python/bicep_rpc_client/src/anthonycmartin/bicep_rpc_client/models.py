@@ -90,6 +90,7 @@ class SnapshotMetadata:
     resource_group: str | None = None
     location: str | None = None
     deployment_name: str | None = None
+    management_group_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

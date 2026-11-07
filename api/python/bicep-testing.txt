@@ -35,10 +35,21 @@ CLASS OperationError
   OperationError(code: 'str | None', message: 'str | None', raw_data: 'Mapping[str, Any]') -> None
 
 CLASS SnapshotMetadata
-  SnapshotMetadata(tenant_id: 'str | None' = None, subscription_id: 'str | None' = None, resource_group: 'str | None' = None, location: 'str | None' = None, deployment_name: 'str | None' = None) -> None
+  SnapshotMetadata(tenant_id: 'str | None' = None, subscription_id: 'str | None' = None, resource_group: 'str | None' = None, location: 'str | None' = None, deployment_name: 'str | None' = None, management_group_id: 'str | None' = None) -> None
 
 CLASS SnapshotResource
   SnapshotResource(id: 'str', type: 'str', name: 'str', api_version: 'str', location: 'str | None' = None, properties: 'Mapping[str, Any]' = <factory>, additional_properties: 'Mapping[str, Any]' = <factory>) -> None
 
 CLASS SnapshotResult
   SnapshotResult(predicted_resources: 'tuple[SnapshotResource, ...]', diagnostics: 'tuple[str, ...]', outputs: 'Mapping[str, Any]') -> None
+
+CLASS ResourceScope
+  ResourceScope(subscription_id: 'str | None' = None, resource_group: 'str | None' = None, management_group_id: 'str | None' = None) -> None
+
+FUNCTION resources_of_type(snapshot: 'SnapshotResult', type: 'str') -> 'tuple[SnapshotResource, ...]'
+
+FUNCTION require_resource(snapshot: 'SnapshotResult', *, id: 'str | None' = None, type: 'str | None' = None, name: 'str | None' = None) -> 'SnapshotResource'
+
+FUNCTION get_resource_scope(id: 'str') -> 'ResourceScope'
+
+FUNCTION get_snapshot_value(value: 'Any', pointer: 'str') -> 'Any'

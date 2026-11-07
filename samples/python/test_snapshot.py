@@ -2,12 +2,15 @@ from pathlib import Path
 from typing import Any, Iterator
 
 import pytest
-from anthonycmartin.bicep_testing import BicepTestSession, SnapshotMetadata
+from anthonycmartin.bicep_testing import (
+    BicepTestSession, SnapshotMetadata, resources_of_type, require_resource,
+    get_resource_scope, get_snapshot_value,
+)
 
 
 @pytest.fixture(scope="module")
 def session() -> Iterator[BicepTestSession]:
-    with BicepTestSession.create("0.46.1") as value:
+    with BicepTestSession.create("0.47.16") as value:
         yield value
 
 
@@ -53,6 +56,21 @@ def test_environment_parameters_select_topology_skus_and_tags(session: BicepTest
     assert nested(production.predicted_resources[0].additional_properties, "sku", "name") == "Standard_ZRS"
     assert nested(production.predicted_resources[0].additional_properties, "tags", "dataClassification") == "confidential"
     assert nested(production.predicted_resources[1].additional_properties, "sku", "name") == "Standard_GRS"
+
+
+def test_minimal_context_and_management_group_helpers_work_offline(session: BicepTestSession) -> None:
+    infra = Path(__file__).parents[1] / "infra"
+    assert session.snapshot(infra / "security-baseline/secure.bicepparam").diagnostics == ()
+    result = session.snapshot(infra / "snapshot-scopes/management-group.bicepparam", SnapshotMetadata(
+        management_group_id="sample-platform", location="eastus", deployment_name="sample-deployment",
+    ))
+    assert result.diagnostics == ()
+    assert len(resources_of_type(result, "Microsoft.Authorization/policyDefinitions")) == 1
+    policy = require_resource(result, type="Microsoft.Authorization/policyDefinitions", name="require-cost-center")
+    assert require_resource(result, id=result.outputs["policyId"]) is policy
+    assert get_resource_scope(policy.id).management_group_id == "sample-platform"
+    assert get_snapshot_value(policy.properties, "/policyRule/then/effect") == "audit"
+    assert result.outputs["scopeId"] == "/providers/Microsoft.Management/managementGroups/sample-platform"
 
 
 def test_security_baseline_catches_weakened_parameters(session: BicepTestSession) -> None:

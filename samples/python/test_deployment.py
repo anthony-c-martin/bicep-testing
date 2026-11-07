@@ -177,3 +177,35 @@ def test_deployment_reconciles_removed_audit_storage_and_cleans_up(session: Live
         deployment.close()
 
     assert get_azure_resource(credential, primary_storage_id)[0] == 404
+
+
+def test_identical_redeployment_preserves_resource_identity_and_security(session: LiveBicepTestSession) -> None:
+    subscription_id, resource_group, stack_name, resource_prefix = live_settings()
+    options = ResourceGroupDeployOptions(
+        file_path=Path(__file__).parents[1] / "infra" / "live-storage" / "main.bicepparam",
+        subscription_id=subscription_id, resource_group=resource_group,
+        stack_name=f"{stack_name}-idempotency",
+        parameter_overrides={"resourcePrefix": resource_prefix, "includeAuditStorage": False},
+    )
+    credential = DefaultAzureCredential()
+    deployment = None
+    try:
+        deployment = session.deploy(options)
+        assert deployment.succeeded, deployment.error_message
+        primary_storage_id = deployment.outputs["primaryStorageId"]
+        original_ids = sorted(resource.id for resource in deployment.resources)
+
+        deployment = session.deploy(options)
+        assert deployment.succeeded, deployment.error_message
+        assert deployment.outputs["primaryStorageId"] == primary_storage_id
+        assert sorted(resource.id for resource in deployment.resources) == original_ids
+        status, storage = get_azure_resource(credential, primary_storage_id)
+        assert status == 200
+        assert storage is not None
+        assert storage["properties"]["allowBlobPublicAccess"] is False
+        assert storage["properties"]["minimumTlsVersion"] == "TLS1_2"
+        assert storage["properties"]["publicNetworkAccess"] == "Disabled"
+    finally:
+        if deployment is not None:
+            deployment.close()
+    assert get_azure_resource(credential, primary_storage_id)[0] == 404
